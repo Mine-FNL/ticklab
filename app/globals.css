@@ -1,0 +1,278 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 0 0% 4%;
+  --foreground: 0 0% 98%;
+  --card: 240 4% 10%;
+  --card-foreground: 0 0% 98%;
+  --popover: 240 4% 10%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 160 84% 39%;
+  --primary-foreground: 0 0% 4%;
+  --secondary: 240 4% 16%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 240 4% 16%;
+  --muted-foreground: 240 4% 64%;
+  --accent: 240 4% 16%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 4% 16%;
+  --input: 240 4% 16%;
+  --ring: 160 84% 39%;
+  --radius: 0.5rem;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--foreground));
+}
+
+/* Selection */
+::selection {
+  background-color: hsl(var(--primary) / 0.3);
+  color: hsl(var(--foreground));
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+.animate-pulse-slow {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Gradient backgrounds */
+.bg-gradient-radial {
+  background: radial-gradient(ellipse at center, var(--tw-gradient-stops));
+}
+
+/* Glass effect */
+.glass {
+  background: rgba(24, 24, 27, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Number input styling */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* RainbowKit overrides */
+[data-rk] {
+  --rk-colors-accentColor: hsl(var(--primary));
+  --rk-colors-accentColorForeground: hsl(var(--primary-foreground));
+  --rk-colors-modalBackground: hsl(var(--card));
+  --rk-colors-modalText: hsl(var(--foreground));
+  --rk-colors-modalTextSecondary: hsl(var(--muted-foreground));
+  --rk-colors-profileForeground: hsl(var(--card));
+  --rk-colors-selectedOptionBorder: hsl(var(--primary));
+  --rk-colors-closeButton: hsl(var(--muted-foreground));
+  --rk-colors-closeButtonBackground: hsl(var(--muted));
+  --rk-colors-connectButtonBackground: hsl(var(--card));
+  --rk-colors-connectButtonBackgroundError: hsl(var(--destructive));
+  --rk-colors-connectButtonInnerBackground: hsl(var(--secondary));
+  --rk-colors-connectButtonText: hsl(var(--foreground));
+  --rk-colors-connectButtonTextError: hsl(var(--destructive-foreground));
+  --rk-colors-connectionIndicator: hsl(var(--primary));
+  --rk-colors-error: hsl(var(--destructive));
+  --rk-colors-menuItemBackground: hsl(var(--secondary));
+  --rk-colors-generalBorder: hsl(var(--border));
+  --rk-colors-generalBorderDim: hsl(var(--border) / 0.5);
+  --rk-colors-actionButtonBorder: hsl(var(--border));
+  --rk-colors-actionButtonBorderMobile: hsl(var(--border));
+  --rk-colors-actionButtonSecondaryBackground: hsl(var(--secondary));
+}
+
+/* Recharts tooltip styling */
+.recharts-tooltip-wrapper {
+  outline: none !important;
+}
+
+/* Card hover effect */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Status badges */
+.badge-in-range {
+  @apply bg-emerald-500/20 text-emerald-400 border-emerald-500/30;
+}
+
+.badge-out-range {
+  @apply bg-rose-500/20 text-rose-400 border-rose-500/30;
+}
+
+.badge-warning {
+  @apply bg-amber-500/20 text-amber-400 border-amber-500/30;
+}
+
+/* Loading skeleton */
+.skeleton {
+  @apply bg-zinc-800 animate-pulse rounded;
+}
+
+/* Data table */
+.data-table th {
+  @apply text-left text-xs font-medium text-zinc-500 uppercase tracking-wider py-3 px-4;
+}
+
+.data-table td {
+  @apply py-3 px-4 text-sm text-zinc-300;
+}
+
+.data-table tr:hover {
+  @apply bg-zinc-800/50;
+}
+
+/* Form elements */
+.form-label {
+  @apply block text-sm font-medium text-zinc-400 mb-1;
+}
+
+.form-input {
+  @apply w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-colors;
+}
+
+.form-select {
+  @apply w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-colors appearance-none;
+}
+
+/* Button variants */
+.btn-primary {
+  @apply px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-md transition-colors;
+}
+
+.btn-secondary {
+  @apply px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 font-medium rounded-md transition-colors;
+}
+
+.btn-ghost {
+  @apply px-4 py-2 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100 font-medium rounded-md transition-colors;
+}
+
+/* Chart container */
+.chart-container {
+  @apply bg-zinc-900/50 border border-zinc-800 rounded-lg p-4;
+}
+
+/* Metric card */
+.metric-card {
+  @apply bg-zinc-900/50 border border-zinc-800 rounded-lg p-4;
+}
+
+.metric-label {
+  @apply text-sm text-zinc-500 mb-1;
+}
+
+.metric-value {
+  @apply text-2xl font-semibold text-zinc-100;
+}
+
+.metric-change {
+  @apply text-sm mt-1;
+}
+
+.metric-change.positive {
+  @apply text-emerald-400;
+}
+
+.metric-change.negative {
+  @apply text-rose-400;
+}
+
+/* Tooltip */
+.custom-tooltip {
+  @apply bg-zinc-900 border border-zinc-800 rounded-lg p-3 shadow-lg;
+}
+
+/* Warning banner */
+.warning-banner {
+  @apply bg-amber-500/10 border border-amber-500/20 rounded-lg p-4;
+}
+
+.warning-banner.info {
+  @apply bg-blue-500/10 border-blue-500/20;
+}
+
+.warning-banner.critical {
+  @apply bg-rose-500/10 border-rose-500/20;
+}

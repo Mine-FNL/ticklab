@@ -1,0 +1,1 @@
+export default function BacktestPage() { return <main className="min-h-screen bg-institutional p-8"><div className="max-w-7xl mx-auto"><h1 className="text-3xl font-bold text-white mb-6">Backtest</h1><p className="text-zinc-400">Historical strategy replay.</p></div></main>; }
