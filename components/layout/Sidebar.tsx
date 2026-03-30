@@ -7,14 +7,14 @@ import {
   SlidersHorizontal,
   History,
   Wallet,
-  Pool,
+  LayoutGrid,
   Menu,
   X,
 } from 'lucide-react';
 
 const navigation = [
   { name: 'Strategy', href: '/strategy', icon: SlidersHorizontal },
-  { name: 'Pools', href: '/pools', icon: Pool },
+  { name: 'Pools', href: '/pools', icon: LayoutGrid },
   { name: 'Backtest', href: '/backtest', icon: History },
   { name: 'Positions', href: '/positions', icon: Wallet },
 ];

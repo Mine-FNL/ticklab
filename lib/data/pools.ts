@@ -198,3 +198,38 @@ export async function validateToken(
 export function clearPoolCache(): void {
   poolCache.clear();
 }
+
+// Wrapper functions for API routes
+export async function getTopPools(chainId: number, limit = 20): Promise<Pool[]> {
+  // Return empty array - actual implementation would query DeFi Llama or factory
+  console.warn('getTopPools: Using empty array - implement with DeFi Llama API');
+  return [];
+}
+
+export async function getPoolsByToken(chainId: number, tokenAddress: string): Promise<Pool[]> {
+  // Use discoverPool which exists
+  try {
+    const pool = await discoverPool(chainId, tokenAddress as `0x${string}`);
+    return pool ? [pool] : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function searchPools(chainId: number, searchTerm: string): Promise<Pool[]> {
+  // Simple search - just return empty for now
+  console.warn('searchPools: Using empty array - implement with DeFi Llama search');
+  return [];
+}
+
+export async function getPoolMetricsData(chainId: number, poolAddress: string): Promise<{
+  tvl: number;
+  volume24h: number;
+  fees24h: number;
+  apr: number;
+  volumeUSD24h?: number;
+} | null> {
+  // Return null - metrics would come from DeFi Llama
+  console.warn('getPoolMetricsData: Not implemented - returns null');
+  return null;
+}
