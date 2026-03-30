@@ -1,9 +1,22 @@
 /** @type {import('next').NextConfig} */
+const path = require('path')
+
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
     domains: ['raw.githubusercontent.com', 'assets.coingecko.com'],
+  },
+  webpack: (config) => {
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      net: false,
+      tls: false,
+    };
+    // Add path alias
+    config.resolve.alias['@'] = path.join(__dirname, '.');
+    return config;
   },
   async headers() {
     return [
@@ -17,15 +30,6 @@ const nextConfig = {
         ],
       },
     ];
-  },
-  webpack: (config) => {
-    config.resolve.fallback = {
-      ...config.resolve.fallback,
-      fs: false,
-      net: false,
-      tls: false,
-    };
-    return config;
   },
 };
 
