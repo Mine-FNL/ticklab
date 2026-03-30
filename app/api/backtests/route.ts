@@ -71,6 +71,10 @@ export async function POST(request: NextRequest) {
       rebalanceMode: params.rebalanceMode,
       rebalanceParams: params.rebalanceParams,
       gasCostGwei: params.gasCostGwei,
+      gasUnitsPerRebalance: 250000,
+      token0Decimals: pool.token0.decimals,
+      token1Decimals: pool.token1.decimals,
+      feeTier: pool.fee,
     });
 
     return NextResponse.json({
