@@ -1,128 +1,168 @@
 'use client';
 
-import React from 'react';
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  ReferenceLine,
-} from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { EquityPoint } from '@/types';
+import { SimulationPath } from '@/lib/monte-carlo'
 
 interface EquityCurveChartProps {
-  data: EquityPoint[];
-  depositAmount: number;
+  paths: SimulationPath[]
+  days: number
 }
 
-export function EquityCurveChart({ data, depositAmount }: EquityCurveChartProps) {
-  const formatCurrency = (value: number) =>
-    `$${value.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
-
-  const formatDate = (timestamp: number) => {
-    const date = new Date(timestamp);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-3 shadow-lg">
-          <p className="text-zinc-400 text-sm mb-2">{formatDate(label)}</p>
-          {payload.map((entry: any, index: number) => (
-            <p
-              key={index}
-              className="text-sm"
-              style={{ color: entry.color }}
-            >
-              {entry.name}: {formatCurrency(entry.value)}
-            </p>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
-
+/**
+ * Equity Curve Visualization for Monte Carlo Simulation Results
+ * Shows percentile-based return scenarios as horizontal bar charts
+ */
+export function EquityCurveChart({ paths, days }: EquityCurveChartProps) {
+  if (paths.length === 0) return null
+  
+  // Sort paths by net return for percentile extraction
+  const sortedByReturn = [...paths].sort((a, b) => a.netReturn - b.netReturn)
+  
+  // Get percentile paths
+  const p10 = sortedByReturn[Math.floor(paths.length * 0.1)]
+  const p25 = sortedByReturn[Math.floor(paths.length * 0.25)]
+  const p50 = sortedByReturn[Math.floor(paths.length * 0.5)]
+  const p75 = sortedByReturn[Math.floor(paths.length * 0.75)]
+  const p90 = sortedByReturn[Math.floor(paths.length * 0.9)]
+  
+  // Calculate max absolute return for scaling
+  const maxAbsReturn = Math.max(
+    Math.abs(p10?.netReturn || 0),
+    Math.abs(p90?.netReturn || 0),
+    Math.abs(p50?.netReturn || 0)
+  )
+  
+  const scalePercent = (value: number) => {
+    const pct = (Math.abs(value) / maxAbsReturn) * 50
+    return Math.min(100, Math.max(2, pct))
+  }
+  
   return (
-    <Card className="bg-zinc-900/50 border-zinc-800">
-      <CardHeader>
-        <CardTitle className="text-lg font-medium text-zinc-100">
-          Equity Curve
-        </CardTitle>
-        <p className="text-sm text-zinc-500">
-          Position value over time vs HODL benchmark
-        </p>
-      </CardHeader>
-      <CardContent>
-        <div className="h-[350px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-              <defs>
-                <linearGradient id="colorLp" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="colorHodl" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-              <XAxis
-                dataKey="timestamp"
-                tickFormatter={formatDate}
-                stroke="#71717a"
-                tick={{ fill: '#71717a', fontSize: 11 }}
-                minTickGap={30}
-              />
-              <YAxis
-                tickFormatter={formatCurrency}
-                stroke="#71717a"
-                tick={{ fill: '#71717a', fontSize: 12 }}
-                domain={['auto', 'auto']}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <ReferenceLine y={depositAmount} stroke="#52525b" strokeDasharray="3 3" />
-              <Area
-                type="monotone"
-                dataKey="lpValue"
-                name="LP Value"
-                stroke="#3b82f6"
-                fillOpacity={1}
-                fill="url(#colorLp)"
-                strokeWidth={2}
-              />
-              <Area
-                type="monotone"
-                dataKey="hodlValue"
-                name="HODL Value"
-                stroke="#f59e0b"
-                fillOpacity={1}
-                fill="url(#colorHodl)"
-                strokeWidth={2}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="flex justify-center gap-6 mt-4">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-blue-500" />
-            <span className="text-sm text-zinc-400">LP Value</span>
+    <div className="bg-zinc-900 rounded-lg p-4">
+      <h3 className="text-sm font-medium text-zinc-300 mb-4">LP Return Scenarios</h3>
+      
+      {/* Scenario bars */}
+      <div className="space-y-4">
+        {/* P90 (Best) */}
+        <div>
+          <div className="flex justify-between text-xs mb-1">
+            <span className="text-emerald-400">90th Percentile (Best)</span>
+            <span className="font-mono text-emerald-400">
+              {p90?.netReturn ? `+${p90.netReturn.toFixed(2)}%` : 'N/A'}
+            </span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-amber-500" />
-            <span className="text-sm text-zinc-400">HODL Value</span>
+          <div className="h-5 bg-zinc-800 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-emerald-600 transition-all"
+              style={{ width: `${scalePercent(p90?.netReturn || 0)}%` }}
+            />
+          </div>
+          <div className="flex justify-between text-xs text-zinc-600 mt-1">
+            <span>In range: {((p90?.inRangePercent || 0) * 100).toFixed(0)}%</span>
+            <span>Fees: ${((p90?.feesEarned || 0)).toFixed(0)}</span>
           </div>
         </div>
-      </CardContent>
-    </Card>
-  );
+        
+        {/* P75 */}
+        <div>
+          <div className="flex justify-between text-xs mb-1">
+            <span className="text-zinc-400">75th Percentile</span>
+            <span className="font-mono text-zinc-400">
+              {p75?.netReturn ? `+${p75.netReturn.toFixed(2)}%` : 'N/A'}
+            </span>
+          </div>
+          <div className="h-4 bg-zinc-800 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-zinc-600 transition-all"
+              style={{ width: `${scalePercent(p75?.netReturn || 0)}%` }}
+            />
+          </div>
+        </div>
+        
+        {/* P50 (Median) */}
+        <div>
+          <div className="flex justify-between text-xs mb-1">
+            <span className="text-zinc-300">50th Percentile (Median)</span>
+            <span className={`font-mono ${(p50?.netReturn || 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+              {p50?.netReturn !== undefined ? `${p50.netReturn >= 0 ? '+' : ''}${p50.netReturn.toFixed(2)}%` : 'N/A'}
+            </span>
+          </div>
+          <div className="h-5 bg-zinc-800 rounded-full overflow-hidden">
+            <div 
+              className={`h-full transition-all ${(p50?.netReturn || 0) >= 0 ? 'bg-zinc-500' : 'bg-red-700'}`}
+              style={{ width: `${scalePercent(p50?.netReturn || 0)}%` }}
+            />
+          </div>
+          <div className="flex justify-between text-xs text-zinc-600 mt-1">
+            <span>In range: {((p50?.inRangePercent || 0) * 100).toFixed(0)}%</span>
+            <span>Fees: ${((p50?.feesEarned || 0)).toFixed(0)}</span>
+          </div>
+        </div>
+        
+        {/* P25 */}
+        <div>
+          <div className="flex justify-between text-xs mb-1">
+            <span className="text-zinc-400">25th Percentile</span>
+            <span className="font-mono text-zinc-400">
+              {p25?.netReturn !== undefined ? `${p25.netReturn >= 0 ? '+' : ''}${p25.netReturn.toFixed(2)}%` : 'N/A'}
+            </span>
+          </div>
+          <div className="h-4 bg-zinc-800 rounded-full overflow-hidden">
+            <div 
+              className={`h-full transition-all ${(p25?.netReturn || 0) >= 0 ? 'bg-zinc-600' : 'bg-red-600'}`}
+              style={{ width: `${scalePercent(p25?.netReturn || 0)}%` }}
+            />
+          </div>
+        </div>
+        
+        {/* P10 (Worst) */}
+        <div>
+          <div className="flex justify-between text-xs mb-1">
+            <span className="text-red-400">10th Percentile (Worst)</span>
+            <span className="font-mono text-red-400">
+              {p10?.netReturn !== undefined ? `${p10.netReturn >= 0 ? '+' : ''}${p10.netReturn.toFixed(2)}%` : 'N/A'}
+            </span>
+          </div>
+          <div className="h-5 bg-zinc-800 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-red-600 transition-all"
+              style={{ width: `${scalePercent(p10?.netReturn || 0)}%` }}
+            />
+          </div>
+          <div className="flex justify-between text-xs text-zinc-600 mt-1">
+            <span>In range: {((p10?.inRangePercent || 0) * 100).toFixed(0)}%</span>
+            <span>Fees: ${((p10?.feesEarned || 0)).toFixed(0)}</span>
+          </div>
+        </div>
+      </div>
+      
+      {/* Summary stats */}
+      <div className="mt-4 pt-4 border-t border-zinc-800">
+        <div className="grid grid-cols-3 gap-2 text-xs">
+          <div className="text-center">
+            <p className="text-zinc-500">Peak Return (P90)</p>
+            <p className="font-mono text-emerald-400">
+              {p90?.peakReturn ? `+${p90.peakReturn.toFixed(1)}%` : 'N/A'}
+            </p>
+          </div>
+          <div className="text-center">
+            <p className="text-zinc-500">Avg In-Range</p>
+            <p className="font-mono text-zinc-300">
+              {((paths.reduce((sum, p) => sum + p.inRangePercent, 0) / paths.length) * 100).toFixed(0)}%
+            </p>
+          </div>
+          <div className="text-center">
+            <p className="text-zinc-500">Trough Return (P10)</p>
+            <p className="font-mono text-red-400">
+              {p10?.troughReturn ? `${p10.troughReturn.toFixed(1)}%` : 'N/A'}
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      {/* Footer */}
+      <div className="mt-3 text-xs text-zinc-600">
+        Based on {paths.length} simulation paths over {days} days
+      </div>
+    </div>
+  )
 }

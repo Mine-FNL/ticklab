@@ -5,14 +5,18 @@ import { useAppStore } from '@/lib/store';
 import { CHAIN_NAMES } from '@/lib/constants';
 import { fetchChainTVL, formatTVL } from '@/lib/data/tvl';
 import { fetchSwapStats, formatSwapVolume } from '@/lib/data/swap';
-import { SlidersHorizontal, TrendingUp, Activity, BarChart3, AlertCircle } from 'lucide-react';
+import { SlidersHorizontal, TrendingUp, Activity, BarChart3, AlertCircle, BarChart, GitBranch } from 'lucide-react';
 import { StrategyBuilder } from '@/components/strategy/StrategyBuilder';
 import { ScenarioChart } from '@/components/strategy/ScenarioChart';
 import { RangeVisualizer } from '@/components/strategy/RangeVisualizer';
+import { MonteCarloRunner } from '@/components/montecarlo/MonteCarloRunner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Pool } from '@/types/strategy';
 import { sqrtPriceToTick } from '@/lib/lp-math';
+import type { ScenarioResult } from '@/lib/scenarios';
+import type { LPStrategy, ComparisonResult } from '@/lib/lp-vs-hodl';
 
 export default function StrategyPage() {
   const { selectedChain, selectedPool, selectPool } = useAppStore();
@@ -21,6 +25,8 @@ export default function StrategyPage() {
   const [loading, setLoading] = useState(true);
   const [scenarios, setScenarios] = useState<any[]>([]);
   const [calculatedRange, setCalculatedRange] = useState({ lowerTick: 0, upperTick: 0 });
+  const [viewMode, setViewMode] = useState<'scenarios' | 'montecarlo'>('scenarios');
+  const [poolStats, setPoolStats] = useState<{ strategy?: LPStrategy; comparison?: ComparisonResult }>({});
 
   useEffect(() => {
     setLoading(true);
@@ -40,6 +46,15 @@ export default function StrategyPage() {
 
   const handleRangeCalculated = (lower: number, upper: number) => {
     setCalculatedRange({ lowerTick: lower, upperTick: upper });
+  };
+
+  const handleStrategyComplete = (strategy: LPStrategy, results: ComparisonResult) => {
+    setPoolStats({ strategy, comparison: results });
+  };
+
+  const handleScenariosCalculated = (scenarios: ScenarioResult[], lowerTick: number, upperTick: number) => {
+    setScenarios(scenarios);
+    setCalculatedRange({ lowerTick, upperTick });
   };
 
   const currentTick = selectedPool ? sqrtPriceToTick(selectedPool.sqrtPriceX96) : 0;
@@ -142,6 +157,8 @@ export default function StrategyPage() {
               currentTick={currentTick}
               sqrtPrice={selectedPool.sqrtPriceX96}
               currentPrice={currentPrice}
+              onStrategyComplete={handleStrategyComplete}
+              onScenariosCalculated={handleScenariosCalculated}
             />
           </div>
 
@@ -157,7 +174,32 @@ export default function StrategyPage() {
               />
             )}
             
+            {/* View Mode Tabs */}
             {scenarios.length > 0 && (
+              <div className="flex gap-2">
+                <Button
+                  variant={viewMode === 'scenarios' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('scenarios')}
+                  className="flex items-center gap-2"
+                >
+                  <BarChart3 className="w-4 h-4" />
+                  Scenarios
+                </Button>
+                <Button
+                  variant={viewMode === 'montecarlo' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('montecarlo')}
+                  className="flex items-center gap-2"
+                >
+                  <GitBranch className="w-4 h-4" />
+                  Monte Carlo
+                </Button>
+              </div>
+            )}
+            
+            {/* Scenario Analysis View */}
+            {viewMode === 'scenarios' && scenarios.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Scenario Analysis</CardTitle>
@@ -169,6 +211,17 @@ export default function StrategyPage() {
                   />
                 </CardContent>
               </Card>
+            )}
+            
+            {/* Monte Carlo View */}
+            {viewMode === 'montecarlo' && scenarios.length > 0 && calculatedRange.lowerTick !== 0 && (
+              <MonteCarloRunner
+                entryPrice={currentPrice}
+                lowerTick={calculatedRange.lowerTick}
+                upperTick={calculatedRange.upperTick}
+                poolTVL={selectedPool.tvlUsd}
+                feeTier={selectedPool.fee}
+              />
             )}
             
             {!scenarios.length && (
