@@ -11,6 +11,7 @@ export interface TVLDataPoint {
 export interface PoolTVL {
   address: string;
   symbol: string;
+  feeTier: number;
   tvlUSD: number;
   change1d: number;
   change7d: number;
@@ -74,6 +75,13 @@ export async function fetchChainTVL(chainId: number): Promise<{ tvl: number; cha
   }
 }
 
+function parseFeeTier(poolMeta?: string): number {
+  if (!poolMeta) return 0;
+  const match = poolMeta.match(/([\d.]+)%/);
+  if (!match) return 0;
+  return Math.round(parseFloat(match[1]) * 10000);
+}
+
 export async function fetchPoolTVLs(chainId: number): Promise<PoolTVL[]> {
   const llv2Key = CHAINS_DEFI_LLAMA[chainId];
   if (!llv2Key) return [];
@@ -89,9 +97,10 @@ export async function fetchPoolTVLs(chainId: number): Promise<PoolTVL[]> {
     return pools
       .filter((p: { protocol?: string }) => p.protocol?.toLowerCase().includes('uniswap') || p.poolMeta?.toLowerCase().includes('v3'))
       .slice(0, 50)
-      .map((p: { address?: string; symbol?: string; tvlUsd?: number; change1d?: number; change7d?: number; volumeUsd?: number; feesUsd?: number; apy?: number }) => ({
+      .map((p: { address?: string; symbol?: string; tvlUsd?: number; change1d?: number; change7d?: number; volumeUsd?: number; feesUsd?: number; apy?: number; poolMeta?: string }) => ({
         address: p.address || '',
         symbol: p.symbol || '—',
+        feeTier: parseFeeTier(p.poolMeta),
         tvlUSD: p.tvlUsd || 0,
         change1d: p.change1d || 0,
         change7d: p.change7d || 0,
