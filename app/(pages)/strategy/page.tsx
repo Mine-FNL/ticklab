@@ -5,13 +5,22 @@ import { useAppStore } from '@/lib/store';
 import { CHAIN_NAMES } from '@/lib/constants';
 import { fetchChainTVL, formatTVL } from '@/lib/data/tvl';
 import { fetchSwapStats, formatSwapVolume } from '@/lib/data/swap';
-import { SlidersHorizontal, TrendingUp, Activity, BarChart3 } from 'lucide-react';
+import { SlidersHorizontal, TrendingUp, Activity, BarChart3, AlertCircle } from 'lucide-react';
+import { StrategyBuilder } from '@/components/strategy/StrategyBuilder';
+import { ScenarioChart } from '@/components/strategy/ScenarioChart';
+import { RangeVisualizer } from '@/components/strategy/RangeVisualizer';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import type { Pool } from '@/types/strategy';
+import { sqrtPriceToTick } from '@/lib/lp-math';
 
 export default function StrategyPage() {
-  const { selectedChain } = useAppStore();
+  const { selectedChain, selectedPool, selectPool } = useAppStore();
   const [chainTVL, setChainTVL] = useState({ tvl: 0, change24h: 0 });
   const [swapStats, setSwapStats] = useState({ totalVolumeUSD: 0, totalSwaps: 0 });
   const [loading, setLoading] = useState(true);
+  const [scenarios, setScenarios] = useState<any[]>([]);
+  const [calculatedRange, setCalculatedRange] = useState({ lowerTick: 0, upperTick: 0 });
 
   useEffect(() => {
     setLoading(true);
@@ -24,6 +33,19 @@ export default function StrategyPage() {
       setLoading(false);
     });
   }, [selectedChain]);
+
+  const handleCalculate = (scenarios: any[]) => {
+    setScenarios(scenarios);
+  };
+
+  const handleRangeCalculated = (lower: number, upper: number) => {
+    setCalculatedRange({ lowerTick: lower, upperTick: upper });
+  };
+
+  const currentTick = selectedPool ? sqrtPriceToTick(selectedPool.sqrtPriceX96) : 0;
+  const currentPrice = selectedPool 
+    ? Math.pow(Number(selectedPool.sqrtPriceX96) / Number(BigInt(2 ** 96)), 2)
+    : 0;
 
   return (
     <div className="animate-fade-in">
@@ -64,38 +86,105 @@ export default function StrategyPage() {
         />
       </div>
 
-      {/* Quick actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
-        <QuickActionCard
-          title="New Strategy"
-          desc="Create a new concentrated liquidity position with custom price range and fee tier."
-          href="/strategy"
-          cta="Build Strategy"
-        />
-        <QuickActionCard
-          title="Backtest"
-          desc="Run historical simulations to see how your strategy would have performed."
-          href="/backtest"
-          cta="Run Backtest"
-        />
-        <QuickActionCard
-          title="Explore Pools"
-          desc="Browse top Uniswap V3 pools and analyze their historical performance."
-          href="/pools"
-          cta="Explore Pools"
-        />
-      </div>
+      {/* No pool selected state */}
+      {!selectedPool ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <AlertCircle className="w-12 h-12 text-zinc-600 mb-4" />
+            <h3 className="text-lg font-medium text-white mb-2">No Pool Selected</h3>
+            <p className="text-sm text-zinc-400 text-center max-w-md mb-4">
+              Select a pool from the{' '}
+              <a href="/pools" className="text-emerald-400 hover:text-emerald-300">
+                Pools page
+              </a>{' '}
+              to start building your LP strategy.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left column - Strategy Builder */}
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  {selectedPool.token0.symbol} / {selectedPool.token1.symbol}
+                  <span className="text-xs text-zinc-500 font-normal">
+                    {(selectedPool.fee / 10000).toFixed(2)}% fee tier
+                  </span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-zinc-500">TVL</span>
+                    <p className="font-mono text-white">${selectedPool.tvlUsd.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500">24h Volume</span>
+                    <p className="font-mono text-white">${selectedPool.volume24h.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500">Current Tick</span>
+                    <p className="font-mono text-white">{currentTick}</p>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500">Liquidity</span>
+                    <p className="font-mono text-white">{selectedPool.liquidity.toString()}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <StrategyBuilder
+              pool={selectedPool}
+              currentTick={currentTick}
+              sqrtPrice={selectedPool.sqrtPriceX96}
+              currentPrice={currentPrice}
+            />
+          </div>
 
-      {/* Strategy builder form */}
-      <div className="card">
-        <div className="card-header flex items-center justify-between">
-          <span className="card-title">Strategy Parameters</span>
-          <span className="text-xs text-[#555]">Configure your LP position</span>
+          {/* Right column - Visualization */}
+          <div className="space-y-6">
+            {calculatedRange.lowerTick !== 0 && (
+              <RangeVisualizer
+                lowerTick={calculatedRange.lowerTick}
+                upperTick={calculatedRange.upperTick}
+                currentTick={currentTick}
+                token0Symbol={selectedPool.token0.symbol}
+                token1Symbol={selectedPool.token1.symbol}
+              />
+            )}
+            
+            {scenarios.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Scenario Analysis</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ScenarioChart
+                    scenarios={scenarios}
+                    entryPrice={currentPrice}
+                  />
+                </CardContent>
+              </Card>
+            )}
+            
+            {!scenarios.length && (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                  <BarChart3 className="w-10 h-10 text-zinc-600 mb-3" />
+                  <p className="text-sm text-zinc-400">
+                    Configure your strategy parameters and click &quot;Calculate Strategy&quot; 
+                    to see scenario analysis
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </div>
-        <div className="p-6">
-          <StrategyForm />
-        </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -119,7 +208,7 @@ function DashboardCard({
       <div>
         <div className="metric-label">{label}</div>
         {loading ? (
-          <div className="skeleton h-7 w-24 mt-0.5" />
+          <Skeleton className="h-7 w-24 mt-0.5" />
         ) : (
           <div className="metric-value mt-0.5">{value}</div>
         )}
@@ -129,96 +218,6 @@ function DashboardCard({
           </div>
         )}
       </div>
-    </div>
-  );
-}
-
-function QuickActionCard({
-  title,
-  desc,
-  href,
-  cta,
-}: {
-  title: string;
-  desc: string;
-  href: string;
-  cta: string;
-}) {
-  return (
-    <div className="card card-body flex flex-col gap-3">
-      <div>
-        <h3 className="text-sm font-medium text-white">{title}</h3>
-        <p className="text-xs text-[#888] mt-1 leading-relaxed">{desc}</p>
-      </div>
-      <a
-        href={href}
-        className="btn btn-primary text-center inline-block mt-auto"
-      >
-        {cta}
-      </a>
-    </div>
-  );
-}
-
-function StrategyForm() {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      <FormField label="Token Pair" hint="Select pool">
-        <select className="select">
-          <option>ETH / USDC</option>
-          <option>WBTC / ETH</option>
-          <option>USDC / USDT</option>
-        </select>
-      </FormField>
-      <FormField label="Fee Tier" hint="Pool fee tier">
-        <select className="select">
-          <option value="3000">0.3% — Most Common</option>
-          <option value="500">0.05% — Low Vol</option>
-          <option value="10000">1% — High Fee</option>
-          <option value="100">0.01% — Stable</option>
-        </select>
-      </FormField>
-      <FormField label="Lower Price" hint="Price or tick">
-        <input type="text" placeholder="e.g. 1800 or tick -500" className="input font-mono" />
-      </FormField>
-      <FormField label="Upper Price" hint="Price or tick">
-        <input type="text" placeholder="e.g. 2200 or tick +500" className="input font-mono" />
-      </FormField>
-      <FormField label="Deposit Amount" hint="In USD equivalent">
-        <input type="number" placeholder="1000" className="input font-mono" />
-      </FormField>
-      <FormField label="Gas Price (Gwei)" hint="For fee estimation">
-        <input type="number" placeholder="20" defaultValue="20" className="input font-mono" />
-      </FormField>
-      <FormField label="Horizon (Days)" hint="Simulation length">
-        <input type="number" placeholder="30" defaultValue="30" className="input font-mono" />
-      </FormField>
-      <FormField label="Volume Scenario" hint="Swap volume estimate">
-        <select className="select">
-          <option value="base">Base (current)</option>
-          <option value="low">Low (-50%)</option>
-          <option value="high">High (+100%)</option>
-        </select>
-      </FormField>
-    </div>
-  );
-}
-
-function FormField({
-  label,
-  hint,
-  children,
-}: {
-  label: string;
-  hint: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div>
-      <label className="block text-xs text-[#888] mb-1.5">
-        {label} <span className="text-[#555]">({hint})</span>
-      </label>
-      {children}
     </div>
   );
 }
