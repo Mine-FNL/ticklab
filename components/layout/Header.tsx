@@ -10,15 +10,14 @@ import { SUPPORTED_CHAINS } from '@/lib/constants';
 
 const NAV_TABS = [
   { label: 'Strategy', href: '/strategy' },
-  { label: 'Swaps', href: '/swaps' },
   { label: 'Pools', href: '/pools' },
-  { label: 'TVL', href: '/tvl' },
-  { label: 'Liquidity', href: '/liquidity' },
+  { label: 'Backtest', href: '/backtest' },
+  { label: 'Positions', href: '/positions' },
 ];
 
 export function Header() {
   const pathname = usePathname();
-  const { selectedChain, setSettings } = useAppStore();
+  const { selectedChain, selectChain } = useAppStore();
   const [chainOpen, setChainOpen] = useState(false);
 
   const currentChain = SUPPORTED_CHAINS.find((c) => c.id === selectedChain) || SUPPORTED_CHAINS[0];
@@ -75,7 +74,7 @@ export function Header() {
                     <button
                       key={chain.id}
                       onClick={() => {
-                        setSettings({ defaultChainId: chain.id });
+                        selectChain(chain.id);
                         setChainOpen(false);
                       }}
                       className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-[#222] transition-colors ${

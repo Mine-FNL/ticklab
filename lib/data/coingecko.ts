@@ -70,3 +70,50 @@ export function addTokenMapping(tokenAddress: string, chainId: number, geckoId: 
   }
   COINGECKO_IDS[lowerAddress][chainId] = geckoId
 }
+
+/**
+ * Chain ID to CoinGecko platform name mapping
+ */
+const CHAIN_TO_PLATFORM: Record<number, string> = {
+  1: 'ethereum',
+  42161: 'arbitrum-one',
+  8453: 'base',
+  10: 'optimism',
+  137: 'polygon-pos',
+}
+
+/**
+ * Auto-lookup CoinGecko ID using contract address
+ * Tries manual mapping first, then falls back to CoinGecko search API
+ * 
+ * @param tokenAddress - Token contract address
+ * @param chainId - Chain ID
+ * @returns CoinGecko ID or null if not found
+ */
+export async function getCoinGeckoIdAuto(
+  tokenAddress: string,
+  chainId: number
+): Promise<string | null> {
+  // Try our manual mapping first
+  const mapped = getCoinGeckoId(tokenAddress, chainId)
+  if (mapped) return mapped
+
+  // Try CoinGecko API to find by contract address
+  const platform = CHAIN_TO_PLATFORM[chainId]
+  if (!platform) return null
+
+  try {
+    const res = await fetch(
+      `https://api.coingecko.com/api/v3/coins/list?include_platform=true`
+    )
+    if (!res.ok) return null
+
+    const coins: Array<{ id: string; platforms: Record<string, string> }> = await res.json()
+    const address = tokenAddress.toLowerCase()
+
+    const found = coins.find((coin) => coin.platforms?.[platform] === address)
+    return found?.id ?? null
+  } catch {
+    return null
+  }
+}

@@ -122,6 +122,13 @@ export default function PoolsPage() {
                         {pool.change1d >= 0 ? '+' : ''}{pool.change1d.toFixed(2)}%
                       </span>
                     </td>
+                    <td>
+                      {pool.tvlUSD < 100000 ? (
+                        <span className="text-yellow-500 text-xs" title={`Low TVL: $${(pool.tvlUSD / 1000).toFixed(0)}K`}>
+                          ⚠️ Low
+                        </span>
+                      ) : null}
+                    </td>
                   </tr>
                 ))}
               </tbody>

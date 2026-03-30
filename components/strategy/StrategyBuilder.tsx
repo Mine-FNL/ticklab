@@ -20,7 +20,7 @@ interface StrategyBuilderProps {
   onScenariosCalculated?: (scenarios: ScenarioResult[], lowerTick: number, upperTick: number) => void
 }
 
-export function StrategyBuilder({ pool, currentTick, sqrtPrice, currentPrice }: StrategyBuilderProps) {
+export function StrategyBuilder({ pool, currentTick, sqrtPrice, currentPrice, onStrategyComplete, onScenariosCalculated }: StrategyBuilderProps) {
   const [depositAmount, setDepositAmount] = useState(10000)
   const [rangeWidth, setRangeWidth] = useState(10)
   const [depositMode, setDepositMode] = useState<'balanced' | 'token0-heavy' | 'token1-heavy'>('balanced')
@@ -110,10 +110,27 @@ export function StrategyBuilder({ pool, currentTick, sqrtPrice, currentPrice }: 
     setFeeEstimate(fees)
     setComparison(comp)
     setScenarios(scen)
+
+    // Fire callbacks so parent can update
+    if (onStrategyComplete) {
+      onStrategyComplete(strategy, comp)
+    }
+    if (onScenariosCalculated) {
+      onScenariosCalculated(scen, lower, upper)
+    }
   }
   
   return (
     <div className="space-y-6">
+      {/* Data Quality Warning */}
+      {pool.tvlUsd < 100000 && (
+        <div className="bg-yellow-900/20 border border-yellow-800 rounded-lg p-3">
+          <p className="text-yellow-400 text-sm">
+            ⚠️ Low liquidity pool (${(pool.tvlUsd / 1000).toFixed(0)}K TVL). Data may be unreliable.
+          </p>
+        </div>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Strategy Parameters</CardTitle>

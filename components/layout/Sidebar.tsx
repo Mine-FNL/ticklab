@@ -4,31 +4,19 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  Compass,
   SlidersHorizontal,
   History,
   Wallet,
-  Library,
-  GitCompare,
-  ArrowLeftRight,
   Pool,
-  TrendingUp,
-  Droplets,
   Menu,
   X,
 } from 'lucide-react';
 
 const navigation = [
-  { name: 'Explore', href: '/explore', icon: Compass },
   { name: 'Strategy', href: '/strategy', icon: SlidersHorizontal },
-  { name: 'Backtest', href: '/backtest', icon: History },
-  { name: 'Swaps', href: '/swaps', icon: ArrowLeftRight },
   { name: 'Pools', href: '/pools', icon: Pool },
-  { name: 'TVL', href: '/tvl', icon: TrendingUp },
-  { name: 'Liquidity', href: '/liquidity', icon: Droplets },
+  { name: 'Backtest', href: '/backtest', icon: History },
   { name: 'Positions', href: '/positions', icon: Wallet },
-  { name: 'Compare', href: '/compare', icon: GitCompare },
-  { name: 'Library', href: '/library', icon: Library },
 ];
 
 export function Sidebar() {

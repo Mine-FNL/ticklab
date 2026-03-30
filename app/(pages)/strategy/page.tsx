@@ -149,6 +149,15 @@ export default function StrategyPage() {
                     <p className="font-mono text-white">{selectedPool.liquidity.toString()}</p>
                   </div>
                 </div>
+
+                {/* Data Quality Warning */}
+                {selectedPool.tvlUsd < 100000 && (
+                  <div className="bg-yellow-900/20 border border-yellow-800 rounded-lg p-3 mt-3">
+                    <p className="text-yellow-400 text-sm">
+                      ⚠️ Low liquidity pool (${(selectedPool.tvlUsd / 1000).toFixed(0)}K TVL). Data may be unreliable.
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
             
