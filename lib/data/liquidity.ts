@@ -71,18 +71,11 @@ export async function fetchLiquidityDistribution(
   chainId: number,
   poolAddress?: string
 ): Promise<LiquidityDistribution[]> {
-  // Return mock distribution data since getting full tick data requires subgraph
-  const mock: LiquidityDistribution[] = [];
-  const baseLiq = 1_000_000;
-  for (let i = -50; i <= 50; i++) {
-    const gaussian = Math.exp(-(i * i) / 200);
-    mock.push({
-      tick: i * 60,
-      liquidity: baseLiq * gaussian,
-      tvlUSD: baseLiq * gaussian,
-    });
-  }
-  return mock;
+  // Granular tick-by-tick liquidity distribution requires subgraph access
+  // For now, return empty array - this data needs an indexer
+  // Real tick liquidity data requires Uniswap V3 subgraph or similar indexing service
+  console.log('fetchLiquidityDistribution: Granular tick data requires subgraph/indexer - returning empty');
+  return [];
 }
 
 export function formatLiquidity(usd: number): string {
