@@ -170,6 +170,14 @@ export function LiquidityChart({
         </div>
       </CardHeader>
       <CardContent>
+        {/* Data Quality Warning */}
+        <div className="mb-4 p-3 bg-amber-900/20 border border-amber-800/50 rounded-lg">
+          <p className="text-amber-400 text-xs">
+            ⚠️ <strong>Approximated distribution</strong> — Granular tick liquidity requires subgraph/indexer access. 
+            Shape based on total pool liquidity, not real tick data.
+          </p>
+        </div>
+        
         {loading ? (
           <div className="h-[280px] flex items-center justify-center">
             <p className="text-zinc-500">Loading liquidity data...</p>
