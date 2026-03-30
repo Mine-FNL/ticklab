@@ -255,3 +255,48 @@ body {
   content: '';
   @apply w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse-dot;
 }
+
+/* ============================================
+   Mobile Responsive Utilities
+   ============================================ */
+
+@media (max-width: 768px) {
+  .mobile-stack {
+    flex-direction: column !important;
+  }
+
+  .mobile-hidden {
+    display: none !important;
+  }
+
+  .mobile-full {
+    width: 100% !important;
+  }
+
+  .mobile-text {
+    font-size: 0.875rem !important;
+  }
+
+  .card-content {
+    padding: 1rem !important;
+  }
+
+  .grid-cols-2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .grid-cols-3 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .grid-cols-4 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 40;
+  }
+}

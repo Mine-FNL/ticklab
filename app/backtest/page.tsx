@@ -1,11 +1,12 @@
-import type { Metadata } from 'next';
+'use client';
 
-export const metadata: Metadata = {
+import { Download } from 'lucide-react'
+
+export const metadata = {
   title: 'Historical Backtest | UniV3 LP Strategy Lab',
   description: 'Backtest your Uniswap V3 LP strategy against historical market data.',
 };
 
-// Mock backtest results
 const backtestResults = {
   totalReturn: 18.5,
   hodlComparison: 15.2,
@@ -17,7 +18,6 @@ const backtestResults = {
   timeInRange: 82,
 };
 
-// Mock equity curve data points
 const equityData = [
   { date: 'Jan 1', lp: 10000, hodl: 10000, fees: 0 },
   { date: 'Jan 8', lp: 10250, hodl: 10200, fees: 120 },
@@ -41,6 +41,51 @@ function formatCurrency(value: number): string {
 function formatPercent(value: number): string {
   const sign = value >= 0 ? '+' : '';
   return `${sign}${value.toFixed(1)}%`;
+}
+
+function handleExportCSV() {
+  const headers = [
+    'Date', 'Price', 'LP Value', 'HODL Value', 'Fees Cumulative',
+    'IL Cumulative', 'Net Return %', 'In Range', 'Rebalanced'
+  ]
+  const rows = equityData.map((d, i) => {
+    const feesCum = d.fees
+    const ilCum = d.lp - d.hodl
+    const netRet = ((d.lp - 10000) / 10000) * 100
+    return [
+      d.date,
+      (10000 + i * 100).toFixed(2),
+      d.lp.toFixed(2),
+      d.hodl.toFixed(2),
+      feesCum.toFixed(2),
+      ilCum.toFixed(2),
+      netRet.toFixed(2),
+      'Yes',
+      i === 3 || i === 6 || i === 9 ? 'Yes' : 'No'
+    ]
+  })
+  const summaryRows = [
+    [],
+    ['Summary'],
+    ['Total Fees', backtestResults.totalFees.toFixed(2)],
+    ['Total IL', backtestResults.realizedIL.toFixed(2)],
+    ['Net Return', backtestResults.netReturn.toFixed(2) + '%'],
+    ['HODL Return', backtestResults.hodlComparison.toFixed(2) + '%'],
+    ['Time In Range', backtestResults.timeInRange + '%'],
+    ['Rebalances', backtestResults.rebalanceCount.toString()],
+  ]
+  const csv = [
+    headers.join(','),
+    ...rows.map(r => r.join(',')),
+    ...summaryRows.map(r => r.join(','))
+  ].join('\n')
+  const blob = new Blob([csv], { type: 'text/csv' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `backtest_${new Date().toISOString().split('T')[0]}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
 }
 
 export default function BacktestPage() {
@@ -71,7 +116,6 @@ export default function BacktestPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {/* Pool Selector */}
             <div>
               <label className="block text-sm text-[var(--muted-foreground)] mb-2">Pool</label>
               <select className="input-field">
@@ -80,8 +124,6 @@ export default function BacktestPage() {
                 <option>WBTC/WETH 0.30%</option>
               </select>
             </div>
-
-            {/* Date Range */}
             <div>
               <label className="block text-sm text-[var(--muted-foreground)] mb-2">Date Range</label>
               <select className="input-field">
@@ -92,8 +134,6 @@ export default function BacktestPage() {
                 <option>Custom range</option>
               </select>
             </div>
-
-            {/* Strategy Parameters */}
             <div>
               <label className="block text-sm text-[var(--muted-foreground)] mb-2">Strategy</label>
               <select className="input-field">
@@ -102,8 +142,6 @@ export default function BacktestPage() {
                 <option>Create new</option>
               </select>
             </div>
-
-            {/* Gas Cost */}
             <div>
               <label className="block text-sm text-[var(--muted-foreground)] mb-2">Gas Cost (Gwei)</label>
               <input type="number" defaultValue="25" className="input-field" />
@@ -130,8 +168,7 @@ export default function BacktestPage() {
         {/* Results Section */}
         <div className="mb-8">
           <h2 className="text-xl font-semibold mb-6">Backtest Results</h2>
-          
-          {/* Performance Summary Cards */}
+
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <div className="pool-card text-center">
               <div className="text-sm text-[var(--muted-foreground)] mb-1">Total Return</div>
@@ -163,7 +200,6 @@ export default function BacktestPage() {
             </div>
           </div>
 
-          {/* Additional Metrics */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <div className="pool-card">
               <div className="flex items-center justify-between">
@@ -213,28 +249,21 @@ export default function BacktestPage() {
           </div>
           <div className="h-80 bg-[var(--secondary)] rounded-lg p-4 relative">
             <svg className="w-full h-full" viewBox="0 0 800 300" preserveAspectRatio="none">
-              {/* Grid lines */}
               {[0, 75, 150, 225, 300].map((y) => (
                 <line key={y} x1="0" y1={y} x2="800" y2={y} stroke="var(--border)" strokeWidth="1" />
               ))}
-              
-              {/* LP Value line */}
               <polyline
                 fill="none"
                 stroke="#10b981"
                 strokeWidth="2"
                 points={equityData.map((d, i) => `${(i / (equityData.length - 1)) * 800},${300 - ((d.lp - 9500) / 3000) * 300}`).join(' ')}
               />
-              
-              {/* HODL Value line */}
               <polyline
                 fill="none"
                 stroke="#3b82f6"
                 strokeWidth="2"
                 points={equityData.map((d, i) => `${(i / (equityData.length - 1)) * 800},${300 - ((d.hodl - 9500) / 3000) * 300}`).join(' ')}
               />
-              
-              {/* Rebalance markers */}
               {[3, 6, 9].map((i) => (
                 <circle
                   key={i}
@@ -247,8 +276,6 @@ export default function BacktestPage() {
                 />
               ))}
             </svg>
-            
-            {/* X-axis labels */}
             <div className="absolute bottom-2 left-4 right-4 flex justify-between text-xs text-[var(--muted-foreground)]">
               {equityData.filter((_, i) => i % 3 === 0).map((d, i) => (
                 <span key={i}>{d.date}</span>
@@ -268,10 +295,7 @@ export default function BacktestPage() {
           <h3 className="font-semibold mb-4">Drawdown from Peak</h3>
           <div className="h-48 bg-[var(--secondary)] rounded-lg p-4 relative">
             <svg className="w-full h-full" viewBox="0 0 800 200" preserveAspectRatio="none">
-              {/* Zero line */}
               <line x1="0" y1="20" x2="800" y2="20" stroke="var(--muted-foreground)" strokeWidth="1" />
-              
-              {/* Drawdown area */}
               <polygon
                 fill="rgba(244, 63, 94, 0.2)"
                 stroke="#f43f5e"
@@ -279,7 +303,6 @@ export default function BacktestPage() {
                 points="0,20 50,20 100,40 150,60 200,50 250,80 300,100 350,90 400,70 450,60 500,80 550,100 600,90 650,70 700,50 750,40 800,20 800,200 0,200"
               />
             </svg>
-            
             <div className="absolute top-2 right-4 text-right">
               <div className="text-sm text-[var(--muted-foreground)]">Max Drawdown</div>
               <div className="text-xl font-bold text-red-400">-8.5%</div>
@@ -336,7 +359,7 @@ export default function BacktestPage() {
                     </span>
                   </div>
                   <div className="h-4 bg-[var(--secondary)] rounded-full overflow-hidden">
-                    <div 
+                    <div
                       className={`h-full ${item.color} transition-all duration-500`}
                       style={{ width: `${Math.abs(item.percent)}%` }}
                     />
@@ -394,10 +417,11 @@ export default function BacktestPage() {
 
         {/* Action Buttons */}
         <div className="flex flex-wrap gap-4">
-          <button className="btn-primary flex items-center gap-2">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
+          <button
+            onClick={handleExportCSV}
+            className="btn-primary flex items-center gap-2"
+          >
+            <Download className="w-5 h-5" />
             Export CSV
           </button>
           <button className="btn-secondary flex items-center gap-2">

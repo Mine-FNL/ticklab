@@ -556,3 +556,63 @@ Rebalance: ${strategy.rebalanceMode}
     throw new Error('Failed to copy strategy to clipboard');
   }
 }
+
+// ============================================================================
+// Backtest CSV Export
+// ============================================================================
+
+import type { BacktestResult } from './backtest'
+
+export function exportBacktestToCSV(result: BacktestResult): string {
+  const headers = [
+    'Date',
+    'Price',
+    'LP Value',
+    'HODL Value',
+    'Fees Cumulative',
+    'IL Cumulative',
+    'Net Return %',
+    'In Range',
+    'Rebalanced'
+  ]
+
+  const rows = result.dailyData.map(d => [
+    new Date(d.date).toISOString().split('T')[0],
+    d.price.toFixed(6),
+    d.lpValue.toFixed(2),
+    d.hodlValue.toFixed(2),
+    d.feesCumulative.toFixed(2),
+    d.ilCumulative.toFixed(2),
+    d.netReturn.toFixed(2),
+    d.inRange ? 'Yes' : 'No',
+    d.rebalanced ? 'Yes' : 'No'
+  ])
+
+  // Summary rows
+  const summaryRows = [
+    [],
+    ['Summary'],
+    ['Total Fees', result.totalFees.toFixed(2)],
+    ['Total IL', result.totalIL.toFixed(2)],
+    ['Net Return', result.netReturn.toFixed(2) + '%'],
+    ['HODL Return', result.hodlReturn.toFixed(2) + '%'],
+    ['Time In Range', (result.timeInRangePercent * 100).toFixed(1) + '%'],
+    ['Rebalances', result.rebalanceCount.toString()],
+  ]
+
+  return [
+    headers.join(','),
+    ...rows.map(r => r.join(',')),
+    ...summaryRows.map(r => r.join(','))
+  ].join('\n')
+}
+
+export function downloadCSV(content: string, filename: string): void {
+  const blob = new Blob([content], { type: 'text/csv' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}

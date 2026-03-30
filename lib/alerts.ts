@@ -570,6 +570,94 @@ export function resetAlertManager(): void {
 }
 
 // ============================================================================
+// Simple Alert Check Utilities
+// ============================================================================
+
+export interface SimpleAlert {
+  id: string
+  type: 'price_below' | 'price_above' | 'out_of_range' | 'il_threshold' | 'fee_below'
+  positionId?: string
+  poolAddress: string
+  threshold: number
+  enabled: boolean
+  triggered: boolean
+  triggeredAt?: Date
+  message: string
+}
+
+/**
+ * Check alerts for a position and return triggered alerts
+ */
+export function checkAlerts(
+  alerts: SimpleAlert[],
+  currentPrice: number,
+  currentTick: number,
+  lowerTick: number,
+  upperTick: number,
+  ilPercent: number,
+  feesEarned: number
+): SimpleAlert[] {
+  const now = new Date()
+
+  return alerts
+    .filter(alert => alert.enabled && !alert.triggered)
+    .map(alert => {
+      let shouldTrigger = false
+
+      switch (alert.type) {
+        case 'price_below':
+          shouldTrigger = currentPrice <= alert.threshold
+          break
+        case 'price_above':
+          shouldTrigger = currentPrice >= alert.threshold
+          break
+        case 'out_of_range':
+          shouldTrigger = currentTick < lowerTick || currentTick > upperTick
+          break
+        case 'il_threshold':
+          shouldTrigger = ilPercent >= alert.threshold
+          break
+        case 'fee_below':
+          shouldTrigger = feesEarned < alert.threshold
+          break
+      }
+
+      if (shouldTrigger) {
+        return {
+          ...alert,
+          triggered: true,
+          triggeredAt: now,
+          message: generateAlertMessage(alert, { currentPrice, currentTick, ilPercent, feesEarned })
+        }
+      }
+
+      return alert
+    })
+}
+
+function generateAlertMessage(alert: SimpleAlert, data: {
+  currentPrice: number
+  currentTick: number
+  ilPercent: number
+  feesEarned: number
+}): string {
+  switch (alert.type) {
+    case 'price_below':
+      return `Price ${data.currentPrice.toFixed(2)} fell below your alert at ${alert.threshold}`
+    case 'price_above':
+      return `Price ${data.currentPrice.toFixed(2)} rose above your alert at ${alert.threshold}`
+    case 'out_of_range':
+      return `Position moved out of range at tick ${data.currentTick}`
+    case 'il_threshold':
+      return `IL reached ${data.ilPercent.toFixed(2)}%, exceeding threshold of ${alert.threshold}%`
+    case 'fee_below':
+      return `Fees earned ${data.feesEarned.toFixed(2)} below threshold of ${alert.threshold}`
+    default:
+      return `Alert triggered`
+  }
+}
+
+// ============================================================================
 // Browser Notifications
 // ============================================================================
 
