@@ -16,8 +16,8 @@ export interface Pool {
   token0: Token;
   token1: Token;
   fee: number; // basis points (100 = 0.01%, 3000 = 0.30%)
-  liquidity: bigint;
-  sqrtPriceX96: bigint;
+  liquidity: bigint | string; // On-chain returns bigint, may be stringified
+  sqrtPriceX96: bigint | string;
   tick: number;
   tvlUsd: number;
   volume24h: number;

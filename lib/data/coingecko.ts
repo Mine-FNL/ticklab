@@ -47,6 +47,59 @@ export const COINGECKO_IDS: Record<string, Record<number, string>> = {
   '0x2791bca1f2de4661ed88a30c99a7a9449aa84174': { 137: 'usd-coin' },      // USDC
   '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': { 137: 'tether' },        // USDT
   '0x1bfd67037b42f73f46801769e5f1d204c31a130': { 137: 'wrapped-bitcoin' }, // WBTC
+  
+  // Additional popular tokens
+  '0x514910771af9ca656af840dff83e8264ecf986ca': { 1: 'chainlink' },      // LINK (ETH)
+  '0x514910771af9ca656af840dff83e8264ecf986ca': { 42161: 'chainlink' },    // LINK (ARB)
+  '0x514910771af9ca656af840dff83e8264ecf986ca': { 8453: 'chainlink' },     // LINK (BASE)
+  '0x514910771af9ca656af840dff83e8264ecf986ca': { 10: 'chainlink' },       // LINK (OP)
+  '0x514910771af9ca656af840dff83e8264ecf986ca': { 137: 'chainlink' },     // LINK (MATIC)
+  '0x514910771af9ca656af840dff83e8264ecf986ca': { 1: 'chainlink' },       // LINK (ETH)
+  '0x514910771af9ca656af840dff83e8264ecf986ca': { 42161: 'chainlink' },    // LINK (ARB)
+  '0x514910771af9ca656af840dff83e8264ecf986ca': { 8453: 'chainlink' },     // LINK (BASE)
+  '0x514910771af9ca656af840dff83e8264ecf986ca': { 10: 'chainlink' },       // LINK (OP)
+  '0x514910771af9ca656af840dff83e8264ecf986ca': { 137: 'chainlink' },     // LINK (MATIC)
+  
+  // AAVE
+  '0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9': { 1: 'aave' },           // AAVE (ETH)
+  '0xba5deed8c5c7eb66077afbef7fc956a3441b50e8': { 42161: 'aave' },        // AAVE (ARB)
+  
+  // CRV
+  '0xd533a949740bb3306d119cc777fa900ba034cd52': { 1: 'curve-dao-token' }, // CRV (ETH)
+  
+  // MKR
+  '0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2': { 1: 'maker' },         // MKR (ETH)
+  
+  // SNX
+  '0xc011a73ee8576Fb46F5E1c5751cA3B9Fe0af2a6F': { 1: 'havven' },         // SNX (ETH)
+  
+  // YFI
+  '0x0bc529c00c6401aef6d220be8c6ea9e7ab8617f': { 1: 'yearn-finance' },  // YFI (ETH)
+  
+  // SUSHI
+  '0x6b3595068778dd592e39a122f4e5d2460e84dabe': { 1: 'sushi' },           // SUSHI (ETH)
+  '0x6b3595068778dd592e39a122f4e5d2460e84dabe': { 42161: 'sushi' },      // SUSHI (ARB)
+  
+  // APE
+  '0x4d224452801ac8e21301190b4c1299bbab159e6c': { 1: 'apecoin' },        // APE (ETH)
+  
+  // DOGE
+  '0xba27ae9b9d90489ef476e5cd14a5d9b8640c8cb3': { 1: 'dogecoin' },       // DOGE (ETH)
+  
+  // SHIB
+  '0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce': { 1: 'shiba-inu' },     // SHIB (ETH)
+  
+  // PEPE
+  '0x6982508145454ce325ddbe82a2a3d5ef5ddcb78': { 1: 'pepe' },           // PEPE (ETH)
+  
+  // ARB (native)
+  '0x912ce59144191c1204e64559fe8253a0e49e6548': { 42161: 'arbitrum' },  // ARB (ARB)
+  
+  // OP (native)
+  '0x4200000000000000000000000000000000000042': { 10: 'ethereum' },        // OP uses ETH symbol on Optimism
+  
+  // MATIC (native on Polygon)
+  '0x0000000000000000000000000000000000001010': { 137: 'matic-network' },  // MATIC (MATIC)
 }
 
 /**

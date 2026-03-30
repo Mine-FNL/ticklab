@@ -43,10 +43,7 @@ export default function PositionsPage() {
         
         {/* Right: Position List */}
         <div className="lg:col-span-2">
-          <PositionList 
-            chainId={selectedChain} 
-            currentTick={0}
-          />
+          <PositionList />
         </div>
       </div>
     </div>
