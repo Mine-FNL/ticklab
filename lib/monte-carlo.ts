@@ -186,7 +186,7 @@ export async function runMonteCarlo(params: MonteCarloParams): Promise<MonteCarl
       hodlReturn: hodlReturnFinal,
       feesEarned,
       ilLoss: finalIL.ilAbsolute,
-      netReturn: finalIL.netResult || lpReturn,
+      netReturn: finalIL.excessReturn ?? lpReturn,
       inRangePercent: inRangeDays / days,
       peakReturn: peakReturn === -Infinity ? 0 : peakReturn,
       troughReturn: troughReturn === Infinity ? 0 : troughReturn,
