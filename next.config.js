@@ -14,6 +14,8 @@ const nextConfig = {
       net: false,
       tls: false,
     };
+    // Mock @react-native-async-storage for MetaMask SDK
+    config.resolve.alias['@react-native-async-storage/async-storage'] = path.join(__dirname, 'lib/__mocks__/async-storage.js');
     // Add path alias
     config.resolve.alias['@'] = path.join(__dirname, '.');
     return config;
