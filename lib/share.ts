@@ -330,7 +330,7 @@ export function hasStrategyParams(): boolean {
 }
 
 // ============================================================================
- * Compression (for shorter URLs)
+// Compression (for shorter URLs)
 // ============================================================================
 
 /**
