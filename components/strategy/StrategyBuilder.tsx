@@ -35,7 +35,7 @@ export function StrategyBuilder({ pool, currentTick, sqrtPrice, currentPrice, on
 
   const calculateStrategy = () => {
     const priceFloat = Number(currentPrice)
-    const tickSpacing = pool.fee === 100 ? 1 : pool.fee === 500 ? 10 : pool.fee === 3000 ? 60 : 200
+    const tickSpacing = pool.feeTier === 100 ? 1 : pool.feeTier === 500 ? 10 : pool.feeTier === 3000 ? 60 : 200
     const rangeMultiplier = 1 + (rangeWidth / 100)
     const tickChange = Math.round(Math.log(rangeMultiplier) / Math.log(1.0001))
     
@@ -62,9 +62,9 @@ export function StrategyBuilder({ pool, currentTick, sqrtPrice, currentPrice, on
     const token1Amount = Number(amount1) / Math.pow(10, pool.token1.decimals)
     
     const fees = estimateFees({
-      volume24h: pool.volume24h || 1_000_000,
-      feeTier: pool.fee,
-      liquidity: pool.tvlUsd,
+      volume24h: pool.volumeUSD24h || 1_000_000,
+      feeTier: pool.feeTier,
+      liquidity: pool.tvlUSD ?? 0,
       yourLiquidity: depositAmount,
       timeHorizonHours: horizonDays * 24,
       timeInRangePercent: 0.7,
@@ -123,10 +123,10 @@ export function StrategyBuilder({ pool, currentTick, sqrtPrice, currentPrice, on
   return (
     <div className="space-y-6">
       {/* Data Quality Warning */}
-      {pool.tvlUsd < 100000 && (
+      {(pool.tvlUSD ?? 0) < 100000 && (
         <div className="bg-yellow-900/20 border border-yellow-800 rounded-lg p-3">
           <p className="text-yellow-400 text-sm">
-            ⚠️ Low liquidity pool (${(pool.tvlUsd / 1000).toFixed(0)}K TVL). Data may be unreliable.
+            ⚠️ Low liquidity pool (${((pool.tvlUSD ?? 0) / 1000).toFixed(0)}K TVL). Data may be unreliable.
           </p>
         </div>
       )}

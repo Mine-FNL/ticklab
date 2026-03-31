@@ -4,25 +4,43 @@
  * This module handles data fetching from TheGraph subgraphs.
  */
 
-import { GraphQLClient, gql } from 'graphql-request';
 import { Token, Pool, PoolSnapshot } from '@/types';
 import { SUBGRAPH_URLS } from '@/lib/constants';
 
 /**
- * Get subgraph client for a chain
- * @param chainId - Chain ID
- * @returns GraphQL client
+ * Execute a GraphQL query against a subgraph URL
  */
-export function getSubgraphClient(chainId: number): GraphQLClient {
+async function executeQuery<T>(url: string, query: string, variables: Record<string, unknown>): Promise<T> {
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query, variables }),
+  });
+  if (!response.ok) {
+    throw new Error(`Subgraph request failed: ${response.statusText}`);
+  }
+  const json = await response.json();
+  if (json.errors) {
+    throw new Error(`GraphQL errors: ${JSON.stringify(json.errors)}`);
+  }
+  return json.data as T;
+}
+
+/**
+ * Get subgraph URL for a chain
+ * @param chainId - Chain ID
+ * @returns Subgraph URL
+ */
+export function getSubgraphUrl(chainId: number): string {
   const url = SUBGRAPH_URLS[chainId];
   if (!url) {
     throw new Error(`No subgraph URL for chain ${chainId}`);
   }
-  return new GraphQLClient(url);
+  return url;
 }
 
 // GraphQL queries
-const POOLS_BY_TOKEN_QUERY = gql`
+const POOLS_BY_TOKEN_QUERY = `
   query PoolsByToken($token: String!) {
     pools(
       where: {
@@ -60,7 +78,7 @@ const POOLS_BY_TOKEN_QUERY = gql`
   }
 `;
 
-const POOL_QUERY = gql`
+const POOL_QUERY = `
   query Pool($id: ID!) {
     pool(id: $id) {
       id
@@ -89,7 +107,7 @@ const POOL_QUERY = gql`
   }
 `;
 
-const POOL_DAY_DATA_QUERY = gql`
+const POOL_DAY_DATA_QUERY = `
   query PoolDayData($pool: String!, $startTime: Int!, $endTime: Int!) {
     poolDayDatas(
       where: {
@@ -113,7 +131,7 @@ const POOL_DAY_DATA_QUERY = gql`
   }
 `;
 
-const TOP_POOLS_QUERY = gql`
+const TOP_POOLS_QUERY = `
   query TopPools($first: Int!) {
     pools(
       orderBy: totalValueLockedUSD
@@ -144,7 +162,7 @@ const TOP_POOLS_QUERY = gql`
   }
 `;
 
-const TOKEN_QUERY = gql`
+const TOKEN_QUERY = `
   query Token($id: ID!) {
     token(id: $id) {
       id
@@ -167,15 +185,12 @@ export async function queryPoolsByToken(
   chainId: number,
   tokenAddress: string
 ): Promise<Pool[]> {
-  const client = getSubgraphClient(chainId);
+  const url = getSubgraphUrl(chainId);
 
   try {
-    const data = await client.request<{ pools: any[] }>(
-      POOLS_BY_TOKEN_QUERY,
-      { token: tokenAddress.toLowerCase() }
-    );
+    const data = await executeQuery<{ pools: any[] }>(url, POOLS_BY_TOKEN_QUERY, { token: tokenAddress.toLowerCase() });
 
-    return data.pools.map((pool) => ({
+    return data.pools.map((pool: Record<string, any>) => ({
       chainId,
       address: pool.id,
       token0: {
@@ -218,13 +233,10 @@ export async function queryPool(
   chainId: number,
   poolAddress: string
 ): Promise<Pool | null> {
-  const client = getSubgraphClient(chainId);
+  const url = getSubgraphUrl(chainId);
 
   try {
-    const data = await client.request<{ pool: any }>(
-      POOL_QUERY,
-      { id: poolAddress.toLowerCase() }
-    );
+    const data = await executeQuery<{ pool: any }>(url, POOL_QUERY, { id: poolAddress.toLowerCase() });
 
     if (!data.pool) return null;
 
@@ -275,19 +287,16 @@ export async function queryPoolDayData(
   startTime: number,
   endTime: number
 ): Promise<PoolSnapshot[]> {
-  const client = getSubgraphClient(chainId);
+  const url = getSubgraphUrl(chainId);
 
   try {
-    const data = await client.request<{ poolDayDatas: any[] }>(
-      POOL_DAY_DATA_QUERY,
-      {
-        pool: poolAddress.toLowerCase(),
-        startTime,
-        endTime,
-      }
-    );
+    const data = await executeQuery<{ poolDayDatas: any[] }>(url, POOL_DAY_DATA_QUERY, {
+      pool: poolAddress.toLowerCase(),
+      startTime,
+      endTime,
+    });
 
-    return data.poolDayDatas.map((day) => ({
+    return data.poolDayDatas.map((day: Record<string, any>) => ({
       timestamp: day.date * 1000,
       blockNumber: 0, // Not provided by subgraph
       tick: parseInt(day.tick),
@@ -316,15 +325,12 @@ export async function queryTopPools(
   chainId: number,
   limit: number = 100
 ): Promise<Pool[]> {
-  const client = getSubgraphClient(chainId);
+  const url = getSubgraphUrl(chainId);
 
   try {
-    const data = await client.request<{ pools: any[] }>(
-      TOP_POOLS_QUERY,
-      { first: limit }
-    );
+    const data = await executeQuery<{ pools: any[] }>(url, TOP_POOLS_QUERY, { first: limit });
 
-    return data.pools.map((pool) => ({
+    return data.pools.map((pool: Record<string, any>) => ({
       chainId,
       address: pool.id,
       token0: {
@@ -367,13 +373,10 @@ export async function queryToken(
   chainId: number,
   tokenAddress: string
 ): Promise<Token | null> {
-  const client = getSubgraphClient(chainId);
+  const url = getSubgraphUrl(chainId);
 
   try {
-    const data = await client.request<{ token: any }>(
-      TOKEN_QUERY,
-      { id: tokenAddress.toLowerCase() }
-    );
+    const data = await executeQuery<{ token: any }>(url, TOKEN_QUERY, { id: tokenAddress.toLowerCase() });
 
     if (!data.token) return null;
 

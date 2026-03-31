@@ -82,15 +82,15 @@ export default function BacktestPage() {
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
                     <span className="text-zinc-500">Fee Tier</span>
-                    <p className="font-mono text-white">{(selectedPool.fee / 10000).toFixed(2)}%</p>
+                    <p className="font-mono text-white">{(selectedPool.feeTier / 10000).toFixed(2)}%</p>
                   </div>
                   <div>
                     <span className="text-zinc-500">TVL</span>
-                    <p className="font-mono text-white">${selectedPool.tvlUsd.toLocaleString()}</p>
+                    <p className="font-mono text-white">${(selectedPool.tvlUSD ?? 0).toLocaleString()}</p>
                   </div>
                   <div>
                     <span className="text-zinc-500">24h Volume</span>
-                    <p className="font-mono text-white">${selectedPool.volume24h.toLocaleString()}</p>
+                    <p className="font-mono text-white">${(selectedPool.volumeUSD24h ?? 0).toLocaleString()}</p>
                   </div>
                   <div>
                     <span className="text-zinc-500">Chain</span>

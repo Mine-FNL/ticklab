@@ -254,7 +254,7 @@ export function PoolSelector({
             setManualResolveA(false);
           }}
           onResolve={handleResolveA}
-          resolvedToken={tokenAData}
+          resolvedToken={tokenAData ?? null}
           isResolving={isResolvingA}
           error={tokenAError}
           disabled={!!poolData}
@@ -269,7 +269,7 @@ export function PoolSelector({
             setManualResolveB(false);
           }}
           onResolve={handleResolveB}
-          resolvedToken={tokenBData}
+          resolvedToken={tokenBData ?? null}
           isResolving={isResolvingB}
           error={tokenBError}
           disabled={!!poolData}

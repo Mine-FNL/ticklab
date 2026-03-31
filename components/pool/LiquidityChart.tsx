@@ -74,7 +74,7 @@ async function fetchLiquidityData(
   // Granular tick liquidity data requires historical observation data from the pool
   // This would need a subgraph or indexing service for full historical tick data
   
-  const totalLiquidity = parseFloat(pool.liquidity);
+  const totalLiquidity = parseFloat(pool.currentLiquidity ?? '0');
   const tickSpacing = pool.tickSpacing;
   const range = 50;
   

@@ -117,7 +117,7 @@ export function PoolMetrics({
             <div>
               <p className="text-xs text-zinc-500 mb-1">Liquidity</p>
               <p className="font-mono text-zinc-200">
-                {formatNumber(parseFloat(state.liquidity))}
+                {formatNumber(Number(state.liquidity))}
               </p>
             </div>
             <div>
@@ -142,7 +142,7 @@ export function PoolMetrics({
             <MetricItem
               icon={Droplets}
               label="Total Liquidity"
-              value={formatNumber(parseFloat(pool.liquidity))}
+              value={formatNumber(parseFloat(pool.currentLiquidity ?? '0'))}
             />
             <MetricItem
               icon={Activity}
@@ -158,7 +158,7 @@ export function PoolMetrics({
             <MetricItem
               icon={Clock}
               label="Fee Protocol"
-              value={state.feeProtocol.toString()}
+              value={(state.feeProtocol ?? 0).toString()}
             />
           </div>
         </div>

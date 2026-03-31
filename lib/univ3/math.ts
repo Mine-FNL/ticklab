@@ -77,24 +77,24 @@ export function tickToPrice(tick: number): number {
  */
 export function tickToSqrtPriceX96(tick: number): bigint {
   const absTick = Math.abs(tick);
-  let ratio = absTick & 0x1 !== 0 ? BigInt('79232123831229584821631712447568') : BigInt('79228162514264337593543950336');
-  
-  if (absTick & 0x2 !== 0) ratio = (ratio * BigInt('79236085330515764027303304732')) >> 128n;
-  if (absTick & 0x4 !== 0) ratio = (ratio * BigInt('79244008939048815603715285529')) >> 128n;
-  if (absTick & 0x8 !== 0) ratio = (ratio * BigInt('79259858533276714744399159624')) >> 128n;
-  if (absTick & 0x10 !== 0) ratio = (ratio * BigInt('79291567250765740496340373915')) >> 128n;
-  if (absTick & 0x20 !== 0) ratio = (ratio * BigInt('79355022662378470627699079246')) >> 128n;
-  if (absTick & 0x40 !== 0) ratio = (ratio * BigInt('79482059297663915432149840871')) >> 128n;
-  if (absTick & 0x80 !== 0) ratio = (ratio * BigInt('79736823300114093921829183526')) >> 128n;
-  if (absTick & 0x100 !== 0) ratio = (ratio * BigInt('80248749790811656504158217372')) >> 128n;
-  if (absTick & 0x200 !== 0) ratio = (ratio * BigInt('81282465610642329084185038211')) >> 128n;
-  if (absTick & 0x400 !== 0) ratio = (ratio * BigInt('83390007182334617377626686706')) >> 128n;
-  if (absTick & 0x800 !== 0) ratio = (ratio * BigInt('87873917902043797092652703393')) >> 128n;
-  if (absTick & 0x1000 !== 0) ratio = (ratio * BigInt('97873798387631560758914529195')) >> 128n;
-  if (absTick & 0x2000 !== 0) ratio = (ratio * BigInt('121438419988865159365539493990')) >> 128n;
-  if (absTick & 0x4000 !== 0) ratio = (ratio * BigInt('188709358182804902742061434828')) >> 128n;
-  if (absTick & 0x8000 !== 0) ratio = (ratio * BigInt('455711986000980887884442232784')) >> 128n;
-  if (absTick & 0x10000 !== 0) ratio = (ratio * BigInt('2666946796374807022649853254528')) >> 128n;
+  let ratio = (absTick & 0x1) !== 0 ? BigInt('79232123831229584821631712447568') : BigInt('79228162514264337593543950336');
+
+  if ((absTick & 0x2) !== 0) ratio = (ratio * BigInt('79236085330515764027303304732')) >> 128n;
+  if ((absTick & 0x4) !== 0) ratio = (ratio * BigInt('79244008939048815603715285529')) >> 128n;
+  if ((absTick & 0x8) !== 0) ratio = (ratio * BigInt('79259858533276714744399159624')) >> 128n;
+  if ((absTick & 0x10) !== 0) ratio = (ratio * BigInt('79291567250765740496340373915')) >> 128n;
+  if ((absTick & 0x20) !== 0) ratio = (ratio * BigInt('79355022662378470627699079246')) >> 128n;
+  if ((absTick & 0x40) !== 0) ratio = (ratio * BigInt('79482059297663915432149840871')) >> 128n;
+  if ((absTick & 0x80) !== 0) ratio = (ratio * BigInt('79736823300114093921829183526')) >> 128n;
+  if ((absTick & 0x100) !== 0) ratio = (ratio * BigInt('80248749790811656504158217372')) >> 128n;
+  if ((absTick & 0x200) !== 0) ratio = (ratio * BigInt('81282465610642329084185038211')) >> 128n;
+  if ((absTick & 0x400) !== 0) ratio = (ratio * BigInt('83390007182334617377626686706')) >> 128n;
+  if ((absTick & 0x800) !== 0) ratio = (ratio * BigInt('87873917902043797092652703393')) >> 128n;
+  if ((absTick & 0x1000) !== 0) ratio = (ratio * BigInt('97873798387631560758914529195')) >> 128n;
+  if ((absTick & 0x2000) !== 0) ratio = (ratio * BigInt('121438419988865159365539493990')) >> 128n;
+  if ((absTick & 0x4000) !== 0) ratio = (ratio * BigInt('188709358182804902742061434828')) >> 128n;
+  if ((absTick & 0x8000) !== 0) ratio = (ratio * BigInt('455711986000980887884442232784')) >> 128n;
+  if ((absTick & 0x10000) !== 0) ratio = (ratio * BigInt('2666946796374807022649853254528')) >> 128n;
   
   if (tick > 0) ratio = Q256 / ratio;
   
@@ -125,6 +125,21 @@ export function getTickAtSqrtRatio(sqrtPriceX96: bigint): number {
   }
   
   return lo - 1;
+}
+
+/**
+ * Get tick spacing for a given fee tier
+ * @param feeTier - Fee tier in basis points (100, 500, 3000, 10000)
+ * @returns Tick spacing
+ */
+export function getTickSpacingForFeeTier(feeTier: number): number {
+  switch (feeTier) {
+    case 100: return 1;
+    case 500: return 10;
+    case 3000: return 60;
+    case 10000: return 200;
+    default: return 60;
+  }
 }
 
 /**

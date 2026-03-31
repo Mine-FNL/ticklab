@@ -67,6 +67,8 @@ export interface ScenarioResult {
   il: number;
   /** Net return (fees - IL) */
   netReturn: number;
+  /** HODL return percentage (optional, for chart comparisons) */
+  hodlReturn?: number;
   /** Whether position is in range */
   inRange: boolean;
 }

@@ -57,9 +57,9 @@ export default function StrategyPage() {
     setCalculatedRange({ lowerTick, upperTick });
   };
 
-  const currentTick = selectedPool ? sqrtPriceToTick(selectedPool.sqrtPriceX96) : 0;
-  const currentPrice = selectedPool 
-    ? Math.pow(Number(selectedPool.sqrtPriceX96) / Number(BigInt(2 ** 96)), 2)
+  const currentTick = selectedPool ? sqrtPriceToTick(BigInt(selectedPool.currentSqrtPriceX96 ?? '0')) : 0;
+  const currentPrice = selectedPool
+    ? Math.pow(Number(BigInt(selectedPool.currentSqrtPriceX96 ?? '0')) / Number(BigInt(2 ** 96)), 2)
     : 0;
 
   return (
@@ -126,7 +126,7 @@ export default function StrategyPage() {
                   <span className="w-2 h-2 rounded-full bg-emerald-500" />
                   {selectedPool.token0.symbol} / {selectedPool.token1.symbol}
                   <span className="text-xs text-zinc-500 font-normal">
-                    {(selectedPool.fee / 10000).toFixed(2)}% fee tier
+                    {(selectedPool.feeTier / 10000).toFixed(2)}% fee tier
                   </span>
                 </CardTitle>
               </CardHeader>
@@ -134,11 +134,11 @@ export default function StrategyPage() {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-zinc-500">TVL</span>
-                    <p className="font-mono text-white">${selectedPool.tvlUsd.toLocaleString()}</p>
+                    <p className="font-mono text-white">${(selectedPool.tvlUSD ?? 0).toLocaleString()}</p>
                   </div>
                   <div>
                     <span className="text-zinc-500">24h Volume</span>
-                    <p className="font-mono text-white">${selectedPool.volume24h.toLocaleString()}</p>
+                    <p className="font-mono text-white">${(selectedPool.volumeUSD24h ?? 0).toLocaleString()}</p>
                   </div>
                   <div>
                     <span className="text-zinc-500">Current Tick</span>
@@ -146,25 +146,25 @@ export default function StrategyPage() {
                   </div>
                   <div>
                     <span className="text-zinc-500">Liquidity</span>
-                    <p className="font-mono text-white">{selectedPool.liquidity.toString()}</p>
+                    <p className="font-mono text-white">{selectedPool.currentLiquidity ?? '—'}</p>
                   </div>
                 </div>
 
                 {/* Data Quality Warning */}
-                {selectedPool.tvlUsd < 100000 && (
+                {(selectedPool.tvlUSD ?? 0) < 100000 && (
                   <div className="bg-yellow-900/20 border border-yellow-800 rounded-lg p-3 mt-3">
                     <p className="text-yellow-400 text-sm">
-                      ⚠️ Low liquidity pool (${(selectedPool.tvlUsd / 1000).toFixed(0)}K TVL). Data may be unreliable.
+                      ⚠️ Low liquidity pool (${((selectedPool.tvlUSD ?? 0) / 1000).toFixed(0)}K TVL). Data may be unreliable.
                     </p>
                   </div>
                 )}
               </CardContent>
             </Card>
-            
+
             <StrategyBuilder
               pool={selectedPool}
               currentTick={currentTick}
-              sqrtPrice={selectedPool.sqrtPriceX96}
+              sqrtPrice={BigInt(selectedPool.currentSqrtPriceX96 ?? '0')}
               currentPrice={currentPrice}
               onStrategyComplete={handleStrategyComplete}
               onScenariosCalculated={handleScenariosCalculated}
@@ -228,8 +228,8 @@ export default function StrategyPage() {
                 entryPrice={currentPrice}
                 lowerTick={calculatedRange.lowerTick}
                 upperTick={calculatedRange.upperTick}
-                poolTVL={selectedPool.tvlUsd}
-                feeTier={selectedPool.fee}
+                poolTVL={selectedPool.tvlUSD ?? 0}
+                feeTier={selectedPool.feeTier}
               />
             )}
             

@@ -7,7 +7,7 @@
 
 import { readContract } from '@wagmi/core';
 import { config } from './config';
-import { Token, Pool } from '@/lib/store';
+import { Token, Pool } from '@/types';
 
 // ============================================================================
 // Contract Addresses
@@ -225,26 +225,27 @@ async function fetchTokenInfo(
   address: string
 ): Promise<Token> {
   const checksummedAddress = address.toLowerCase() as `0x${string}`;
-  
+  const cid = chainId as unknown as (1 | 10 | 42161 | 8453 | 137);
+
   try {
     const [name, symbol, decimals] = await Promise.all([
       readContract(config, {
         address: checksummedAddress,
         abi: ERC20_ABI,
         functionName: 'name',
-        chainId,
+        chainId: cid,
       }),
       readContract(config, {
         address: checksummedAddress,
         abi: ERC20_ABI,
         functionName: 'symbol',
-        chainId,
+        chainId: cid,
       }),
       readContract(config, {
         address: checksummedAddress,
         abi: ERC20_ABI,
         functionName: 'decimals',
-        chainId,
+        chainId: cid,
       }),
     ]);
 
@@ -276,6 +277,8 @@ async function getPoolAddress(
     throw new Error(`No factory address for chain ${chainId}`);
   }
 
+  const cid = chainId as unknown as (1 | 10 | 42161 | 8453 | 137);
+
   try {
     const poolAddress = await readContract(config, {
       address: factory as `0x${string}`,
@@ -286,7 +289,7 @@ async function getPoolAddress(
         token1.toLowerCase() as `0x${string}`,
         fee,
       ],
-      chainId,
+      chainId: cid,
     });
 
     // Check if pool exists (address is not zero)
@@ -316,6 +319,7 @@ async function fetchPool(
     throw new Error('Pool does not exist');
   }
 
+  const pcid = chainId as unknown as (1 | 10 | 42161 | 8453 | 137);
   const [token0Info, token1Info, slot0, liquidity] = await Promise.all([
     fetchTokenInfo(chainId, token0),
     fetchTokenInfo(chainId, token1),
@@ -323,13 +327,13 @@ async function fetchPool(
       address: poolAddress as `0x${string}`,
       abi: POOL_ABI,
       functionName: 'slot0',
-      chainId,
+      chainId: pcid,
     }),
     readContract(config, {
       address: poolAddress as `0x${string}`,
       abi: POOL_ABI,
       functionName: 'liquidity',
-      chainId,
+      chainId: pcid,
     }),
   ]);
 
@@ -345,11 +349,11 @@ async function fetchPool(
     chainId,
     token0: token0Info,
     token1: token1Info,
-    fee,
+    feeTier: fee,
     tickSpacing: tickSpacings[fee] || 60,
-    sqrtPriceX96: slot0[0].toString(),
-    tick: Number(slot0[1]),
-    liquidity: liquidity.toString(),
+    currentSqrtPriceX96: (slot0 as unknown as [bigint, number])[0].toString(),
+    currentTick: Number((slot0 as unknown as [bigint, number])[1]),
+    currentLiquidity: (liquidity as bigint).toString(),
   };
 }
 
@@ -374,6 +378,8 @@ export async function importPositions(
     throw new Error(`Chain ${chainId} not supported`);
   }
 
+  const icid = chainId as unknown as (1 | 10 | 42161 | 8453 | 137);
+
   try {
     // Get number of positions owned
     const balance = await readContract(config, {
@@ -381,7 +387,7 @@ export async function importPositions(
       abi: POSITION_MANAGER_ABI,
       functionName: 'balanceOf',
       args: [owner as `0x${string}`],
-      chainId,
+      chainId: icid,
     });
 
     if (balance === BigInt(0)) {
@@ -390,7 +396,7 @@ export async function importPositions(
 
     // Fetch each position
     const positions: ImportedPosition[] = [];
-    
+
     for (let i = 0; i < Number(balance); i++) {
       try {
         const tokenId = await readContract(config, {
@@ -398,7 +404,7 @@ export async function importPositions(
           abi: POSITION_MANAGER_ABI,
           functionName: 'tokenOfOwnerByIndex',
           args: [owner as `0x${string}`, BigInt(i)],
-          chainId,
+          chainId: icid,
         });
 
         const position = await readContract(config, {
@@ -406,7 +412,7 @@ export async function importPositions(
           abi: POSITION_MANAGER_ABI,
           functionName: 'positions',
           args: [tokenId],
-          chainId,
+          chainId: icid,
         });
 
         // Fetch pool information
@@ -452,7 +458,7 @@ export async function importPositions(
  * @returns Position status
  */
 export function getPositionStatus(position: ImportedPosition): PositionStatus {
-  const currentTick = position.pool.tick;
+  const currentTick = position.pool.currentTick ?? 0;
   const isInRange = currentTick >= position.tickLower && currentTick <= position.tickUpper;
   
   // Calculate price range
@@ -461,7 +467,7 @@ export function getPositionStatus(position: ImportedPosition): PositionStatus {
   const maxPrice = 1.0001 ** position.tickUpper * 10 ** decimalDiff;
   
   // Current price from sqrtPriceX96
-  const sqrtPriceX96 = BigInt(position.pool.sqrtPriceX96);
+  const sqrtPriceX96 = BigInt(position.pool.currentSqrtPriceX96 ?? '0');
   const Q96 = BigInt(2) ** BigInt(96);
   const priceSquared = Number(sqrtPriceX96 * sqrtPriceX96) / Number(Q96 * Q96);
   const currentPrice = priceSquared * 10 ** decimalDiff;
@@ -519,7 +525,7 @@ export function formatPosition(position: ImportedPosition): string {
   const range = `${status.priceRange.min.toFixed(4)}-${status.priceRange.max.toFixed(4)}`;
   const rangeStatus = status.isInRange ? '✓ In Range' : '✗ Out of Range';
   
-  return `${position.pool.token0.symbol}/${position.pool.token1.symbol} ${(position.pool.fee / 10000).toFixed(2)}% [${range}] ${rangeStatus}`;
+  return `${position.pool.token0.symbol}/${position.pool.token1.symbol} ${(position.pool.feeTier / 10000).toFixed(2)}% [${range}] ${rangeStatus}`;
 }
 
 /**

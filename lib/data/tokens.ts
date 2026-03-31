@@ -6,12 +6,12 @@
  * NO predefined token list - works with any token.
  */
 
-import { createPublicClient, http, Address, isAddress } from 'viem';
+import { createPublicClient, http, Address, isAddress, Chain } from 'viem';
 import { mainnet, arbitrum, base, optimism, polygon } from 'wagmi/chains';
 import { ERC20_ABI, PUBLIC_RPC_URLS, COINGECKO_API, CACHE_TTL } from '@/lib/constants';
 
 // Chain configuration mapping
-const chainConfigs: Record<number, typeof mainnet> = {
+const chainConfigs: Record<number, Chain> = {
   1: mainnet,
   42161: arbitrum,
   8453: base,

@@ -21,8 +21,7 @@ export const COINGECKO_IDS: Record<string, Record<number, string>> = {
   '0xae7ab96520de3a18e5e111b5eaab095312d7fe84': { 1: 'staked-ether' },    // stETH
   '0xc00e94cb662c3520282e6f5717214004a7f26888': { 1: 'compound-governance-token' }, // COMP
   '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984': { 1: 'uniswap' },         // UNI
-  '0x514910771af9ca656af840dff83e8264ecf986ca': { 1: 'chainlink' },      // LINK
-  
+
   // Arbitrum (chainId: 42161)
   '0x82af49447d8a07e3bd95bd0d56f35241523fbab1': { 42161: 'weth' },        // WETH
   '0xaf88d065e77c8cc2239327c5edb3a432268e5831': { 42161: 'usd-coin' },    // USDC
@@ -36,11 +35,10 @@ export const COINGECKO_IDS: Record<string, Record<number, string>> = {
   '0xfde4c96c8593536e31f229ea8f37b2ada2699b57': { 8453: 'tether' },       // USDT
   
   // Optimism (chainId: 10)
-  '0x4200000000000000000000000000000000000042': { 10: 'weth' },            // WETH
+  '0x4200000000000000000000000000000000000042': { 10: 'weth' },            // WETH (Optimism)
   '0x0b2c639c533813f4aa9d7837caf62653d097ff85': { 10: 'usd-coin' },       // USDC
   '0x94b008aa00579c1307b0ef2c499ad98a8ce58f58': { 10: 'tether' },         // USDT
   '0x68f180fcce6836688e9084f035309e29bf0a209': { 10: 'wrapped-bitcoin' }, // WBTC
-  '0x4200000000000000000000000000000000000042': { 10: 'weth' },            // WETH
   
   // Polygon (chainId: 137)
   '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270': { 137: 'matic-network' }, // MATIC
@@ -48,17 +46,9 @@ export const COINGECKO_IDS: Record<string, Record<number, string>> = {
   '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': { 137: 'tether' },        // USDT
   '0x1bfd67037b42f73f46801769e5f1d204c31a130': { 137: 'wrapped-bitcoin' }, // WBTC
   
-  // Additional popular tokens
-  '0x514910771af9ca656af840dff83e8264ecf986ca': { 1: 'chainlink' },      // LINK (ETH)
-  '0x514910771af9ca656af840dff83e8264ecf986ca': { 42161: 'chainlink' },    // LINK (ARB)
-  '0x514910771af9ca656af840dff83e8264ecf986ca': { 8453: 'chainlink' },     // LINK (BASE)
-  '0x514910771af9ca656af840dff83e8264ecf986ca': { 10: 'chainlink' },       // LINK (OP)
-  '0x514910771af9ca656af840dff83e8264ecf986ca': { 137: 'chainlink' },     // LINK (MATIC)
-  '0x514910771af9ca656af840dff83e8264ecf986ca': { 1: 'chainlink' },       // LINK (ETH)
-  '0x514910771af9ca656af840dff83e8264ecf986ca': { 42161: 'chainlink' },    // LINK (ARB)
-  '0x514910771af9ca656af840dff83e8264ecf986ca': { 8453: 'chainlink' },     // LINK (BASE)
-  '0x514910771af9ca656af840dff83e8264ecf986ca': { 10: 'chainlink' },       // LINK (OP)
-  '0x514910771af9ca656af840dff83e8264ecf986ca': { 137: 'chainlink' },     // LINK (MATIC)
+  // LINK on other chains (different addresses)
+  '0xf97f4df75117a78c1a5a0dbb814af92458539fb4': { 42161: 'chainlink' },   // LINK (ARB)
+  '0x350a791bfc2c21f9ed5d10980dad2e2638ffa7f6': { 10: 'chainlink' },      // LINK (OP)
   
   // AAVE
   '0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9': { 1: 'aave' },           // AAVE (ETH)
@@ -78,7 +68,6 @@ export const COINGECKO_IDS: Record<string, Record<number, string>> = {
   
   // SUSHI
   '0x6b3595068778dd592e39a122f4e5d2460e84dabe': { 1: 'sushi' },           // SUSHI (ETH)
-  '0x6b3595068778dd592e39a122f4e5d2460e84dabe': { 42161: 'sushi' },      // SUSHI (ARB)
   
   // APE
   '0x4d224452801ac8e21301190b4c1299bbab159e6c': { 1: 'apecoin' },        // APE (ETH)
@@ -92,11 +81,8 @@ export const COINGECKO_IDS: Record<string, Record<number, string>> = {
   // PEPE
   '0x6982508145454ce325ddbe82a2a3d5ef5ddcb78': { 1: 'pepe' },           // PEPE (ETH)
   
-  // ARB (native)
-  '0x912ce59144191c1204e64559fe8253a0e49e6548': { 42161: 'arbitrum' },  // ARB (ARB)
-  
   // OP (native)
-  '0x4200000000000000000000000000000000000042': { 10: 'ethereum' },        // OP uses ETH symbol on Optimism
+  '0x4200000000000000000000000000000000000058': { 10: 'optimism' },        // OP token (Optimism)
   
   // MATIC (native on Polygon)
   '0x0000000000000000000000000000000000001010': { 137: 'matic-network' },  // MATIC (MATIC)

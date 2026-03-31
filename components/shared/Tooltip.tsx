@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 
 export interface TooltipProps {
   content: React.ReactNode;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   position?: 'top' | 'bottom' | 'left' | 'right';
   className?: string;
   triggerClassName?: string;

@@ -28,7 +28,7 @@ export async function GET(
     const position = await fetchPosition(query.chainId, id);
 
     // Fetch current pool state
-    const poolState = await fetchPoolState(query.chainId, position.pool.address);
+    const poolState = await fetchPoolState(query.chainId, position.pool!.address);
 
     // Calculate current amounts
     const sqrtPriceX96 = tickToSqrtPriceX96(poolState.tick);
@@ -42,8 +42,8 @@ export async function GET(
       sqrtUpperX96
     );
 
-    const token0Amount = Number(amount0) / 10 ** position.pool.token0.decimals;
-    const token1Amount = Number(amount1) / 10 ** position.pool.token1.decimals;
+    const token0Amount = Number(amount0) / 10 ** position.pool!.token0.decimals;
+    const token1Amount = Number(amount1) / 10 ** position.pool!.token1.decimals;
 
     // Calculate values (would need price data)
     const token0ValueUSD = token0Amount * poolState.token0Price;
@@ -51,8 +51,8 @@ export async function GET(
     const totalValueUSD = token0ValueUSD + token1ValueUSD;
 
     // Calculate unclaimed fees
-    const unclaimedFees0 = Number(position.tokensOwed0) / 10 ** position.pool.token0.decimals;
-    const unclaimedFees1 = Number(position.tokensOwed1) / 10 ** position.pool.token1.decimals;
+    const unclaimedFees0 = Number(position.tokensOwed0) / 10 ** position.pool!.token0.decimals;
+    const unclaimedFees1 = Number(position.tokensOwed1) / 10 ** position.pool!.token1.decimals;
     const unclaimedFeesUSD = unclaimedFees0 * poolState.token0Price + unclaimedFees1;
 
     return NextResponse.json({

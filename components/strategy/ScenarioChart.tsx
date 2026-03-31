@@ -15,17 +15,17 @@ export function ScenarioChart({ scenarios, entryPrice }: ScenarioChartProps) {
     const sorted = [...scenarios].sort((a, b) => a.priceMovePercent - b.priceMovePercent)
     const sampled = sorted.filter((_, i) => i % 5 === 0)
     
-    const minReturn = Math.min(...sampled.map(s => Math.min(s.netReturn * 100, s.hodlReturn * 100)))
-    const maxReturn = Math.max(...sampled.map(s => Math.max(s.netReturn * 100, s.hodlReturn * 100)))
+    const minReturn = Math.min(...sampled.map(s => Math.min(s.netReturn * 100, (s.hodlReturn ?? 0) * 100)))
+    const maxReturn = Math.max(...sampled.map(s => Math.max(s.netReturn * 100, (s.hodlReturn ?? 0) * 100)))
     const range = maxReturn - minReturn || 1
     
     return sampled.map(s => ({
       x: ((s.priceMovePercent + 1) / 2) * 100,
       lpY: 90 - ((s.netReturn * 100 - minReturn) / range) * 80,
-      hodlY: 90 - ((s.hodlReturn * 100 - minReturn) / range) * 80,
+      hodlY: 90 - (((s.hodlReturn ?? 0) * 100 - minReturn) / range) * 80,
       priceMovePercent: s.priceMovePercent * 100,
       netReturn: s.netReturn * 100,
-      hodlReturn: s.hodlReturn * 100,
+      hodlReturn: (s.hodlReturn ?? 0) * 100,
     }))
   }, [scenarios])
   

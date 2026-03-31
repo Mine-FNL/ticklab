@@ -615,7 +615,7 @@ export function compareRebalanceStrategies(
   finalRange: { lower: number; upper: number };
 }> {
   const strategies = [
-    { name: 'None', check: () => ({ shouldRebalance: false }) },
+    { name: 'None', check: () => ({ shouldRebalance: false } as RebalanceCheck) },
     { 
       name: 'Threshold (10%)', 
       check: (i: number, currentRange: typeof initialRange) => 

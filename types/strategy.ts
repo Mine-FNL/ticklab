@@ -4,23 +4,29 @@
  */
 
 export interface Token {
+  chainId: number;
   address: string;
   symbol: string;
   name: string;
   decimals: number;
   logoURI?: string;
+  verified?: boolean;
 }
 
 export interface Pool {
+  chainId: number;
   address: string;
   token0: Token;
   token1: Token;
-  fee: number; // basis points (100 = 0.01%, 3000 = 0.30%)
-  liquidity: bigint | string; // On-chain returns bigint, may be stringified
-  sqrtPriceX96: bigint | string;
-  tick: number;
-  tvlUsd: number;
-  volume24h: number;
+  feeTier: number;
+  tickSpacing: number;
+  currentTick?: number;
+  currentSqrtPriceX96?: string;
+  currentLiquidity?: string;
+  tvlUSD?: number;
+  volumeUSD24h?: number;
+  feesUSD24h?: number;
+  apr?: number;
 }
 
 export interface Strategy {

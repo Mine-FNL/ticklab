@@ -221,7 +221,7 @@ export function runDeterministicScenario(
     // Calculate fees
     const timeInRange = il.inRange ? 1.0 : 0.0;
     const feeEstimate = estimateFees({
-      currentLiquidity: BigInt(Math.floor(entry.liquidity / liquidityShare)),
+      currentLiquidity: BigInt(Math.floor(Number(entry.liquidity) / liquidityShare)),
       activeLiquidityInRange: entry.liquidity,
       feeTier,
       dailyVolumeUSD,

@@ -10,11 +10,11 @@ import { mainnet, arbitrum, base, optimism, polygon } from 'wagmi/chains';
 
 // Supported chains configuration
 export const SUPPORTED_CHAINS = [
-  { id: mainnet.id, name: 'Ethereum', chain: mainnet },
-  { id: arbitrum.id, name: 'Arbitrum', chain: arbitrum },
-  { id: base.id, name: 'Base', chain: base },
-  { id: optimism.id, name: 'Optimism', chain: optimism },
-  { id: polygon.id, name: 'Polygon', chain: polygon },
+  { id: mainnet.id, name: 'Ethereum', chain: mainnet, icon: 'Ξ' },
+  { id: arbitrum.id, name: 'Arbitrum', chain: arbitrum, icon: '🔵' },
+  { id: base.id, name: 'Base', chain: base, icon: '🔷' },
+  { id: optimism.id, name: 'Optimism', chain: optimism, icon: '🔴' },
+  { id: polygon.id, name: 'Polygon', chain: polygon, icon: '🟣' },
 ];
 
 // Chain ID to name mapping
@@ -173,6 +173,16 @@ export const CACHE_TTL = {
   POSITION_DATA: 60 * 1000,                  // 1 minute
   DEFILLAMA_DATA: 5 * 60 * 1000,             // 5 minutes
   COINGECKO_DATA: 5 * 60 * 1000,             // 5 minutes
+  HISTORICAL_DATA: 5 * 60 * 1000,            // 5 minutes
+};
+
+// Uniswap V3 Subgraph URLs (The Graph Network)
+export const SUBGRAPH_URLS: Record<number, string> = {
+  1: 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3',
+  42161: 'https://api.thegraph.com/subgraphs/name/ianlapham/uniswap-arbitrum-one',
+  8453: 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3-base',
+  10: 'https://api.thegraph.com/subgraphs/name/ianlapham/optimism-post-regenesis',
+  137: 'https://api.thegraph.com/subgraphs/name/ianlapham/uniswap-v3-polygon',
 };
 
 // UI Constants

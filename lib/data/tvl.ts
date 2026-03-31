@@ -95,7 +95,7 @@ export async function fetchPoolTVLs(chainId: number): Promise<PoolTVL[]> {
     const pools = await res.json();
 
     return pools
-      .filter((p: { protocol?: string }) => p.protocol?.toLowerCase().includes('uniswap') || p.poolMeta?.toLowerCase().includes('v3'))
+      .filter((p: { protocol?: string; poolMeta?: string }) => p.protocol?.toLowerCase().includes('uniswap') || p.poolMeta?.toLowerCase().includes('v3'))
       .slice(0, 50)
       .map((p: { address?: string; symbol?: string; tvlUsd?: number; change1d?: number; change7d?: number; volumeUsd?: number; feesUsd?: number; apy?: number; poolMeta?: string }) => ({
         address: p.address || '',

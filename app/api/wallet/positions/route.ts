@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
       positions.map(async (position) => {
         try {
           // Fetch pool state
-          const poolState = await fetchPoolState(params.chainId, position.pool.address);
+          const poolState = await fetchPoolState(params.chainId, position.pool!.address);
           
           // Calculate current amounts
           const sqrtPriceX96 = tickToSqrtPriceX96(poolState.tick);
@@ -39,8 +39,8 @@ export async function GET(request: NextRequest) {
             sqrtUpperX96
           );
 
-          const token0Amount = Number(amount0) / 10 ** position.pool.token0.decimals;
-          const token1Amount = Number(amount1) / 10 ** position.pool.token1.decimals;
+          const token0Amount = Number(amount0) / 10 ** position.pool!.token0.decimals;
+          const token1Amount = Number(amount1) / 10 ** position.pool!.token1.decimals;
 
           // Check if in range
           const inRange = poolState.tick >= position.tickLower && poolState.tick < position.tickUpper;
@@ -52,8 +52,8 @@ export async function GET(request: NextRequest) {
               token1: token1Amount,
             },
             unclaimedFees: {
-              token0: Number(position.tokensOwed0) / 10 ** position.pool.token0.decimals,
-              token1: Number(position.tokensOwed1) / 10 ** position.pool.token1.decimals,
+              token0: Number(position.tokensOwed0) / 10 ** position.pool!.token0.decimals,
+              token1: Number(position.tokensOwed1) / 10 ** position.pool!.token1.decimals,
             },
             inRange,
             currentTick: poolState.tick,

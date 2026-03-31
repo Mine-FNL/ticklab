@@ -5,7 +5,53 @@
  * Supports CSV, JSON, and PDF report generation.
  */
 
-import { SavedStrategy, Simulation, Backtest } from './store';
+import { SavedStrategy } from '@/types';
+
+// Local types for export module (legacy compatibility)
+interface SimulationDayData {
+  date: string;
+  price: number;
+  fees: number | string;
+  il: number | string;
+}
+
+interface SimulationResults {
+  dailyData: SimulationDayData[];
+  estimatedFees: number | string;
+  estimatedIL: number | string;
+  totalReturn: number | string;
+  apr: number;
+}
+
+interface Simulation {
+  id: string;
+  results: SimulationResults;
+}
+
+interface BacktestDayData {
+  date: string;
+  price: number;
+  fees: number | string;
+  il: number | string;
+  positionValue: number | string;
+}
+
+interface BacktestResults {
+  dailyData: BacktestDayData[];
+  totalFees: number | string;
+  totalIL: number | string;
+  netReturn: number | string;
+  apr: number;
+  maxDrawdown: number;
+  sharpeRatio?: number;
+  timeInRange?: number;
+  rebalanceCount?: number;
+}
+
+interface Backtest {
+  id: string;
+  results: BacktestResults;
+}
 
 // ============================================================================
 // Types
@@ -153,7 +199,7 @@ export function exportSimulationToCSV(
     'Daily IL': day.il,
     'Cumulative Fees': simulation.results.dailyData
       .slice(0, index + 1)
-      .reduce((sum, d) => sum + parseFloat(d.fees), 0)
+      .reduce((sum, d) => sum + parseFloat(String(d.fees)), 0)
       .toFixed(6),
   }));
 
@@ -245,7 +291,7 @@ export function exportBacktestToCSV(
     },
     {
       'Day': 'Sharpe Ratio',
-      'Date': backtest.results.sharpeRatio.toFixed(4),
+      'Date': (backtest.results.sharpeRatio ?? 0).toFixed(4),
       'Price': '',
       'Daily Fees': '',
       'Daily IL': '',
@@ -417,7 +463,7 @@ export function generateReportHTML(data: PDFReportData): string {
   <h2>Simulation Results</h2>
   <div class="metrics">
     <div class="metric">
-      <div class="metric-value ${parseFloat(simulation.results.totalReturn) >= 0 ? 'positive' : 'negative'}">${parseFloat(simulation.results.totalReturn) >= 0 ? '+' : ''}${simulation.results.totalReturn}</div>
+      <div class="metric-value ${parseFloat(String(simulation.results.totalReturn)) >= 0 ? 'positive' : 'negative'}">${parseFloat(String(simulation.results.totalReturn)) >= 0 ? '+' : ''}${simulation.results.totalReturn}</div>
       <div class="metric-label">Total Return</div>
     </div>
     <div class="metric">
@@ -435,7 +481,7 @@ export function generateReportHTML(data: PDFReportData): string {
   <h2>Backtest Results</h2>
   <div class="metrics">
     <div class="metric">
-      <div class="metric-value ${parseFloat(backtest.results.netReturn) >= 0 ? 'positive' : 'negative'}">${parseFloat(backtest.results.netReturn) >= 0 ? '+' : ''}${backtest.results.netReturn}</div>
+      <div class="metric-value ${parseFloat(String(backtest.results.netReturn)) >= 0 ? 'positive' : 'negative'}">${parseFloat(String(backtest.results.netReturn)) >= 0 ? '+' : ''}${backtest.results.netReturn}</div>
       <div class="metric-label">Net Return</div>
     </div>
     <div class="metric">
@@ -443,7 +489,7 @@ export function generateReportHTML(data: PDFReportData): string {
       <div class="metric-label">APR</div>
     </div>
     <div class="metric">
-      <div class="metric-value">${backtest.results.sharpeRatio.toFixed(2)}</div>
+      <div class="metric-value">${(backtest.results.sharpeRatio ?? 0).toFixed(2)}</div>
       <div class="metric-label">Sharpe Ratio</div>
     </div>
   </div>
@@ -558,12 +604,12 @@ Rebalance: ${strategy.rebalanceMode}
 }
 
 // ============================================================================
-// Backtest CSV Export
+// Backtest CSV Export (from lib/backtest.ts BacktestResult)
 // ============================================================================
 
 import type { BacktestResult } from './backtest'
 
-export function exportBacktestToCSV(result: BacktestResult): string {
+export function formatBacktestCSV(result: BacktestResult): string {
   const headers = [
     'Date',
     'Price',
@@ -607,7 +653,7 @@ export function exportBacktestToCSV(result: BacktestResult): string {
   ].join('\n')
 }
 
-export function downloadCSV(content: string, filename: string): void {
+export function downloadCSVContent(content: string, filename: string): void {
   const blob = new Blob([content], { type: 'text/csv' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')

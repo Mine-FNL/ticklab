@@ -74,7 +74,7 @@ async function runSimulation(
   // Estimate fees
   const feeEstimates = estimateFees({
     currentLiquidity,
-    activeLiquidityInRange: currentLiquidity,
+    activeLiquidityInRange: BigInt(currentLiquidity || '0'),
     feeTier,
     dailyVolumeUSD,
     volumeScenario: params.volumeScenario || 'base',
@@ -146,18 +146,3 @@ export function useSimulationResult(simulationId: string | null) {
   });
 }
 
-// Simulation request type
-interface SimulationRequest {
-  poolAddress: string;
-  depositAmount: string;
-  depositToken: 'token0' | 'token1' | 'usd';
-  lowerTick: number;
-  upperTick: number;
-  horizonDays: number;
-  dailyVolumeUSD: number;
-  feeTier: number;
-  currentLiquidity: bigint;
-  gasCostGwei: number;
-  volumeScenario?: 'low' | 'base' | 'high' | 'custom';
-  customVolumeMultiplier?: number;
-}

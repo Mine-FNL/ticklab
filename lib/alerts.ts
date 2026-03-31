@@ -6,7 +6,7 @@
  */
 
 import { ImportedPosition } from './wallet/positions';
-import { PoolState } from '@/hooks/usePoolState';
+import { PoolState } from '@/types';
 
 // ============================================================================
 // Types
@@ -436,7 +436,7 @@ export class AlertManager {
           break;
 
         case 'volatility_spike':
-          const currentPrice = calculatePriceFromSqrtX96(poolState.sqrtPriceX96);
+          const currentPrice = calculatePriceFromSqrtX96(poolState.sqrtPriceX96.toString());
           if (posState.lastPrice > 0) {
             triggered = checkVolatilitySpike(currentPrice, posState.lastPrice, config.threshold);
             if (triggered) {

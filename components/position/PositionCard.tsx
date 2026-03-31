@@ -177,7 +177,7 @@ export function PositionCard({
           <div className="p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
             <p className="text-xs text-emerald-500/70 mb-1">Unclaimed Fees</p>
             <p className="text-xl font-bold text-emerald-400">
-              ${unclaimedFees.feesUSD.toLocaleString(undefined, { 
+              ${(unclaimedFees.feesUSD ?? 0).toLocaleString(undefined, {
                 maximumFractionDigits: 2 
               })}
             </p>

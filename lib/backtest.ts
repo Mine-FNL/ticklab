@@ -69,6 +69,9 @@ export interface BacktestResult {
   timeInRangePercent: number
   timeOutOfRangePercent: number
   
+  // Deposit amount
+  depositUSD?: number
+
   // Daily breakdown
   dailyData: DailySnapshot[]
 }
@@ -180,7 +183,7 @@ export async function runBacktest(
     
     // Calculate IL from entry price
     const ilCalc = calculateIL(entryPrice, price, totalFees, totalGasCost)
-    totalIL = ilCalc.il
+    totalIL = ilCalc.ilAbsolute
     
     // LP value = initial deposit + fees earned - IL - gas costs
     const lpValue = entryValue + totalFees - totalIL - totalGasCost

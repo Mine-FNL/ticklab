@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
       gasUnitsPerRebalance: 250000,
       token0Decimals: pool.token0.decimals,
       token1Decimals: pool.token1.decimals,
-      feeTier: pool.fee,
+      feeTier: pool.feeTier,
     });
 
     return NextResponse.json({

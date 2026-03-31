@@ -5,7 +5,26 @@
  * Enables users to share their LP strategies with others.
  */
 
-import { SavedStrategy, StrategyParams, Pool } from './store';
+import { SavedStrategy, Pool } from '@/types';
+
+interface StrategyParams {
+  depositAmount: string;
+  depositToken: 'token0' | 'token1' | 'usd';
+  lowerTick: number;
+  upperTick: number;
+  lowerPrice: number;
+  upperPrice: number;
+  horizonDays: number;
+  rebalanceMode: 'none' | 'periodic' | 'threshold' | 'volatility';
+  rebalanceParams?: {
+    periodDays?: number;
+    priceThreshold?: number;
+    volatilityThreshold?: number;
+  };
+  gasCostGwei: number;
+  volumeScenario: 'low' | 'base' | 'high' | 'custom';
+  customVolumeMultiplier?: number;
+}
 
 // ============================================================================
 // Types

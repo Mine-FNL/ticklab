@@ -5,7 +5,7 @@
  * Uses FREE public RPC endpoints - no API key required.
  */
 
-import { createPublicClient, http, PublicClient, Address } from 'viem';
+import { createPublicClient, http, PublicClient, Address, Chain } from 'viem';
 import { mainnet, arbitrum, base, optimism, polygon } from 'wagmi/chains';
 import { Token, Pool, PoolState, Position } from '@/types';
 import { 
@@ -19,7 +19,7 @@ import {
 } from '@/lib/constants';
 
 // Chain configuration mapping
-const chainConfigs: Record<number, typeof mainnet> = {
+const chainConfigs: Record<number, Chain> = {
   1: mainnet,
   42161: arbitrum,
   8453: base,
@@ -170,7 +170,7 @@ export async function fetchPoolState(
       ),
     ]);
 
-    const [sqrtPriceX96, tick] = slot0 as [bigint, number];
+    const [sqrtPriceX96, tick] = slot0 as unknown as [bigint, number];
 
     // Calculate prices from sqrtPriceX96
     const price = Number(sqrtPriceX96) / 2 ** 96;

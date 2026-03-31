@@ -209,7 +209,7 @@ export async function getTopPools(chainId: number, limit = 20): Promise<Pool[]> 
 export async function getPoolsByToken(chainId: number, tokenAddress: string): Promise<Pool[]> {
   // Use discoverPool which exists
   try {
-    const pool = await discoverPool(chainId, tokenAddress as `0x${string}`);
+    const pool = await discoverPool(chainId, tokenAddress as `0x${string}`, tokenAddress as `0x${string}`);
     return pool ? [pool] : [];
   } catch {
     return [];

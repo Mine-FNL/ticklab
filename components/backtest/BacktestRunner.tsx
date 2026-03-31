@@ -328,7 +328,7 @@ export function BacktestRunner({ poolAddress, chainId, tokenAddress }: BacktestR
                           <td className="py-2 text-right text-zinc-300 font-mono">
                             ${snapshot.price.toFixed(2)}
                           </td>
-                          <td className={`py-2 text-right font-mono ${snapshot.lpValue >= result.depositUSD ? 'text-emerald-400' : 'text-red-400'}`}>
+                          <td className={`py-2 text-right font-mono ${snapshot.lpValue >= (result.depositUSD ?? 0) ? 'text-emerald-400' : 'text-red-400'}`}>
                             ${snapshot.lpValue.toFixed(2)}
                           </td>
                           <td className="py-2 text-right text-zinc-400 font-mono">

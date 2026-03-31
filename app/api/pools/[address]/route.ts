@@ -52,7 +52,7 @@ export async function GET(
       });
     }
 
-    if (metrics && metrics.volumeUSD24h < 1000) {
+    if (metrics && (metrics.volumeUSD24h ?? 0) < 1000) {
       warnings.push({
         type: 'sparse_data',
         severity: 'warning',

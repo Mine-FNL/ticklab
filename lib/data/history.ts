@@ -42,7 +42,6 @@ const TOKEN_TO_COINGECKO_ID: Record<string, string> = {
   '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913': 'usd-coin',
   '0xc1cba3fcea344f92d9239c08c0568f6af8f1e5c9': 'coinbase-wrapped-staked-eth',
   // Optimism
-  '0x4200000000000000000000000000000000000006': 'weth',
   '0x7f5c764cbc14f9669b88837ca1490cca17c31607': 'usd-coin',
   '0x68f180fcce6836688e9084f035309e29bf0a2095': 'wrapped-bitcoin',
   // Polygon
