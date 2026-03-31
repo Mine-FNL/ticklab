@@ -1,8 +1,33 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@layer base {
+  :root {
+    --background: 0 0% 4%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 160 84% 39%;
+    --primary-foreground: 0 0% 4%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 53%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 16%;
+    --input: 0 0% 14.9%;
+    --ring: 160 84% 39%;
+    --radius: 0.5rem;
+  }
+}
 
 :root {
   --bg: #0a0a0a;
@@ -99,6 +124,9 @@ body {
 .animate-pulse-dot {
   animation: pulse-dot 2s ease-in-out infinite;
 }
+.animate-shimmer {
+  animation: shimmer 1.5s infinite;
+}
 
 /* Stats bar */
 .stats-bar {
@@ -149,7 +177,7 @@ body {
   @apply border-b border-[#2a2a2a];
 }
 .data-table th {
-  @apply text-left text-xs font-medium text-[#555] uppercase tracking-wider py-3 px-4 font-medium;
+  @apply text-left text-xs font-medium text-[#555] uppercase tracking-wider py-3 px-4;
 }
 .data-table td {
   @apply py-3 px-4 text-[#ccc] border-b border-[#1f1f1f];
