@@ -10,6 +10,45 @@ import { Pool, PoolMetrics, Token } from '@/types';
 import { FEE_TIER_TO_TICK_SPACING, SUPPORTED_FEE_TIERS } from '@/lib/constants';
 import { fetchPoolData, getPoolFromFactory, fetchTokenMetadata } from './rpc';
 import { getPoolMetrics } from './defillama';
+import { fetchDefiLlamaPools } from './defillama';
+
+// Common quote tokens per chain for pool discovery
+const COMMON_QUOTE_TOKENS: Record<number, string[]> = {
+  1: [ // Ethereum
+    '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', // WETH
+    '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', // USDC
+    '0xdac17f958d2ee523a2206206994597c13d831ec7', // USDT
+    '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', // WBTC
+    '0x6b175474e89094c44da98b954eedeac495271d0f', // DAI
+  ],
+  42161: [ // Arbitrum
+    '0x82af49447d8a07e3bd95bd0d56f35241523fbab1', // WETH
+    '0xaf88d065e77c8cc2239327c5edb3a432268e5831', // USDC
+    '0xfd086bc7cd5c481dcc9c96ebe6a1a233e24197f0', // USDT
+    '0x2f2a2543b76a4166549f7aab2e75bef01a8328ca', // WBTC
+    '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1', // DAI
+  ],
+  8453: [ // Base
+    '0x4200000000000000000000000000000000000006', // WETH
+    '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913', // USDC
+    '0xfde4c96c8593536e31f229ea8f37b2ada2699b57', // USDT
+    '0x50c5725949a6f0c72e6c4a641f24049a917db0cb', // DAI
+  ],
+  10: [ // Optimism
+    '0x4200000000000000000000000000000000000042', // WETH
+    '0x0b2c639c533813f4aa9d7837caf62653d097ff85', // USDC
+    '0x94b008aa00579c1307b0ef2c499ad98a8ce58f58', // USDT
+    '0x68f180fcce6836688e9084f035309e29bf0a2095', // WBTC
+    '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1', // DAI
+  ],
+  137: [ // Polygon
+    '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270', // WMATIC
+    '0x2791bca1f2de4661ed88a30c99a7a9449aa84174', // USDC
+    '0xc2132d05d31c914a87c6611c10748aeb04b58e8f', // USDT
+    '0x1bfd67037b42f73f46801769e5f1d204c31a130d', // WBTC
+    '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063', // DAI
+  ],
+};
 
 // Cache for pool data (short TTL for live data)
 const poolCache = new Map<string, { data: Pool; timestamp: number }>();
@@ -207,13 +246,63 @@ export async function getTopPools(chainId: number, limit = 20): Promise<Pool[]> 
 }
 
 export async function getPoolsByToken(chainId: number, tokenAddress: string): Promise<Pool[]> {
-  // Use discoverPool which exists
-  try {
-    const pool = await discoverPool(chainId, tokenAddress as `0x${string}`, tokenAddress as `0x${string}`);
-    return pool ? [pool] : [];
-  } catch {
-    return [];
+  const normalizedToken = tokenAddress.toLowerCase();
+  const discoveredPools: Pool[] = [];
+  const seenAddresses = new Set<string>();
+
+  // 1. Try on-chain discovery against common quote tokens
+  const quoteTokens = COMMON_QUOTE_TOKENS[chainId] || [];
+  const discoveryPromises = quoteTokens.flatMap((quoteToken) =>
+    SUPPORTED_FEE_TIERS.map(async (feeTier) => {
+      try {
+        const pool = await discoverPool(chainId, normalizedToken, quoteToken, feeTier);
+        return pool;
+      } catch {
+        return null;
+      }
+    })
+  );
+
+  const results = await Promise.allSettled(discoveryPromises);
+  for (const result of results) {
+    if (result.status === 'fulfilled' && result.value) {
+      const addr = result.value.address.toLowerCase();
+      if (!seenAddresses.has(addr)) {
+        seenAddresses.add(addr);
+        discoveredPools.push(result.value);
+      }
+    }
   }
+
+  // 2. Fallback: try DeFi Llama pool list for pools containing this token
+  try {
+    const llamaPools = await fetchDefiLlamaPools(chainId);
+    for (const llamaPool of llamaPools) {
+      if (!llamaPool.underlyingTokens) continue;
+      const hasToken = llamaPool.underlyingTokens.some(
+        (t) => t.toLowerCase() === normalizedToken
+      );
+      if (!hasToken) continue;
+
+      // Extract pool address from pool ID (format: "chain:address")
+      const poolAddress = llamaPool.pool.split(':').pop()?.toLowerCase();
+      if (!poolAddress || !poolAddress.startsWith('0x')) continue;
+      if (seenAddresses.has(poolAddress)) continue;
+
+      try {
+        const pool = await getPool(chainId, poolAddress);
+        seenAddresses.add(poolAddress);
+        discoveredPools.push(pool);
+      } catch {
+        // Skip pools we can't fetch on-chain
+      }
+    }
+  } catch {
+    // DeFi Llama fallback is optional
+  }
+
+  // Sort by TVL descending (most liquid first)
+  return discoveredPools.sort((a, b) => (b.tvlUSD || 0) - (a.tvlUSD || 0));
 }
 
 export async function searchPools(chainId: number, searchTerm: string): Promise<Pool[]> {

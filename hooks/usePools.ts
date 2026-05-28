@@ -107,6 +107,32 @@ export function usePoolByAddress(
 }
 
 /**
+ * Hook to fetch all pools for a specific token address
+ * Searches against common quote tokens and DeFi Llama data
+ * 
+ * @param chainId - Chain ID
+ * @param tokenAddress - Token contract address (null if not ready)
+ * @returns Query result with array of pools
+ */
+export function useTokenPools(
+  chainId: number,
+  tokenAddress: string | null
+) {
+  return useQuery<Pool[], Error>({
+    queryKey: ['token-pools', chainId, tokenAddress],
+    queryFn: async () => {
+      if (!tokenAddress) throw new Error('Token address is required');
+      const { getPoolsByToken } = await import('@/lib/data/pools');
+      return getPoolsByToken(chainId, tokenAddress);
+    },
+    enabled: !!tokenAddress && isValidAddress(tokenAddress),
+    staleTime: 60 * 1000, // 1 minute
+    gcTime: 5 * 60 * 1000,
+    retry: 1,
+  });
+}
+
+/**
  * @deprecated Use useToken from '@/hooks/useTokens' instead
  */
 export function useTokenValidation(

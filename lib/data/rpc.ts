@@ -75,7 +75,7 @@ export function getPublicClient(chainId: number): PublicClient {
  * @param fn - Function to execute
  * @returns Result
  */
-async function executeWithFailover<T>(
+export async function executeWithFailover<T>(
   chainId: number,
   fn: (client: PublicClient) => Promise<T>
 ): Promise<T> {

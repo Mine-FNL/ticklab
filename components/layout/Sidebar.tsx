@@ -10,10 +10,14 @@ import {
   LayoutGrid,
   Menu,
   X,
+  Zap,
+  Search,
 } from 'lucide-react';
 
 const navigation = [
   { name: 'Strategy', href: '/strategy', icon: SlidersHorizontal },
+  { name: 'V4 Lab', href: '/v4', icon: Zap },
+  { name: 'Explore', href: '/explore', icon: Search },
   { name: 'Pools', href: '/pools', icon: LayoutGrid },
   { name: 'Backtest', href: '/backtest', icon: History },
   { name: 'Positions', href: '/positions', icon: Wallet },
