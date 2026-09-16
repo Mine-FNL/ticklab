@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+# Cancel any in-flight run when a new commit hits the same branch — saves
+# the 2000 min/month free-tier budget when pushing rapid follow-ups.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: lint + typecheck + test + build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Lint
+        run: npx --no-install next lint --max-warnings=999
+
+      - name: Typecheck
+        run: npx --no-install tsc --noEmit -p tsconfig.json
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npx --no-install next build
+        env:
+          # The build doesn't actually call RPC at compile time, but supplying
+          # the WalletConnect project id prevents wagmi/RainbowKit from
+          # failing the build when env-validation runs.
+          NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${{ secrets.WALLETCONNECT_PROJECT_ID || 'ci-placeholder' }}
