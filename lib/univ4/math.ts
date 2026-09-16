@@ -65,13 +65,20 @@ export function calculateEffectiveFeeRate(
     case 'dynamic':
       // Hook adds to base fee (e.g., volatility-based adjustment)
       return baseRate + (hookFeeBips / 1_000_000);
-    case 'share':
-      // Hook takes a share of the existing fee (LP gets less)
+    case 'share': {
+      // Hook takes a share of the existing fee (LP gets less).
       // hookFeeBips here represents the percentage of fees the hook keeps
-      return baseRate * (1 - hookFeeBips / 10_000);
-    case 'rebate':
-      // Hook returns some fees to LPs (LP gets more)
-      return baseRate * (1 + hookFeeBips / 10_000);
+      // (10000 bips = 100%). Clamp the fraction to [0, 1] so a misconfigured
+      // hook with bips > 10000 can't drive the LP fee negative.
+      const shareFraction = Math.max(0, Math.min(1, hookFeeBips / 10_000));
+      return Math.max(0, baseRate * (1 - shareFraction));
+    }
+    case 'rebate': {
+      // Hook returns some fees to LPs (LP gets more). Rebates > 100% are
+      // nonsense; clamp to avoid explosive APR projections downstream.
+      const rebateFraction = Math.max(0, Math.min(1, hookFeeBips / 10_000));
+      return baseRate * (1 + rebateFraction);
+    }
     default:
       return baseRate;
   }

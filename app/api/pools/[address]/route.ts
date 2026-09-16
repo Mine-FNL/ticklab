@@ -3,6 +3,9 @@ import { z } from 'zod';
 import { getPoolByAddress, getPoolMetricsData } from '@/lib/data/pools';
 import { fetchPoolState } from '@/lib/data/rpc';
 import { DataWarning } from '@/types';
+import { apiConfig } from '@/lib/api/handler';
+
+export const { dynamic, runtime } = apiConfig();
 
 const paramsSchema = z.object({
   address: z.string().regex(/^0x[a-fA-F0-9]{40}$/),

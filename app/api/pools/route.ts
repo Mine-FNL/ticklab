@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getTopPools, getPoolsByToken, searchPools } from '@/lib/data/pools';
+import { apiConfig } from '@/lib/api/handler';
+
+export const { dynamic, runtime } = apiConfig();
 
 const requestSchema = z.object({
   token: z.string().regex(/^0x[a-fA-F0-9]{40}$/).optional(),

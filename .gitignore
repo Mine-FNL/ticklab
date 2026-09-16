@@ -1,2 +1,16 @@
 node_modules/
 .next/
+out/
+coverage/
+
+# TypeScript incremental build cache
+*.tsbuildinfo
+
+# Local env files
+.env.local
+.env*.local
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store

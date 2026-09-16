@@ -3,6 +3,9 @@ import { z } from 'zod';
 import { fetchPosition } from '@/lib/data/rpc';
 import { fetchPoolState } from '@/lib/data/rpc';
 import { getAmountsForLiquidity, tickToSqrtPriceX96 } from '@/lib/univ3/math';
+import { apiConfig } from '@/lib/api/handler';
+
+export const { dynamic, runtime } = apiConfig();
 
 const paramsSchema = z.object({
   id: z.string(),

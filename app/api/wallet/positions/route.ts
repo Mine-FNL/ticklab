@@ -3,6 +3,9 @@ import { z } from 'zod';
 import { fetchUserPositions } from '@/lib/data/rpc';
 import { fetchPoolState } from '@/lib/data/rpc';
 import { getAmountsForLiquidity, tickToSqrtPriceX96 } from '@/lib/univ3/math';
+import { apiConfig } from '@/lib/api/handler';
+
+export const { dynamic, runtime } = apiConfig();
 
 const requestSchema = z.object({
   address: z.string().regex(/^0x[a-fA-F0-9]{40}$/),

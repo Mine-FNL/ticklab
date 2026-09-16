@@ -3,6 +3,9 @@ import { backtestRequestSchema } from '@/lib/validation/schemas';
 import { runBacktest } from '@/lib/simulation/backtest';
 import { getPoolByAddress } from '@/lib/data/pools';
 import { tickToPrice } from '@/lib/univ3/math';
+import { apiConfig } from '@/lib/api/handler';
+
+export const { dynamic, runtime } = apiConfig();
 
 export async function POST(request: NextRequest) {
   try {

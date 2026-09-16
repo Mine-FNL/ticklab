@@ -3,6 +3,10 @@ import { z } from 'zod';
 import { fetchTokenMetadata, isValidERC20 } from '@/lib/data/rpc';
 import { getPoolsByToken } from '@/lib/data/pools';
 import { DataWarning } from '@/types';
+import { apiConfig } from '@/lib/api/handler';
+
+// Viem needs Node; routes are per-request (read searchParams).
+export const { dynamic, runtime } = apiConfig();
 
 const requestSchema = z.object({
   address: z.string().regex(/^0x[a-fA-F0-9]{40}$/),

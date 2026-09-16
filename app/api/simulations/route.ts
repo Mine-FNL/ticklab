@@ -7,6 +7,9 @@ import { tickToPrice } from '@/lib/univ3/math';
 import { getPoolByAddress } from '@/lib/data/pools';
 import { fetchPoolState } from '@/lib/data/rpc';
 import { getPoolMetrics } from '@/lib/data/defillama';
+import { apiConfig } from '@/lib/api/handler';
+
+export const { dynamic, runtime } = apiConfig();
 
 export async function POST(request: NextRequest) {
   try {
