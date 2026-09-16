@@ -303,7 +303,8 @@ export function runBacktest(params: BacktestParams): BacktestResult {
     if (lpValue > peakValue) {
       peakValue = lpValue;
     }
-    const drawdown = (peakValue - lpValue) / peakValue;
+    // Guard divide-by-zero when peakValue is 0 (e.g. zero-liquidity edge cases).
+    const drawdown = peakValue > 0 ? (peakValue - lpValue) / peakValue : 0;
     drawdowns.push({
       timestamp: dataPoint.timestamp,
       drawdown
@@ -330,8 +331,11 @@ export function runBacktest(params: BacktestParams): BacktestResult {
       const gasCostUSD = gasCostETH * 3000; // Assume ETH price
       gasCosts += gasCostUSD;
 
-      // Reset position around current price
-      const rangeWidth = (currentUpperPrice - currentLowerPrice) / currentLowerPrice;
+      // Reset position around current price. Guard against zero or negative
+      // currentLowerPrice so a degenerate state doesn't blow up the loop.
+      const rangeWidth = currentLowerPrice > 0
+        ? (currentUpperPrice - currentLowerPrice) / currentLowerPrice
+        : 0.2; // fallback to a ±10% range when bounds degenerate
       currentLowerPrice = currentPrice * (1 - rangeWidth / 2);
       currentUpperPrice = currentPrice * (1 + rangeWidth / 2);
 

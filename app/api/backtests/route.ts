@@ -45,18 +45,78 @@ const realBacktestRequestSchema = backtestRequestSchema.merge(
   }),
 );
 
+// Per-request observability: a stable id propagated through logs + the response
+// header so callers can correlate failures. Inline counter avoids pulling in
+// lib/api/handler.ts just for the id (the legacy route is too tightly coupled
+// to keep a clean refactor inside this PR).
+let _requestCounter = 0;
+function nextRequestId(): string {
+  _requestCounter = (_requestCounter + 1) % 1_000_000;
+  return `req_${Date.now().toString(36)}_${_requestCounter.toString(36)}`;
+}
+
 export async function POST(request: NextRequest) {
+  const requestId = nextRequestId();
+  const startedAt = Date.now();
+  const log = (status: number, err?: string) => {
+    // eslint-disable-next-line no-console
+    console.log(
+      `[api] backtests ${status} ${Date.now() - startedAt}ms req=${requestId}${err ? ` err="${err.slice(0, 200)}"` : ''}`,
+    );
+  };
+
   try {
     const body = await request.json();
     const params = realBacktestRequestSchema.parse(body);
 
+    // -------- pre-flight checks (run before any expensive work) --------
+    // Catching these here turns the legacy 500 into a useful 4xx.
+    if (params.lowerTick >= params.upperTick) {
+      const res = NextResponse.json(
+        {
+          error: 'invalid_request',
+          message: 'lowerTick must be < upperTick',
+          details: { lowerTick: params.lowerTick, upperTick: params.upperTick },
+          suggestion: 'Widen the tick range.',
+          requestId,
+        },
+        { status: 400 },
+      );
+      res.headers.set('x-request-id', requestId);
+      log(400, 'invalid tick range');
+      return res;
+    }
+    const TICK_RANGE = Math.abs(params.upperTick - params.lowerTick);
+    if (TICK_RANGE < 60) {
+      const res = NextResponse.json(
+        {
+          error: 'invalid_request',
+          message: `Tick range too narrow (${TICK_RANGE}); minimum is 60 ticks.`,
+          details: { tickRange: TICK_RANGE, minRequired: 60 },
+          suggestion: 'Widen the tick range to at least 60 ticks.',
+          requestId,
+        },
+        { status: 400 },
+      );
+      res.headers.set('x-request-id', requestId);
+      log(400, 'narrow range');
+      return res;
+    }
+
     // Fetch pool data
     const pool = await getPoolByAddress(params.chainId, params.poolAddress);
     if (!pool) {
-      return NextResponse.json(
-        { error: 'Pool not found', suggestion: 'Check the pool address or try a different chain.' },
-        { status: 404 }
+      const res = NextResponse.json(
+        {
+          error: 'Pool not found',
+          suggestion: 'Check the pool address or try a different chain.',
+          requestId,
+        },
+        { status: 404 },
       );
+      res.headers.set('x-request-id', requestId);
+      log(404, 'pool not found');
+      return res;
     }
 
     const startTime = new Date(params.startDate).getTime();
@@ -64,10 +124,17 @@ export async function POST(request: NextRequest) {
     const days = Math.floor((endTime - startTime) / (24 * 60 * 60 * 1000));
 
     if (days <= 0) {
-      return NextResponse.json(
-        { error: 'Invalid date range', suggestion: 'End date must be after start date.' },
-        { status: 400 }
+      const res = NextResponse.json(
+        {
+          error: 'Invalid date range',
+          suggestion: 'End date must be after start date.',
+          requestId,
+        },
+        { status: 400 },
       );
+      res.headers.set('x-request-id', requestId);
+      log(400, 'invalid date range');
+      return res;
     }
 
     // Calculate lower and upper prices from ticks (used by both branches)
@@ -120,7 +187,7 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        return NextResponse.json({
+        const res = NextResponse.json({
           backtestId: `bt_${Date.now()}`,
           useRealData: true,
           results: real.historical,
@@ -128,15 +195,19 @@ export async function POST(request: NextRequest) {
           dataPointsUsed: real.dataPointsUsed,
           fetchTimestamp: real.fetchTimestamp,
           warnings: [],
+          requestId,
           ...(confidenceBands ? { confidenceBands } : {}),
           ...(checklistResult ? { checklist: checklistResult } : {}),
         });
+        res.headers.set('x-request-id', requestId);
+        log(200);
+        return res;
       } catch (realErr) {
         if (realErr instanceof HistoricalDataError) {
           const status =
             realErr.code === 'NOT_FOUND' ? 404 :
             realErr.code === 'INVALID_INPUT' ? 400 : 502;
-          return NextResponse.json(
+          const res = NextResponse.json(
             {
               error: realErr.code === 'NOT_FOUND' ? 'pool_not_indexed' : 'upstream_failure',
               useRealData: true,
@@ -145,9 +216,13 @@ export async function POST(request: NextRequest) {
                 realErr.code === 'NOT_FOUND'
                   ? 'This pool is not indexed by DeFi Llama; real-data backtests are unavailable.'
                   : 'Try again or lower the `days` value.',
+              requestId,
             },
             { status },
           );
+          res.headers.set('x-request-id', requestId);
+          log(status, realErr.message);
+          return res;
         }
         throw realErr;
       }
@@ -208,7 +283,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({
+    const res = NextResponse.json({
       backtestId: `bt_${Date.now()}`,
       useRealData: false,
       results: backtestResult,
@@ -218,33 +293,65 @@ export async function POST(request: NextRequest) {
         message: 'Backtest uses synthetic price data. For accurate backtesting, use a paid data provider.',
         recommendation: 'Consider using Dune Analytics or TheGraph for real historical data.',
       }],
+      requestId,
       ...(confidenceBands ? { confidenceBands } : {}),
       ...(checklistResult ? { checklist: checklistResult } : {}),
     });
+    res.headers.set('x-request-id', requestId);
+    log(200);
+    return res;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Backtest error:', error);
 
     // Zod validation failures should not surface as 500 — they are caller errors.
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
+      const res = NextResponse.json(
         {
           error: 'invalid_request',
           message: 'Request did not match expected schema',
           details: error.flatten(),
           suggestion: 'Check chainId, poolAddress, ticks, dates and rebalance params.',
+          requestId,
         },
         { status: 400 },
       );
+      res.headers.set('x-request-id', requestId);
+      log(400, 'zod');
+      return res;
     }
 
-    return NextResponse.json(
+    const message = (error as Error).message ?? '';
+    // Detect math-layer "Division by zero" and turn it into a 400 instead of 500.
+    if (/division by zero/i.test(message) || /NaN|non-finite/i.test(message)) {
+      const res = NextResponse.json(
+        {
+          error: 'invalid_request',
+          message:
+            'Numeric overflow / divide-by-zero in the backtest math. This usually means the tick range is too narrow or the price path degenerated.',
+          suggestion:
+            'Use a wider tick range (≥ 60 ticks) or check your input bounds.',
+          requestId,
+        },
+        { status: 400 },
+      );
+      res.headers.set('x-request-id', requestId);
+      log(400, message);
+      return res;
+    }
+
+    const res = NextResponse.json(
       {
         error: 'Backtest failed',
         message: (error as Error).message,
-        suggestion: 'Check your inputs and try again.'
+        suggestion: 'Check your inputs and try again.',
+        requestId,
       },
-      { status: 500 }
+      { status: 500 },
     );
+    res.headers.set('x-request-id', requestId);
+    log(500, message);
+    return res;
   }
 }
 

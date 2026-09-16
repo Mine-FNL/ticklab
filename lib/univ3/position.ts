@@ -89,6 +89,9 @@ export function calculateBalancedEntry(
 
   if (currentPrice <= lowerPrice) {
     // All in token0
+    if (currentPrice <= 0) {
+      throw new Error(`currentPrice must be > 0, got ${currentPrice}`);
+    }
     token0Amount = depositUSD / currentPrice;
     token1Amount = 0;
   } else if (currentPrice >= upperPrice) {
@@ -98,7 +101,19 @@ export function calculateBalancedEntry(
   } else {
     // In range - calculate optimal ratio
     // Formula: L = depositUSD / (2 * sqrt(P) - sqrt(Pa) - P / sqrt(Pb))
-    const L = depositUSD / (2 * sqrtCurrent - sqrtLower - currentPrice / sqrtUpper);
+    const denominator = 2 * sqrtCurrent - sqrtLower - currentPrice / sqrtUpper;
+    // Degenerate denominators can occur when the price sits exactly at the
+    // boundary or when lowerPrice ≈ upperPrice (zero-width range). Without
+    // this guard, the user gets an opaque "Division by zero".
+    if (denominator <= 0 || !Number.isFinite(denominator)) {
+      throw new Error(
+        `Degenerate range: lowerPrice=${lowerPrice}, upperPrice=${upperPrice}, currentPrice=${currentPrice}. Use a wider tick range.`,
+      );
+    }
+    const L = depositUSD / denominator;
+    if (sqrtCurrent === 0 || sqrtUpper === 0) {
+      throw new Error(`sqrt price is zero — bounds out of valid range.`);
+    }
     token0Amount = L * (sqrtUpper - sqrtCurrent) / (sqrtCurrent * sqrtUpper);
     token1Amount = L * (sqrtCurrent - sqrtLower);
   }

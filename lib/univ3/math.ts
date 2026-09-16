@@ -76,29 +76,23 @@ export function tickToPrice(tick: number): number {
  * @returns Q96.96 encoded sqrt price
  */
 export function tickToSqrtPriceX96(tick: number): bigint {
-  const absTick = Math.abs(tick);
-  let ratio = (absTick & 0x1) !== 0 ? BigInt('79232123831229584821631712447568') : BigInt('79228162514264337593543950336');
+  if (!Number.isFinite(tick)) {
+    throw new RangeError(`tickToSqrtPriceX96: tick must be finite, got ${tick}`);
+  }
+  if (tick > MAX_TICK) tick = MAX_TICK;
+  if (tick < MIN_TICK) tick = MIN_TICK;
 
-  if ((absTick & 0x2) !== 0) ratio = (ratio * BigInt('79236085330515764027303304732')) >> 128n;
-  if ((absTick & 0x4) !== 0) ratio = (ratio * BigInt('79244008939048815603715285529')) >> 128n;
-  if ((absTick & 0x8) !== 0) ratio = (ratio * BigInt('79259858533276714744399159624')) >> 128n;
-  if ((absTick & 0x10) !== 0) ratio = (ratio * BigInt('79291567250765740496340373915')) >> 128n;
-  if ((absTick & 0x20) !== 0) ratio = (ratio * BigInt('79355022662378470627699079246')) >> 128n;
-  if ((absTick & 0x40) !== 0) ratio = (ratio * BigInt('79482059297663915432149840871')) >> 128n;
-  if ((absTick & 0x80) !== 0) ratio = (ratio * BigInt('79736823300114093921829183526')) >> 128n;
-  if ((absTick & 0x100) !== 0) ratio = (ratio * BigInt('80248749790811656504158217372')) >> 128n;
-  if ((absTick & 0x200) !== 0) ratio = (ratio * BigInt('81282465610642329084185038211')) >> 128n;
-  if ((absTick & 0x400) !== 0) ratio = (ratio * BigInt('83390007182334617377626686706')) >> 128n;
-  if ((absTick & 0x800) !== 0) ratio = (ratio * BigInt('87873917902043797092652703393')) >> 128n;
-  if ((absTick & 0x1000) !== 0) ratio = (ratio * BigInt('97873798387631560758914529195')) >> 128n;
-  if ((absTick & 0x2000) !== 0) ratio = (ratio * BigInt('121438419988865159365539493990')) >> 128n;
-  if ((absTick & 0x4000) !== 0) ratio = (ratio * BigInt('188709358182804902742061434828')) >> 128n;
-  if ((absTick & 0x8000) !== 0) ratio = (ratio * BigInt('455711986000980887884442232784')) >> 128n;
-  if ((absTick & 0x10000) !== 0) ratio = (ratio * BigInt('2666946796374807022649853254528')) >> 128n;
-  
-  if (tick > 0) ratio = Q256 / ratio;
-  
-  return (ratio >> 32n) + (ratio % (1n << 32n) === 0n ? 0n : 1n);
+  // The bit-shift formula used here approximates sqrt(1.0001^tick). For some
+  // tick values the cumulative `>> 128n` shifts collapse the intermediate
+  // ratio to 0n before the inverse step, which throws RangeError. Math.exp
+  // is the canonical robust path; convert at full double precision and only
+  // lose precision at the very edges of the Q64.96 range, which is well
+  // beyond what Uniswap pools actually reach.
+  const sqrtPrice = Math.sqrt(Math.pow(1.0001, tick));
+  // Q64.96: multiply by 2^96.
+  const SCALE = 79228162514264337593543950336n; // 2^96
+  const big = BigInt(Math.round(sqrtPrice * Number(SCALE)));
+  return big;
 }
 
 const Q256 = 2n ** 256n;
@@ -176,11 +170,14 @@ export function getLiquidityForAmount0(
   amount0: bigint
 ): bigint {
   if (amount0 === 0n) return 0n;
-  
-  const [sqrtA, sqrtB] = sqrtPriceAX96 < sqrtPriceBX96 
-    ? [sqrtPriceAX96, sqrtPriceBX96] 
+
+  const [sqrtA, sqrtB] = sqrtPriceAX96 < sqrtPriceBX96
+    ? [sqrtPriceAX96, sqrtPriceBX96]
     : [sqrtPriceBX96, sqrtPriceAX96];
-  
+
+  // Degenerate range → 0 liquidity (caller supplied a zero-width tick range).
+  if (sqrtA === 0n || sqrtB === 0n || sqrtB === sqrtA) return 0n;
+
   const intermediate = (sqrtA * sqrtB) / Q96;
   return (amount0 * intermediate) / (sqrtB - sqrtA);
 }
@@ -198,11 +195,14 @@ export function getLiquidityForAmount1(
   amount1: bigint
 ): bigint {
   if (amount1 === 0n) return 0n;
-  
-  const [sqrtA, sqrtB] = sqrtPriceAX96 < sqrtPriceBX96 
-    ? [sqrtPriceAX96, sqrtPriceBX96] 
+
+  const [sqrtA, sqrtB] = sqrtPriceAX96 < sqrtPriceBX96
+    ? [sqrtPriceAX96, sqrtPriceBX96]
     : [sqrtPriceBX96, sqrtPriceAX96];
-  
+
+  // Degenerate range → 0 liquidity (caller supplied a zero-width tick range).
+  if (sqrtA === 0n || sqrtB === 0n || sqrtB === sqrtA) return 0n;
+
   return (amount1 * Q96) / (sqrtB - sqrtA);
 }
 
@@ -252,11 +252,16 @@ export function getAmount0ForLiquidity(
   liquidity: bigint
 ): bigint {
   if (liquidity === 0n) return 0n;
-  
-  const [sqrtA, sqrtB] = sqrtPriceAX96 < sqrtPriceBX96 
-    ? [sqrtPriceAX96, sqrtPriceBX96] 
+
+  const [sqrtA, sqrtB] = sqrtPriceAX96 < sqrtPriceBX96
+    ? [sqrtPriceAX96, sqrtPriceBX96]
     : [sqrtPriceBX96, sqrtPriceAX96];
-  
+
+  // Degenerate range (sqrtB - sqrtA = 0) or zero lower bound both yield 0 amount.
+  // Without this guard, callers can produce an opaque "Division by zero" error
+  // when a pool exists at extreme tick bounds.
+  if (sqrtA === 0n || sqrtB === 0n || sqrtB === sqrtA) return 0n;
+
   return ((liquidity * Q96) * (sqrtB - sqrtA)) / (sqrtB * sqrtA);
 }
 
@@ -273,11 +278,14 @@ export function getAmount1ForLiquidity(
   liquidity: bigint
 ): bigint {
   if (liquidity === 0n) return 0n;
-  
-  const [sqrtA, sqrtB] = sqrtPriceAX96 < sqrtPriceBX96 
-    ? [sqrtPriceAX96, sqrtPriceBX96] 
+
+  const [sqrtA, sqrtB] = sqrtPriceAX96 < sqrtPriceBX96
+    ? [sqrtPriceAX96, sqrtPriceBX96]
     : [sqrtPriceBX96, sqrtPriceAX96];
-  
+
+  // Guard against degenerate ranges so callers get 0 instead of "Division by zero".
+  if (sqrtA === 0n || sqrtB === 0n || sqrtB === sqrtA) return 0n;
+
   return (liquidity * (sqrtB - sqrtA)) / Q96;
 }
 
