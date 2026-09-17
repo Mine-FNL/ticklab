@@ -54,10 +54,9 @@ const POOLS: PoolSpec[] = [
   { label: 'WBTC/WETH 0.05%', address: '0x4585fe77225b41b697c9b5e82213441756fba1e2', feeTierBips: 500, token0Symbol: 'WBTC', token1Symbol: 'WETH', token0Address: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', token1Address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' },
   { label: 'WBTC/WETH 0.3%',  address: '0xcbcdf9626bc03e7f6d22d462f0d4b1d30e14e1c5', feeTierBips: 3000, token0Symbol: 'WBTC', token1Symbol: 'WETH', token0Address: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', token1Address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' },
 
-  // Stables
-  { label: 'USDC/USDT 0.01%', address: '0x3416cf6c708da44db2624d63ea0aaef711e7e314', feeTierBips: 100, token0Symbol: 'USDC', token1Symbol: 'USDT', token0Address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', token1Address: '0xdac17f958d2ee523a2206206994597c13d831ec7' },
-  { label: 'DAI/USDC 0.01%',  address: '0x5777d92f208679db4b9778590fa3cab1a9a0bba1', feeTierBips: 100, token0Symbol: 'DAI',  token1Symbol: 'USDC', token0Address: '0x6b175474e89094c44da98b954eedeac495271d0f', token1Address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' },
-  { label: 'USDC/USDT 0.05%', address: '0x4e68ccd3e89f51c3074ca5072bbac773960dfa36', feeTierBips: 500, token0Symbol: 'USDC', token1Symbol: 'USDT', token0Address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', token1Address: '0xdac17f958d2ee523a2206206994597c13d831ec7' },
+  // Stables. USDC/USDT pairs removed (USDT can't be fetched from Binance as a
+// standalone base token — the harness needs token1 to have a USDT pair).
+  { label: 'FRAX/USDC 0.05%', address: '0x69fa348f1d486c5e80ce34a546f4d749f873aa26', feeTierBips: 500, token0Symbol: 'FRAX', token1Symbol: 'USDC', token0Address: '0x853d955acef822db058eb8505911ed77f175b99e', token1Address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' },
   { label: 'wstETH/WETH 0.01%', address: '0x109830a1aaad605b7d6804864a6371c14bccd8a6', feeTierBips: 100, token0Symbol: 'wstETH', token1Symbol: 'WETH', token0Address: '0xae7ab96520de3a18e5e111b5eaab095312d7fe84', token1Address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' },
   { label: 'rETH/WETH 0.3%',  address: '0xa4e0faa58441a4d7950a23a95bd0a1d9cb1cb2ee', feeTierBips: 3000, token0Symbol: 'rETH', token1Symbol: 'WETH', token0Address: '0xae78736cd615f374d3085123a210448e74fc6393', token1Address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' },
 
@@ -66,7 +65,7 @@ const POOLS: PoolSpec[] = [
   { label: 'UNI/WETH 0.3%',   address: '0x1d42064fc4beb5f872aeb2e9975a75236e71f083', feeTierBips: 3000, token0Symbol: 'UNI',  token1Symbol: 'WETH', token0Address: '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984', token1Address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' },
   { label: 'LDO/WETH 0.3%',   address: '0xa3f558aeba7cf0175d355e1c3325a7fc1a55ac6', feeTierBips: 3000, token0Symbol: 'LDO',  token1Symbol: 'WETH', token0Address: '0x5a98fcbea516cf06857215779fd812ca3bef1b32', token1Address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' },
   { label: 'AAVE/WETH 0.3%',  address: '0x5ab53ee1d8bf8c248255f8a954b17673ff8cf69a', feeTierBips: 3000, token0Symbol: 'AAVE', token1Symbol: 'WETH', token0Address: '0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9', token1Address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' },
-  { label: 'MKR/WETH 0.3%',   address: '0xe8c6c9227491c0a8156aae6c8efcc7f5a8a05e8d', feeTierBips: 3000, token0Symbol: 'MKR',  token1Symbol: 'WETH', token0Address: '0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2', token1Address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' },
+  { label: 'COMP/WETH 0.3%',  address: '0xea4ba4ce14fdd287f1b6c3af33539d0c7f8d90a4', feeTierBips: 3000, token0Symbol: 'COMP', token1Symbol: 'WETH', token0Address: '0xc00e94cb662c3520282e6f5717214004a7f26888', token1Address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' },
   { label: 'ENS/WETH 0.3%',   address: '0x9258c6c14b0721532c39b22b41ec36e1da0ce6eb', feeTierBips: 3000, token0Symbol: 'ENS',  token1Symbol: 'WETH', token0Address: '0xc18360217d8f7ab5e7c5165667617f8e5cb1d05b', token1Address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' },
   { label: 'CRV/WETH 1%',     address: '0x4e3318b89a26b80cb54aac9daf90ea1d6f249ef1', feeTierBips: 10000, token0Symbol: 'CRV',  token1Symbol: 'WETH', token0Address: '0xd533a949740bb3306d119cc777fa900ba034cd52', token1Address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' },
   { label: 'SUSHI/WETH 0.3%', address: '0xcd6d86d8054f66eda922bf6d44e2c0b89bf83bf6', feeTierBips: 3000, token0Symbol: 'SUSHI', token1Symbol: 'WETH', token0Address: '0x6b3595068778dd592e39a122f4e5d2460e84dabe', token1Address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' },
@@ -95,6 +94,8 @@ const DECIMALS: Record<string, number> = {
   UNI: 18,
   LDO: 18,
   AAVE: 18,
+  COMP: 18,
+  FRAX: 18,
   MKR: 18,
   ENS: 18,
   CRV: 18,
@@ -148,6 +149,8 @@ const BINANCE_SYMBOL: Record<string, string> = {
   '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984': 'UNIUSDT',
   '0x5a98fcbea516cf06857215779fd812ca3bef1b32': 'LDOUSDT',
   '0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9': 'AAVEUSDT',
+  '0xc00e94cb662c3520282e6f5717214004a7f26888': 'COMPUSDT', // added 2026-09-17 — replaces MKR/WETH which had stale Binance data
+  '0x853d955acef822db058eb8505911ed77f175b99e': 'FRAXUSDT', // added 2026-09-17 — replaces DAI/USDC which had stale Binance data
   '0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2': 'MKRUSDT',
   '0xc18360217d8f7ab5e7c5165667617f8e5cb1d05b': 'ENSUSDT',
   '0xd533a949740bb3306d119cc777fa900ba034cd52': 'CRVUSDT',
