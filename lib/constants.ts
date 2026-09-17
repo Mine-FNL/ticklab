@@ -29,9 +29,11 @@ export const CHAIN_NAMES: Record<number, string> = {
 // FREE Public RPC Endpoints (no API key required)
 export const PUBLIC_RPC_URLS: Record<number, string[]> = {
   [mainnet.id]: [
-    'https://eth.llamarpc.com',
-    'https://rpc.ankr.com/eth',
     'https://ethereum.publicnode.com',
+    'https://rpc.ankr.com/eth',
+    'https://cloudflare-eth.com',
+    'https://eth.drpc.org',
+    'https://1rpc.io/eth',
   ],
   [arbitrum.id]: [
     'https://arb1.arbitrum.io/rpc',

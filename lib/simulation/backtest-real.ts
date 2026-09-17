@@ -133,6 +133,13 @@ export async function runRealBacktest(
   const priceHistory: PriceDataPoint[] = historical.points;
   const entryTimestamp = priceHistory[0].timestamp;
 
+  // The engine's daily fee rate is computed as `feeTier / 10000`. V3's
+  // on-chain feeTier (uint24) is fee in hundredths-of-a-bip, so we
+  // divide by 100 to land at the engine's expected units (fee in
+  // hundredths-of-a-PERCENT, e.g. 500 V3 → 5 engine). Without this
+  // normalization the simulator projects ~100x the correct fee revenue.
+  const engineFeeTier = params.feeTier / 100;
+
   const backtestParams: BacktestParams = {
     priceHistory,
     entryTimestamp,
@@ -146,7 +153,7 @@ export async function runRealBacktest(
     gasUnitsPerRebalance: params.gasUnitsPerRebalance,
     token0Decimals: params.token0Decimals,
     token1Decimals: params.token1Decimals,
-    feeTier: params.feeTier,
+    feeTier: engineFeeTier,
   };
 
   // ---- Delegate to the existing engine ----

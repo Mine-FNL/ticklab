@@ -351,7 +351,9 @@ describe('runRealBacktest — delegation to runBacktest', () => {
     expect(callArgs!.gasUnitsPerRebalance).toBe(250_000);
     expect(callArgs!.token0Decimals).toBe(6);
     expect(callArgs!.token1Decimals).toBe(18);
-    expect(callArgs!.feeTier).toBe(3000);
+    // V3 feeTier 3000 (0.3% pool) is normalised to 30 for the engine's
+    // `dailyFeeRate = feeTier / 10000` convention.
+    expect(callArgs!.feeTier).toBe(30);
     expect(callArgs!.priceHistory).toHaveLength(8);
 
     // Wrapped result shape
