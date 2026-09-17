@@ -1,0 +1,12 @@
+{
+  "label": "WETH/USDC 0.3%",
+  "address": "0x8ad599c3a0ff1de082011efdd2bce8a3c8763363",
+  "token0Address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+  "token1Address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+  "token0Symbol": "USDC",
+  "token1Symbol": "WETH",
+  "token0Decimals": 6,
+  "token1Decimals": 18,
+  "feeTier": 3000,
+  "currentPriceApprox": 2447
+}

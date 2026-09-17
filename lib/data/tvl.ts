@@ -115,10 +115,17 @@ export async function fetchPoolTVLs(chainId: number): Promise<PoolTVL[]> {
   }
 }
 
-export function formatTVL(usd: number): string {
-  if (usd >= 1e12) return `$${(usd / 1e12).toFixed(2)}T`;
-  if (usd >= 1e9) return `$${(usd / 1e9).toFixed(2)}B`;
-  if (usd >= 1e6) return `$${(usd / 1e6).toFixed(2)}M`;
-  if (usd >= 1e3) return `$${(usd / 1e3).toFixed(2)}K`;
-  return `$${usd.toFixed(2)}`;
+export function formatTVL(usd: number | null | undefined | string): string {
+  // Upstream APIs sometimes return TVL as a string, null, or undefined.
+  // Coerce defensively so a single missing field can't crash the entire
+  // /strategy /backtest /explore page (the formatTVL helper is invoked
+  // from many code paths and a crash here propagates to the Next.js error
+  // boundary, hiding the actual page content from E2E tests).
+  const n = typeof usd === 'string' ? Number.parseFloat(usd) : usd;
+  if (typeof n !== 'number' || !Number.isFinite(n) || n < 0) return '$0';
+  if (n >= 1e12) return `$${(n / 1e12).toFixed(2)}T`;
+  if (n >= 1e9) return `$${(n / 1e9).toFixed(2)}B`;
+  if (n >= 1e6) return `$${(n / 1e6).toFixed(2)}M`;
+  if (n >= 1e3) return `$${(n / 1e3).toFixed(2)}K`;
+  return `$${n.toFixed(2)}`;
 }
