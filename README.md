@@ -211,9 +211,14 @@ lib/
 | `/api/pools` | GET | Discover pools | DeFi Llama + RPC |
 | `/api/pools/[address]` | GET | Get pool details | RPC |
 | `/api/simulations` | POST | Run simulation | Calculated |
-| `/api/backtests` | POST | Run backtest | Calculated |
+| `/api/backtests` | POST | Run backtest (with optional confidence bands + checklist) | Calculated + DeFi Llama |
+| `/api/backtests/confidence` | POST | P5/P50/P95 confidence bands for a backtest | Calculated |
+| `/api/backtests/checklist` | POST | 10-rule pre-deposit red-flag checklist | Calculated |
+| `/api/analytics/risk` | POST | VaR, CVaR, Sharpe, Sortino, MaxDD, Ulcer, Burke from any equity curve | Calculated |
+| `/api/v4/{pools,simulate,hooks,hooks/recommend}` | GET / POST | Uniswap V4 (pools, simulation, hook discovery) | RPC + Calculated |
 | `/api/wallet/positions` | GET | Get wallet positions | RPC |
 | `/api/positions/[id]/analytics` | GET | Get position analytics | RPC |
+| `/api/health` | GET | Liveness + dependency smoke checks (DefiLlama, Binance, RPC) | Self |
 
 ## Key Features
 
@@ -244,7 +249,24 @@ lib/
 - Equity curve analysis with confidence bands (P5/P50/P95 via bootstrap)
 - Pre-deposit checklist with 10 red-flag rules and severity ladder
 
-### 6. Validation Harness (Honest Measurement)
+### 6. Risk Analytics & Portfolio Mode
+- **Risk metrics** (`lib/analytics/risk.ts`): VaR (95/99), CVaR (95/99),
+  Sharpe, Sortino, Calmar, MaxDD with peak/trough/recovery indices,
+  annualized volatility, Ulcer Index, Burke Ratio
+- **Risk API** (`/api/analytics/risk`): feed in any equity curve, get a
+  full `RiskReport` back
+- **Portfolio simulator** (`lib/simulation/portfolio.ts`): aggregate
+  multiple LP positions, compute total value, worst-day loss, and
+  inter-position correlation — for Markowitz-style allocation decisions
+
+### 7. V3 In-Range Simulator (`lib/simulation/v3-inrange.ts`)
+Proper V3 mechanics: token0/token1 balances rebalance continuously as
+price moves within range (the existing `backtest.ts` freezes the entry
+amounts, which is a known inaccuracy inside the range). Drop-in
+replacement for higher-fidelity backtests; out of scope for the
+default harness until per-swap data lands.
+
+### 8. Validation Harness (Honest Measurement)
 
 The simulator is verified end-to-end against real historical data:
 
@@ -260,7 +282,7 @@ replay computed from real DeFi Llama daily fees + Binance OHLC. See
 the methodology, and what's required to actually reach the ±5% APR accuracy
 target (per-swap historical events from The Graph / Covalent need an API key).
 
-### 7. Live Position Monitoring
+### 9. Live Position Monitoring
 - Wallet connection via RainbowKit
 - Position import from NFT manager
 - Real-time position analytics
@@ -279,7 +301,28 @@ POLYGON_RPC_URL="https://polygon-rpc.com"
 # Optional: WalletConnect Project ID
 # Get one free at: https://cloud.walletconnect.com
 NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID=""
+
+# Optional: build metadata (consumed by /api/health)
+BUILD_SHA="<git-rev>"
 ```
+
+## Deployment
+
+Production-ready container image (~85 MB compressed, Alpine-based, runs as
+non-root uid 1001) ships with the repo.
+
+```bash
+docker build -t univ3-strategy-lab .
+docker run --rm -p 3000:3000 univ3-strategy-lab
+```
+
+Vercel deploy is one-click via `vercel.json` (regions `iad1`, `fra1`).
+For self-hosted / systemd / nginx examples and monitoring setup, see
+[`docs/DEPLOY.md`](./docs/DEPLOY.md).
+
+`/api/health` returns 200 with `status: 'ok' | 'degraded'` plus 3 dependency
+smoke checks (DefiLlama, Binance, public RPC). Wire K8s liveness to the
+200 status; wire alerting to the `status` field.
 
 ## Key Product Principles
 
