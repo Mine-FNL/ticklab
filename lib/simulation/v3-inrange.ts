@@ -225,6 +225,10 @@ export function v3EntryLiquidity(
   }
 
   // In range: 50/50 USD split, then derive L from the binding side.
+  // NOTE: This convention treats `entryPrice` as `token0` USD price, with
+  // token1 priced at $1. That matches the harness's convention for stable-
+  // base pairs (USDC/WETH etc.) but is NOT general. The simulator will
+  // misbehave for pairs where neither side is roughly pegged to $1.
   const amount0Init = depositUSD / (2 * entryPrice);
   const amount1Init = depositUSD / 2;
 
@@ -359,6 +363,9 @@ export function simulateV3InRange(params: V3InRangeParams): V3InRangeResult {
 
   // Position value at exit = token balances re-priced at exit price + fees.
   // (Fees are tracked in USD and added directly.)
+  // NB: this still uses the simulator's stable-base convention (token0
+  // valued at $1, token1 valued at exit price). See v3EntryLiquidity's
+  // NOTE block.
   const lpValueEnd = final.token0Amount * final.price + final.token1Amount + final.totalFeesUSD;
 
   // HODL = entry position re-priced at exit price (no fees).
