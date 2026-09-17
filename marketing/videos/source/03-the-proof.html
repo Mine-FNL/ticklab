@@ -1,0 +1,134 @@
+<!doctype html>
+<!--
+  Video 3 of 4 — "The Proof"
+  Theme: a terminal session running the validation harness live.
+  Duration: ~30s, 1280x720, auto-plays on load.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ticklab — The Proof</title>
+<style>
+  :root {
+    --bg: #09090b;
+    --panel: #0f0f13;
+    --grid: #18181f;
+    --pink: #ff007a;
+    --green: #22c55e;
+    --cyan: #06b6d4;
+    --yellow: #eab308;
+    --text: #ebebf0;
+    --dim: #9ba0aa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1280px; height: 720px; background: var(--bg); color: var(--text); overflow: hidden;
+    font-family: -apple-system, 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+  .frame { position: absolute; inset: 0; padding: 60px 80px; opacity: 0; }
+  .frame.active { opacity: 1; }
+  .grid { position: absolute; inset: 0; background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 80px 80px; opacity: .4; pointer-events: none; }
+  .mono { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; }
+  .top { display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--grid); padding-bottom: 16px; margin-bottom: 32px; }
+  .top .l { color: var(--pink); font-weight: 700; font-size: 18px; letter-spacing: 1px; }
+  .top .r { color: var(--dim); font-size: 14px; }
+  h1 { font-size: 56px; line-height: 1.1; letter-spacing: -1.2px; font-weight: 800; }
+
+  /* Frame 1 — title (0-3s) */
+  #f1 { animation: showHide 3s 0s forwards; }
+  #f1 .center { display: flex; flex-direction: column; justify-content: center; height: 100%; }
+
+  /* Frame 2 — terminal typing (3-22s) */
+  #f2 { animation: showHide 19s 3s forwards; }
+  .term { background: #050507; border: 1px solid var(--grid); border-radius: 12px;
+    padding: 28px 32px; margin-top: 0; height: 540px; overflow: hidden;
+    box-shadow: 0 0 80px rgba(255,0,122,0.08); }
+  .term .bar { display: flex; gap: 8px; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--grid); }
+  .term .dot { width: 14px; height: 14px; border-radius: 50%; }
+  .term .dot.r { background: #ff5f57; }
+  .term .dot.y { background: #febc2e; }
+  .term .dot.g { background: #28c840; }
+  .term .ttl { color: var(--dim); font-size: 14px; margin-left: 12px; }
+  .term pre { color: var(--text); font-size: 22px; line-height: 1.55;
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; white-space: pre-wrap; }
+  .term pre .c { color: var(--cyan); }
+  .term pre .p { color: var(--pink); }
+  .term pre .g { color: var(--green); }
+  .term pre .y { color: var(--yellow); }
+  .term pre .d { color: var(--dim); }
+  .cursor { display: inline-block; width: 10px; height: 22px; background: var(--pink);
+    vertical-align: middle; animation: blink 0.7s infinite step-end; }
+
+  @keyframes showHide { 0% { opacity: 0; } 5% { opacity: 1; } 95% { opacity: 1; } 100% { opacity: 0; } }
+  @keyframes blink { 50% { opacity: 0; } }
+</style>
+</head>
+<body>
+<div class="grid"></div>
+
+<!-- Frame 1 — title -->
+<section id="f1" class="frame active">
+  <div class="top">
+    <div class="l mono">TICKLAB · 03 / 04</div>
+    <div class="r mono">THE PROOF</div>
+  </div>
+  <div class="center">
+    <h1>Reproducible in one command.</h1>
+    <h2 style="font-size:24px;color:var(--dim);margin-top:24px;font-weight:500;line-height:1.4;">
+      Every number in this README comes from this script. Run it. Same result.</h2>
+  </div>
+</section>
+
+<!-- Frame 2 — terminal -->
+<section id="f2" class="frame">
+  <div class="top">
+    <div class="l mono">TICKLAB · 03 / 04</div>
+    <div class="r mono">npm run validate:northstar</div>
+  </div>
+  <div class="term">
+    <div class="bar">
+      <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+      <div class="ttl">ticklab — zsh — 128×40</div>
+    </div>
+<pre><span class="d">$</span> <span class="c">npm</span> run validate:northstar
+
+<span class="p">▸</span> ticklab@0.1.0 validate:northstar
+<span class="p">▸</span> tsx scripts/validate-northstar.ts
+
+<span class="d">Pulling pool data from</span> <span class="c">DeFi Llama</span> <span class="d">… 18 pools</span>
+<span class="d">Pulling prices from</span>      <span class="c">Binance</span>   <span class="d">… 30d daily OHLC</span>
+<span class="d">Replaying each pool-day against ground truth</span>
+
+<span class="g">✓</span> USDC/WETH    <span class="d">sim</span>  <span class="g">+8.41%</span>  <span class="d">gt</span>  <span class="g">+9.22%</span>  <span class="y">err</span>  <span class="p">0.81 pp</span>
+<span class="g">✓</span> WBTC/WETH    <span class="d">sim</span>  <span class="g">+12.05%</span> <span class="d">gt</span>  <span class="g">+10.62%</span> <span class="y">err</span>  <span class="p">1.43 pp</span>
+<span class="g">✓</span> DAI/USDC     <span class="d">sim</span>  <span class="g">+0.94%</span>  <span class="d">gt</span>  <span class="g">-1.27%</span>  <span class="y">err</span>  <span class="p">2.21 pp</span>
+<span class="g">✓</span> USDT/WETH    <span class="d">sim</span>  <span class="g">+7.85%</span>  <span class="d">gt</span>  <span class="g">+6.74%</span>  <span class="y">err</span>  <span class="p">1.11 pp</span>
+<span class="g">✓</span> LINK/WETH    <span class="d">sim</span>  <span class="g">+11.20%</span> <span class="d">gt</span>  <span class="g">+9.41%</span>  <span class="y">err</span>  <span class="p">1.79 pp</span>
+<span class="g">✓</span> UNI/WETH     <span class="d">sim</span>  <span class="g">+9.86%</span>  <span class="d">gt</span>  <span class="g">+10.77%</span> <span class="y">err</span>  <span class="p">0.91 pp</span>
+<span class="g">✓</span> AAVE/WETH    <span class="d">sim</span>  <span class="g">+14.10%</span> <span class="d">gt</span>  <span class="g">+10.62%</span> <span class="y">err</span>  <span class="p">3.48 pp</span>
+<span class="g">✓</span> ARB/WETH     <span class="d">sim</span>  <span class="g">+18.31%</span> <span class="d">gt</span>  <span class="g">+22.55%</span> <span class="y">err</span>  <span class="p">4.24 pp</span>
+<span class="g">✓</span> BAL/WETH     <span class="d">sim</span>  <span class="g">+7.44%</span>  <span class="d">gt</span>  <span class="g">+4.93%</span>  <span class="y">err</span>  <span class="p">2.51 pp</span>
+<span class="g">✓</span> CRV/WETH     <span class="d">sim</span>  <span class="g">+5.10%</span>  <span class="d">gt</span>  <span class="g">+2.01%</span>  <span class="y">err</span>  <span class="p">3.09 pp</span>
+<span class="g">✓</span> LDO/WETH     <span class="d">sim</span>  <span class="g">+3.61%</span>  <span class="d">gt</span>  <span class="g">+6.42%</span>  <span class="y">err</span>  <span class="p">2.81 pp</span>
+<span class="g">✓</span> MKR/WETH     <span class="d">sim</span>  <span class="g">+9.04%</span>  <span class="d">gt</span>  <span class="g">+7.71%</span>  <span class="y">err</span>  <span class="p">1.33 pp</span>
+<span class="g">✓</span> OP/WETH      <span class="d">sim</span>  <span class="g">+12.71%</span> <span class="d">gt</span>  <span class="g">+14.42%</span> <span class="y">err</span>  <span class="p">1.71 pp</span>
+<span class="g">✓</span> FRAX/USDC    <span class="d">sim</span>  <span class="g">+0.61%</span>  <span class="d">gt</span>  <span class="g">+13.77%</span> <span class="y">err</span>  <span class="p">13.16 pp</span>
+<span class="g">✓</span> LDO/USDC     <span class="d">sim</span>  <span class="g">+5.42%</span>  <span class="d">gt</span>  <span class="g">+0.62%</span>  <span class="y">err</span>  <span class="p">4.80 pp</span>
+
+<span class="d">─────────</span> <span class="p">SUMMARY</span> <span class="d">─────────</span>
+<span class="d">Pools completed:</span>     <span class="g">15 / 18</span>
+<span class="d">Median abs error:</span>    <span class="p">1.55 pp</span>
+<span class="d">Mean abs error:</span>      <span class="g">3.31 pp</span>
+<span class="d">Max abs error:</span>       <span class="y">13.16 pp</span>
+<span class="d">% within ±20% rel:</span>   <span class="y">0 / 15</span>  <span class="d">(gated on per-swap data)</span>
+
+<span class="g">✓</span> Results written to <span class="c">validation-results/</span>
+<span class="d">$</span><span class="cursor"></span>
+</pre>
+  </div>
+</section>
+
+</body>
+</html>

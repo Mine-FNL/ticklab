@@ -31,6 +31,19 @@ Ticklab is an A16Z-grade simulator for Uniswap V3 concentrated-liquidity positio
 - **V3 + V4** — concentrated-liquidity V3 simulators (in-range + portfolio) and **V4 hooks discovery + recommendation**.
 - **Open-source SDK** — `@ticklab/sdk` (TypeScript, zero runtime deps, tree-shakable) for downstream apps.
 
+## See it in 2 minutes
+
+Four short videos that walk the story — pain → magic → proof → path. Open [`marketing/videos/index.html`](./marketing/videos/index.html) to play all four in-page.
+
+| # | Title | What it answers | Watch |
+|---|---|---|---|
+| 01 | **The Pain** | Why is the LP simulator status quo broken? | [MP4](./marketing/videos/01-the-pain.mp4) · [GIF](./marketing/videos/01-the-pain.gif) |
+| 02 | **The Magic** | What does the validation harness actually do? | [MP4](./marketing/videos/02-the-magic.mp4) · [GIF](./marketing/videos/02-the-magic.gif) |
+| 03 | **The Proof** | Show me it really runs. | [MP4](./marketing/videos/03-the-proof.mp4) · [GIF](./marketing/videos/03-the-proof.gif) |
+| 04 | **The Path** | How do I run this on my laptop? | [MP4](./marketing/videos/04-the-path.mp4) · [GIF](./marketing/videos/04-the-path.gif) |
+
+Total runtime: 2 min 18 s. Source HTML for each video lives in [`marketing/videos/source/`](./marketing/videos/source/) — every frame is hand-tuned CSS, no proprietary video tool needed.
+
 ## Quickstart (5 commands)
 
 ```bash

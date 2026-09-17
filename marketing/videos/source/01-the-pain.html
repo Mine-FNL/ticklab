@@ -1,0 +1,190 @@
+<!doctype html>
+<!--
+  Video 1 of 4 — "The Pain"
+  Theme: what LPers actually experience when they trust an LP simulator.
+  Duration: ~30s, 1280x720, 24fps, auto-plays on load.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ticklab — The Pain</title>
+<style>
+  :root {
+    --bg: #09090b;
+    --panel: #0f0f13;
+    --grid: #18181f;
+    --pink: #ff007a;
+    --green: #22c55e;
+    --red: #ef4444;
+    --text: #ebebf0;
+    --dim: #9ba0aa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1280px; height: 720px; background: var(--bg); color: var(--text); overflow: hidden;
+    font-family: -apple-system, 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+  .frame { position: absolute; inset: 0; padding: 60px 80px; opacity: 0; }
+  .frame.active { opacity: 1; }
+
+  /* grid */
+  .grid { position: absolute; inset: 0; background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 80px 80px; opacity: .6; pointer-events: none; }
+
+  /* monospace */
+  .mono { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; }
+
+  /* title bar */
+  .top { display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--grid); padding-bottom: 16px; margin-bottom: 32px; }
+  .top .l { color: var(--pink); font-weight: 700; font-size: 18px; letter-spacing: 1px; }
+  .top .r { color: var(--dim); font-size: 14px; }
+
+  h1 { font-size: 64px; line-height: 1.05; letter-spacing: -1.5px; font-weight: 800; }
+  h2 { font-size: 28px; line-height: 1.3; font-weight: 500; color: var(--dim); margin-top: 16px; max-width: 980px; }
+  .big { font-size: 96px; line-height: 1; font-weight: 800; letter-spacing: -3px; }
+  .pill { display: inline-block; padding: 6px 14px; border-radius: 999px;
+    background: var(--panel); border: 1px solid var(--grid); font-size: 14px; color: var(--dim); }
+  .pill.pink { color: var(--pink); border-color: var(--pink); }
+  .pill.green { color: var(--green); border-color: var(--green); }
+  .pill.red { color: var(--red); border-color: var(--red); }
+
+  /* Frame 1 — title */
+  #f1 { animation: showHide 4s 0s forwards; }
+  #f1 .center { display: flex; flex-direction: column; justify-content: center; height: 100%; }
+
+  /* Frame 2 — projection chart */
+  #f2 { animation: showHide 7s 4s forwards; }
+  .chart-card { background: var(--panel); border: 1px solid var(--grid);
+    border-radius: 12px; padding: 24px; margin-top: 32px; height: 460px; position: relative; }
+  .chart-card .ch-title { font-size: 16px; color: var(--dim); margin-bottom: 16px; }
+  .chart-card .ch-line { stroke: var(--pink); stroke-width: 4; fill: none;
+    stroke-dasharray: 1400; stroke-dashoffset: 1400; animation: drawLine 3s 5s forwards; }
+  .chart-card .ch-area { fill: rgba(255,0,122,0.12); opacity: 0; animation: fadeIn 1s 7s forwards; }
+  .chart-card .ch-axis { stroke: var(--grid); stroke-width: 1; }
+  .chart-card .ch-y-label { font-size: 14px; fill: var(--dim); }
+  .chart-card .badge { position: absolute; right: 24px; top: 24px; }
+  .chart-card .end-val { position: absolute; right: 24px; bottom: 24px;
+    color: var(--pink); font-size: 32px; font-weight: 800; }
+
+  /* Frame 3 — reality chart (the rug pull) */
+  #f3 { animation: showHide 7s 11s forwards; }
+  .chart-card .ch-line.down { stroke: var(--red); animation: drawLine 3s 12s forwards; }
+
+  /* Frame 4 — side by side */
+  #f4 { animation: showHide 8s 18s forwards; }
+  .sxs { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 32px; }
+  .sxs .col { background: var(--panel); border: 1px solid var(--grid);
+    border-radius: 12px; padding: 24px; }
+  .sxs .col .label { color: var(--dim); font-size: 14px; text-transform: uppercase; letter-spacing: 1.5px; }
+  .sxs .col .val { font-size: 64px; font-weight: 800; letter-spacing: -2px; line-height: 1; margin: 12px 0; }
+  .sxs .col .note { font-size: 16px; color: var(--dim); }
+  .sxs .col.proj { border-color: var(--pink); }
+  .sxs .col.real { border-color: var(--red); }
+
+  /* Frame 5 — hook */
+  #f5 { animation: showHide 4s 26s forwards; }
+  #f5 .center { display: flex; flex-direction: column; justify-content: center; height: 100%; }
+  #f5 .accent { color: var(--pink); }
+
+  @keyframes showHide { 0% { opacity: 0; } 5% { opacity: 1; } 95% { opacity: 1; } 100% { opacity: 0; } }
+  @keyframes fadeIn { to { opacity: 1; } }
+  @keyframes drawLine { to { stroke-dashoffset: 0; } }
+</style>
+</head>
+<body>
+  <div class="grid"></div>
+
+  <!-- Frame 1 — title (0-4s) -->
+  <section id="f1" class="frame active">
+    <div class="top">
+      <div class="l mono">TICKLAB · 01 / 04</div>
+      <div class="r mono">THE PAIN</div>
+    </div>
+    <div class="center">
+      <h1>The LP projection lie.</h1>
+      <h2>Every LP simulator ships an APR. Most of them ship the wrong one.</h2>
+    </div>
+  </section>
+
+  <!-- Frame 2 — projection chart (4-11s) -->
+  <section id="f2" class="frame">
+    <div class="top">
+      <div class="l mono">TICKLAB · 01 / 04</div>
+      <div class="r mono">WHAT THE SIMULATOR SHOWS YOU</div>
+    </div>
+    <div class="chart-card">
+      <div class="ch-title mono">Projected cumulative return · WETH/USDC · 30d</div>
+      <div class="badge"><span class="pill pink">SIMULATOR</span></div>
+      <svg viewBox="0 0 1080 320" preserveAspectRatio="none" style="width:100%;height:320px;margin-top:8px;">
+        <line class="ch-axis" x1="40" y1="280" x2="1040" y2="280" />
+        <line class="ch-axis" x1="40" y1="40"  x2="40"  y2="280" />
+        <text class="ch-y-label mono" x="0" y="60" >+40%</text>
+        <text class="ch-y-label mono" x="0" y="160">+20%</text>
+        <text class="ch-y-label mono" x="0" y="260">0%</text>
+        <path class="ch-area" d="M 40 280 Q 200 240 360 200 T 680 130 T 1040 60 L 1040 280 Z" />
+        <path class="ch-line"     d="M 40 280 Q 200 240 360 200 T 680 130 T 1040 60" />
+      </svg>
+      <div class="end-val mono">+41.8% APR</div>
+    </div>
+  </section>
+
+  <!-- Frame 3 — reality chart (11-18s) -->
+  <section id="f3" class="frame">
+    <div class="top">
+      <div class="l mono">TICKLAB · 01 / 04</div>
+      <div class="r mono">WHAT ACTUALLY HAPPENED</div>
+    </div>
+    <div class="chart-card">
+      <div class="ch-title mono">Realized cumulative return · WETH/USDC · 30d</div>
+      <div class="badge"><span class="pill red">REALITY</span></div>
+      <svg viewBox="0 0 1080 320" preserveAspectRatio="none" style="width:100%;height:320px;margin-top:8px;">
+        <line class="ch-axis" x1="40" y1="280" x2="1040" y2="280" />
+        <line class="ch-axis" x1="40" y1="40"  x2="40"  y2="280" />
+        <text class="ch-y-label mono" x="0" y="60" >+40%</text>
+        <text class="ch-y-label mono" x="0" y="160">+20%</text>
+        <text class="ch-y-label mono" x="0" y="260">0%</text>
+        <path class="ch-area" d="M 40 270 Q 200 240 360 260 T 680 230 T 1040 250 L 1040 280 Z" fill="rgba(239,68,68,0.12);opacity:1" />
+        <path class="ch-line down" d="M 40 270 Q 200 240 360 260 T 680 230 T 1040 250" />
+      </svg>
+      <div class="end-val mono" style="color:var(--red);">+6.3% APR</div>
+    </div>
+  </section>
+
+  <!-- Frame 4 — side by side (18-26s) -->
+  <section id="f4" class="frame">
+    <div class="top">
+      <div class="l mono">TICKLAB · 01 / 04</div>
+      <div class="r mono">PROJECTION vs REALITY</div>
+    </div>
+    <h1 style="font-size:36px;font-weight:700;letter-spacing:-0.5px;">Same pool. Same window. Different story.</h1>
+    <div class="sxs">
+      <div class="col proj">
+        <div class="label mono">SIMULATOR PROJECTION</div>
+        <div class="val" style="color:var(--pink);">+41.8%</div>
+        <div class="note">APR · confidence band ±8%</div>
+      </div>
+      <div class="col real">
+        <div class="label mono">REALIZED RETURN</div>
+        <div class="val" style="color:var(--red);">+6.3%</div>
+        <div class="note">30d cumulative · IL + fees - gas</div>
+      </div>
+    </div>
+    <div style="margin-top:32px;color:var(--dim);font-size:18px;">
+      Difference: <span style="color:var(--red);font-weight:700;">35.5 percentage points</span>. The model never told you.
+    </div>
+  </section>
+
+  <!-- Frame 5 — hook (26-30s) -->
+  <section id="f5" class="frame">
+    <div class="top">
+      <div class="l mono">TICKLAB · 01 / 04</div>
+      <div class="r mono">THE HOOK</div>
+    </div>
+    <div class="center">
+      <h1 style="font-size:72px;"><span class="accent">What if your simulator</span><br>published its own error?</h1>
+    </div>
+  </section>
+
+</body>
+</html>

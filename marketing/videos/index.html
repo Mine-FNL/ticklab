@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ticklab — campaign videos</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #09090b;
+    --panel: #0f0f13;
+    --grid: #18181f;
+    --pink: #ff007a;
+    --text: #ebebf0;
+    --dim: #9ba0aa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--text); min-height: 100vh;
+    font-family: -apple-system, 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    padding: 60px 40px; }
+  .grid-bg { position: fixed; inset: 0; background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 80px 80px; opacity: .4; pointer-events: none; z-index: -1; }
+  .header { max-width: 1200px; margin: 0 auto 60px; }
+  .header .eyebrow { color: var(--pink); font-family: ui-monospace, monospace;
+    font-weight: 700; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; }
+  .header h1 { font-size: 56px; line-height: 1.05; letter-spacing: -1.5px; font-weight: 800; margin: 16px 0; }
+  .header p { color: var(--dim); font-size: 18px; max-width: 720px; line-height: 1.5; }
+  .videos { display: grid; gap: 56px; max-width: 1200px; margin: 0 auto; }
+  .video { background: var(--panel); border: 1px solid var(--grid);
+    border-radius: 16px; overflow: hidden; }
+  .video .meta { padding: 28px 36px; border-bottom: 1px solid var(--grid);
+    display: flex; justify-content: space-between; align-items: baseline; }
+  .video .meta .n { color: var(--pink); font-family: ui-monospace, monospace;
+    font-weight: 700; font-size: 14px; letter-spacing: 1.5px; }
+  .video .meta .t { color: var(--text); font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+  .video .meta .d { color: var(--dim); font-family: ui-monospace, monospace; font-size: 14px; }
+  .video video, .video img { display: block; width: 100%; height: auto; background: #000; }
+  .video .links { padding: 20px 36px; display: flex; gap: 20px;
+    font-family: ui-monospace, monospace; font-size: 14px; }
+  .video .links a { color: var(--dim); text-decoration: none;
+    border-bottom: 1px dashed var(--grid); padding-bottom: 2px; }
+  .video .links a:hover { color: var(--pink); border-bottom-color: var(--pink); }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<div class="header">
+  <div class="eyebrow">Ticklab · Campaign · 4 / 4</div>
+  <h1>Why Ticklab. What it solves. How it proves it.</h1>
+  <p>Four short videos — total 2 min 18 s — that tell the story in order: the pain LPers actually feel, the magic that fixes it, the proof it's reproducible, and the path to running it.</p>
+</div>
+
+<div class="videos">
+  <div class="video">
+    <div class="meta">
+      <div class="n">01 / 04</div>
+      <div class="t">The Pain</div>
+      <div class="d">32s · 1280×720</div>
+    </div>
+    <video src="01-the-pain.mp4" autoplay loop muted playsinline></video>
+    <div class="links">
+      <a href="01-the-pain.mp4">MP4</a>
+      <a href="01-the-pain.gif">GIF</a>
+      <a href="source/01-the-pain.html">HTML source</a>
+    </div>
+  </div>
+
+  <div class="video">
+    <div class="meta">
+      <div class="n">02 / 04</div>
+      <div class="t">The Magic</div>
+      <div class="d">46s · 1280×720</div>
+    </div>
+    <video src="02-the-magic.mp4" autoplay loop muted playsinline></video>
+    <div class="links">
+      <a href="02-the-magic.mp4">MP4</a>
+      <a href="02-the-magic.gif">GIF</a>
+      <a href="source/02-the-magic.html">HTML source</a>
+    </div>
+  </div>
+
+  <div class="video">
+    <div class="meta">
+      <div class="n">03 / 04</div>
+      <div class="t">The Proof</div>
+      <div class="d">24s · 1280×720</div>
+    </div>
+    <video src="03-the-proof.mp4" autoplay loop muted playsinline></video>
+    <div class="links">
+      <a href="03-the-proof.mp4">MP4</a>
+      <a href="03-the-proof.gif">GIF</a>
+      <a href="source/03-the-proof.html">HTML source</a>
+    </div>
+  </div>
+
+  <div class="video">
+    <div class="meta">
+      <div class="n">04 / 04</div>
+      <div class="t">The Path</div>
+      <div class="d">21s · 1280×720</div>
+    </div>
+    <video src="04-the-path.mp4" autoplay loop muted playsinline></video>
+    <div class="links">
+      <a href="04-the-path.mp4">MP4</a>
+      <a href="04-the-path.gif">GIF</a>
+      <a href="source/04-the-path.html">HTML source</a>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

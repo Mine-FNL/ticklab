@@ -1,0 +1,186 @@
+<!doctype html>
+<!--
+  Video 4 of 4 — "The Path"
+  Theme: 5-command quickstart, terminal + browser.
+  Duration: ~30s, 1280x720, auto-plays on load.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ticklab — The Path</title>
+<style>
+  :root {
+    --bg: #09090b;
+    --panel: #0f0f13;
+    --grid: #18181f;
+    --pink: #ff007a;
+    --green: #22c55e;
+    --cyan: #06b6d4;
+    --text: #ebebf0;
+    --dim: #9ba0aa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1280px; height: 720px; background: var(--bg); color: var(--text); overflow: hidden;
+    font-family: -apple-system, 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+  .frame { position: absolute; inset: 0; padding: 60px 80px; opacity: 0; }
+  .frame.active { opacity: 1; }
+  .grid { position: absolute; inset: 0; background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 80px 80px; opacity: .4; pointer-events: none; }
+  .mono { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; }
+  .top { display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--grid); padding-bottom: 16px; margin-bottom: 32px; }
+  .top .l { color: var(--pink); font-weight: 700; font-size: 18px; letter-spacing: 1px; }
+  .top .r { color: var(--dim); font-size: 14px; }
+  h1 { font-size: 56px; line-height: 1.1; letter-spacing: -1.2px; font-weight: 800; }
+
+  /* Frame 1 — title */
+  #f1 { animation: showHide 4s 0s forwards; }
+  #f1 .center { display: flex; flex-direction: column; justify-content: center; height: 100%; }
+  #f1 .big { font-size: 96px; font-weight: 800; letter-spacing: -3px; line-height: 1; }
+  #f1 .sub { color: var(--dim); font-size: 28px; margin-top: 16px; font-weight: 500; }
+
+  /* Frame 2 — git clone */
+  #f2 { animation: showHide 4s 4s forwards; }
+  .step { display: grid; grid-template-columns: 120px 1fr; gap: 32px; align-items: center; margin-bottom: 20px; }
+  .step .n { color: var(--pink); font-size: 56px; font-weight: 800; letter-spacing: -2px; line-height: 1; }
+  .step .cmd { background: var(--panel); border: 1px solid var(--grid); border-radius: 10px;
+    padding: 22px 28px; font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 26px; }
+  .step .cmd .c { color: var(--cyan); }
+  .step .cmd .p { color: var(--pink); }
+  .step .cmd .g { color: var(--green); }
+
+  #f2 .step { opacity: 0; animation: slideIn 0.6s forwards; }
+  #f2 .s1 { animation-delay: 5s; }
+  #f2 .s2 { animation-delay: 5.8s; }
+  #f2 .s3 { animation-delay: 6.6s; }
+  #f2 .s4 { animation-delay: 7.4s; }
+
+  /* Frame 3 — browser window */
+  #f3 { animation: showHide 5s 8s forwards; }
+  .browser { background: var(--panel); border: 1px solid var(--grid); border-radius: 12px;
+    margin-top: 12px; overflow: hidden; box-shadow: 0 0 80px rgba(255,0,122,0.10); }
+  .browser .bar { display: flex; align-items: center; gap: 8px; padding: 14px 18px;
+    border-bottom: 1px solid var(--grid); background: #050507; }
+  .browser .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .browser .dot.r { background: #ff5f57; }
+  .browser .dot.y { background: #febc2e; }
+  .browser .dot.g { background: #28c840; }
+  .browser .url { background: #0a0a0e; border: 1px solid var(--grid); border-radius: 8px;
+    margin-left: 14px; padding: 8px 14px; color: var(--dim); font-size: 14px;
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; }
+  .browser .url .pink { color: var(--pink); }
+  .browser .content { padding: 36px 48px; min-height: 440px; }
+  .browser .content .h { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
+  .browser .content .s { color: var(--dim); margin-top: 8px; font-size: 16px; }
+  .browser .content .stats { display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 16px; margin-top: 28px; }
+  .browser .content .stat { background: #050507; border: 1px solid var(--grid);
+    border-radius: 8px; padding: 16px 20px; }
+  .browser .content .stat .lbl { color: var(--dim); font-size: 12px;
+    text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+  .browser .content .stat .val { font-size: 32px; font-weight: 800; letter-spacing: -1px;
+    margin-top: 4px; }
+  .browser .content .stat .val.pink { color: var(--pink); }
+  .browser .content .stat .val.green { color: var(--green); }
+  .browser .content .stat .val.cyan { color: var(--cyan); }
+
+  /* Frame 4 — close */
+  #f4 { animation: showHide 6s 13s forwards; }
+  #f4 .center { display: flex; flex-direction: column; justify-content: center; height: 100%; text-align: center; }
+
+  @keyframes showHide { 0% { opacity: 0; } 5% { opacity: 1; } 95% { opacity: 1; } 100% { opacity: 0; } }
+  @keyframes slideIn { 0% { opacity: 0; transform: translateX(-30px); } 100% { opacity: 1; transform: translateX(0); } }
+</style>
+</head>
+<body>
+<div class="grid"></div>
+
+<!-- Frame 1 — title -->
+<section id="f1" class="frame active">
+  <div class="top">
+    <div class="l mono">TICKLAB · 04 / 04</div>
+    <div class="r mono">THE PATH</div>
+  </div>
+  <div class="center">
+    <div class="big">5 commands.</div>
+    <div class="sub">From <span class="mono" style="color:var(--pink);">git clone</span> to a running simulator.</div>
+  </div>
+</section>
+
+<!-- Frame 2 — five commands -->
+<section id="f2" class="frame">
+  <div class="top">
+    <div class="l mono">TICKLAB · 04 / 04</div>
+    <div class="r mono">THE QUICKSTART</div>
+  </div>
+  <div style="margin-top: 40px;">
+    <div class="step s1">
+      <div class="n mono">01</div>
+      <div class="cmd"><span class="c">git</span> clone https://github.com/<span class="p">Mine-FNL</span>/<span class="p">ticklab</span>.git</div>
+    </div>
+    <div class="step s2">
+      <div class="n mono">02</div>
+      <div class="cmd"><span class="c">cd</span> ticklab && <span class="c">npm</span> install</div>
+    </div>
+    <div class="step s3">
+      <div class="n mono">03</div>
+      <div class="cmd"><span class="c">npm</span> run validate:northstar    <span style="color:var(--dim);font-size:18px;"># reproduce every metric</span></div>
+    </div>
+    <div class="step s4">
+      <div class="n mono">04</div>
+      <div class="cmd"><span class="c">npm</span> run dev                   <span style="color:var(--dim);font-size:18px;"># http://localhost:3000</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Frame 3 — browser window -->
+<section id="f3" class="frame">
+  <div class="top">
+    <div class="l mono">TICKLAB · 04 / 04</div>
+    <div class="r mono">localhost:3000</div>
+  </div>
+  <div class="browser">
+    <div class="bar">
+      <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+      <div class="url">http://<span class="pink">localhost:3000</span></div>
+    </div>
+    <div class="content">
+      <div class="h">Ticklab</div>
+      <div class="s">Production-grade backtest & risk analytics for concentrated-liquidity LP.</div>
+      <div class="stats">
+        <div class="stat">
+          <div class="lbl">Median abs err</div>
+          <div class="val pink">1.55 pp</div>
+        </div>
+        <div class="stat">
+          <div class="lbl">Pools validated</div>
+          <div class="val cyan">15 / 18</div>
+        </div>
+        <div class="stat">
+          <div class="lbl">Tests passing</div>
+          <div class="val green">257</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Frame 4 — close -->
+<section id="f4" class="frame">
+  <div class="top">
+    <div class="l mono">TICKLAB · 04 / 04</div>
+    <div class="r mono">GO</div>
+  </div>
+  <div class="center">
+    <h1>Free. Open source.<br>Every claim reproducible.</h1>
+    <div style="margin-top: 32px; font-family: ui-monospace, monospace; font-size: 24px; color: var(--cyan);">
+      github.com/<span style="color:var(--pink);">Mine-FNL</span>/ticklab
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

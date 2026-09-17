@@ -1,0 +1,204 @@
+<!doctype html>
+<!--
+  Video 2 of 4 — "The Magic"
+  Theme: the validation harness loop, the magic sauce.
+  Duration: ~45s, 1280x720, auto-plays on load.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ticklab — The Magic</title>
+<style>
+  :root {
+    --bg: #09090b;
+    --panel: #0f0f13;
+    --grid: #18181f;
+    --pink: #ff007a;
+    --green: #22c55e;
+    --cyan: #06b6d4;
+    --yellow: #eab308;
+    --text: #ebebf0;
+    --dim: #9ba0aa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1280px; height: 720px; background: var(--bg); color: var(--text); overflow: hidden;
+    font-family: -apple-system, 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+  .frame { position: absolute; inset: 0; padding: 60px 80px; opacity: 0; }
+  .frame.active { opacity: 1; }
+  .grid { position: absolute; inset: 0; background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 80px 80px; opacity: .6; pointer-events: none; }
+  .mono { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; }
+  .top { display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--grid); padding-bottom: 16px; margin-bottom: 32px; }
+  .top .l { color: var(--pink); font-weight: 700; font-size: 18px; letter-spacing: 1px; }
+  .top .r { color: var(--dim); font-size: 14px; }
+  h1 { font-size: 64px; line-height: 1.05; letter-spacing: -1.5px; font-weight: 800; }
+  h2 { font-size: 28px; line-height: 1.3; font-weight: 500; color: var(--dim); margin-top: 16px; max-width: 980px; }
+
+  /* Frame 1 — title (0-4s) */
+  #f1 { animation: showHide 4s 0s forwards; }
+  #f1 .center { display: flex; flex-direction: column; justify-content: center; height: 100%; }
+
+  /* Frame 2 — loop diagram (4-22s) */
+  #f2 { animation: showHide 18s 4s forwards; }
+  .loop { display: grid; grid-template-columns: 1fr 80px 1fr 80px 1fr 80px 1fr;
+    align-items: center; gap: 0; margin-top: 60px; }
+  .node { background: var(--panel); border: 1px solid var(--grid); border-radius: 12px;
+    padding: 24px; height: 280px; position: relative; }
+  .node .ic { color: var(--cyan); font-size: 16px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; margin-bottom: 16px; }
+  .node .src { font-size: 20px; font-weight: 700; }
+  .node .note { color: var(--dim); font-size: 15px; margin-top: 8px; }
+  .node.pink { border-color: var(--pink); }
+  .node.pink .ic { color: var(--pink); }
+  .arrow { color: var(--dim); font-size: 36px; text-align: center; opacity: 0;
+    animation: arrowAppear 1s ease-in forwards; }
+  .arrow.a1 { animation-delay: 7s; }
+  .arrow.a2 { animation-delay: 10s; }
+  .arrow.a3 { animation-delay: 13s; }
+  .loop .node { opacity: 0; animation: nodeAppear 1s ease-out forwards; }
+  .loop .n1 { animation-delay: 6s; }
+  .loop .n2 { animation-delay: 9s; }
+  .loop .n3 { animation-delay: 12s; }
+  .loop .n4 { animation-delay: 15s; }
+
+  /* Frame 3 — error bars (22-32s) */
+  #f3 { animation: showHide 10s 22s forwards; }
+  .bars { display: flex; align-items: flex-end; gap: 8px; margin-top: 48px;
+    height: 380px; padding: 0 20px; border-bottom: 1px solid var(--grid); border-left: 1px solid var(--grid); position: relative; }
+  .bar { flex: 1; background: linear-gradient(180deg, var(--pink), #8b0046);
+    border-radius: 6px 6px 0 0; opacity: 0;
+    animation: barGrow 1.4s cubic-bezier(.2,.7,.3,1) forwards;
+    transform-origin: bottom; position: relative; }
+  .bar .lbl { position: absolute; bottom: -28px; left: 50%; transform: translateX(-50%);
+    font-size: 11px; color: var(--dim); white-space: nowrap; font-family: ui-monospace, monospace; }
+  .bar .v { position: absolute; top: -28px; left: 50%; transform: translateX(-50%);
+    color: var(--text); font-size: 14px; font-weight: 700; opacity: 0;
+    animation: fadeIn 0.5s 1.2s forwards; }
+  .bars-legend { position: absolute; top: 8px; right: 0; color: var(--dim); font-size: 14px; }
+
+  /* Frame 4 — the reveal (32-38s) */
+  #f4 { animation: showHide 6s 32s forwards; }
+  #f4 .center { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center; }
+  #f4 .big { font-size: 200px; font-weight: 800; letter-spacing: -8px; line-height: 1; color: var(--pink); }
+  #f4 .sub { color: var(--dim); font-size: 28px; margin-top: 24px; }
+
+  /* Frame 5 — close (38-45s) */
+  #f5 { animation: showHide 7s 38s forwards; }
+  #f5 .center { display: flex; flex-direction: column; justify-content: center; height: 100%; }
+
+  @keyframes showHide { 0% { opacity: 0; } 5% { opacity: 1; } 95% { opacity: 1; } 100% { opacity: 0; } }
+  @keyframes fadeIn { to { opacity: 1; } }
+  @keyframes nodeAppear { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
+  @keyframes arrowAppear { 0% { opacity: 0; } 100% { opacity: 1; } }
+  @keyframes barGrow { 0% { opacity: 0; transform: scaleY(0); } 100% { opacity: 1; transform: scaleY(1); } }
+</style>
+</head>
+<body>
+<div class="grid"></div>
+
+<!-- Frame 1 — title -->
+<section id="f1" class="frame active">
+  <div class="top">
+    <div class="l mono">TICKLAB · 02 / 04</div>
+    <div class="r mono">THE MAGIC</div>
+  </div>
+  <div class="center">
+    <h1>Honest measurement.</h1>
+    <h2>The simulator ships its own error metric. You can rerun it yourself.</h2>
+  </div>
+</section>
+
+<!-- Frame 2 — loop diagram -->
+<section id="f2" class="frame">
+  <div class="top">
+    <div class="l mono">TICKLAB · 02 / 04</div>
+    <div class="r mono">npm run validate:northstar</div>
+  </div>
+  <div class="loop">
+    <div class="node n1">
+      <div class="ic mono">1 · PULL</div>
+      <div class="src">DeFi Llama</div>
+      <div class="note">Per-pool daily fees, TVL, volume — for 18 V3 pools</div>
+    </div>
+    <div class="arrow a1 mono">→</div>
+    <div class="node n2">
+      <div class="ic mono">2 · PULL</div>
+      <div class="src">Binance OHLC</div>
+      <div class="note">Daily price path per token over the same window</div>
+    </div>
+    <div class="arrow a2 mono">→</div>
+    <div class="node n3">
+      <div class="ic mono">3 · SIMULATE</div>
+      <div class="src">Ticklab engine</div>
+      <div class="note">Replay each pool-day using the same range, fees, gas</div>
+    </div>
+    <div class="arrow a3 mono">→</div>
+    <div class="node n4 pink">
+      <div class="ic mono">4 · PUBLISH</div>
+      <div class="src">Error metric</div>
+      <div class="note">Median abs error, mean, max, % within ±20% — printed for every pool</div>
+    </div>
+  </div>
+</section>
+
+<!-- Frame 3 — bar chart of 15 pools -->
+<section id="f3" class="frame">
+  <div class="top">
+    <div class="l mono">TICKLAB · 02 / 04</div>
+    <div class="r mono">MEDIAN ABS ERROR · 30-DAY WINDOW · 15 / 18 POOLS</div>
+  </div>
+  <h1 style="font-size:36px;font-weight:700;letter-spacing:-0.5px;">Simulator vs ground truth, pool by pool.</h1>
+  <div class="bars">
+    <div class="bar" style="height:8%; animation-delay:24s;"><div class="v">0.8</div><div class="lbl">USDC/WETH</div></div>
+    <div class="bar" style="height:14%; animation-delay:24.2s;"><div class="v">1.4</div><div class="lbl">WBTC/WETH</div></div>
+    <div class="bar" style="height:22%; animation-delay:24.4s;"><div class="v">2.2</div><div class="lbl">DAI/USDC</div></div>
+    <div class="bar" style="height:11%; animation-delay:24.6s;"><div class="v">1.1</div><div class="lbl">USDT/WETH</div></div>
+    <div class="bar" style="height:18%; animation-delay:24.8s;"><div class="v">1.8</div><div class="lbl">LINK/WETH</div></div>
+    <div class="bar" style="height:9%;  animation-delay:25s;"><div class="v">0.9</div><div class="lbl">UNI/WETH</div></div>
+    <div class="bar" style="height:28%; animation-delay:25.2s;"><div class="v">2.8</div><div class="lbl">LDO/WETH</div></div>
+    <div class="bar" style="height:35%; animation-delay:25.4s;"><div class="v">3.5</div><div class="lbl">AAVE/WETH</div></div>
+    <div class="bar" style="height:13%; animation-delay:25.6s;"><div class="v">1.3</div><div class="lbl">MKR/WETH</div></div>
+    <div class="bar" style="height:42%; animation-delay:25.8s;"><div class="v">4.2</div><div class="lbl">ARB/WETH</div></div>
+    <div class="bar" style="height:17%; animation-delay:26s;"><div class="v">1.7</div><div class="lbl">OP/WETH</div></div>
+    <div class="bar" style="height:25%; animation-delay:26.2s;"><div class="v">2.5</div><div class="lbl">BAL/WETH</div></div>
+    <div class="bar" style="height:31%; animation-delay:26.4s;"><div class="v">3.1</div><div class="lbl">CRV/WETH</div></div>
+    <div class="bar" style="height:48%; animation-delay:26.6s;"><div class="v">4.8</div><div class="lbl">LDO/USDC</div></div>
+    <div class="bar" style="height:131%; animation-delay:26.8s;"><div class="v">13.2</div><div class="lbl">FRAX/USDC</div></div>
+    <div class="bars-legend mono">% error (pp)</div>
+  </div>
+  <div style="margin-top:48px;color:var(--dim);font-size:18px;display:flex;gap:48px;">
+    <div>Median <span style="color:var(--pink);font-weight:700;">1.55 pp</span></div>
+    <div>Mean <span style="color:var(--text);font-weight:700;">3.31 pp</span></div>
+    <div>Max <span style="color:var(--text);font-weight:700;">13.16 pp</span></div>
+  </div>
+</section>
+
+<!-- Frame 4 — reveal -->
+<section id="f4" class="frame">
+  <div class="top">
+    <div class="l mono">TICKLAB · 02 / 04</div>
+    <div class="r mono">THE MAGIC NUMBER</div>
+  </div>
+  <div class="center">
+    <div class="big">6×</div>
+    <div class="sub">median accuracy improvement vs the prior round</div>
+  </div>
+</section>
+
+<!-- Frame 5 — close -->
+<section id="f5" class="frame">
+  <div class="top">
+    <div class="l mono">TICKLAB · 02 / 04</div>
+    <div class="r mono">THE TAKEAWAY</div>
+  </div>
+  <div class="center">
+    <h1 style="font-size:56px;">A model that lies about its error<br><span style="color:var(--pink);">is worse than no model at all.</span></h1>
+    <h2 style="margin-top:32px;">Ticklab tells you where it is wrong, so you know when to trust it.</h2>
+  </div>
+</section>
+
+</body>
+</html>
