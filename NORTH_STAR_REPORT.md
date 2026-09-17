@@ -121,3 +121,40 @@ gt=29.93%) but not precise enough to stake $250k of LP capital on.
 I will not claim "decision-grade" again until I can show empirically that
 the simulator projects 30-day returns within ±5% APR of realized returns
 on a held-out set of ≥20 pools × 30 days. The current run does not.
+---
+
+## Appendix: Data Gap Taxonomy (7 of 20 pools skipped)
+
+Verified against `https://yields.llama.fi/pools` (11MB, all protocols + chains):
+
+| Pool | Skip reason | Why |
+|---|---|---|
+| USDC/USDT 0.01% | Binance HTTP 400 | `USDCUSDT` not a valid Binance symbol — USDC is not on Binance spot |
+| USDC/USDT 0.05% | Binance HTTP 400 | same — no Binance spot for USDC |
+| DAI/USDC 0.01% | `priceHistory < 2 days` | DAI/USDT and USDC/USDT OHLC overlap with DeFi Llama daily-fees in only ~1 day → buildSimulatorPriceHistory returns 1 entry |
+| MKR/WETH 0.3% | `priceHistory < 2 days` | MKR has very low Binance spot volume → sparse candles; daily-fees/OHLC overlap window is too small |
+| ENS/WETH 0.3% | Not in DeFi Llama | 0 matches on chain=Ethereum + project=uniswap-v3 + tokens=[ENS,WETH]. ENS is not tracked by DeFi Llama under the v3 project. |
+| SUSHI/WETH 0.3% | Not in DeFi Llama | 0 matches — SUSHI not tracked under uniswap-v3 project |
+| PEPE/WETH 1% | Not in DeFi Llama | 0 matches — PEPE not tracked under uniswap-v3 project |
+
+The DeFi Llama coverage gap is the dominant cause: **3 of 7 failures** are
+pools the aggregator doesn't track, period. The 2 stable-pool failures are
+upstream data-source shape mismatches (Binance spot doesn't list USDC).
+The 2 MKR/DAI failures are data sparsity in the daily-aggregates window.
+
+None of these are bugs in the validation harness — they're the reason a
+held-out validation set needs > 20 candidate pools. Expanding the pool
+universe would help, but every candidate has to clear both:
+(a) DeFi Llama tracking the v3 pool with `underlyingTokens` populated, AND
+(b) Binance (or alternate) listing the relevant USDT pair for daily OHLC.
+
+The existing 13 pools that complete span the major-pair / stable /
+mid-cap-ETH / volatile categories, which is enough to verify the simulator's
+behaviour on the population the user will actually use it on.
+
+---
+
+*Re-runnable via `npm run validate:northstar` (local, exits 0) or
+`npm run validate:northstar:ci` (CI gate, exits non-zero on star miss or
+fewer than 8 pools succeeding). See `validation-results/validation-*.csv`
+for raw per-pool data on every run.*

@@ -1,17 +1,34 @@
 # UniV3 LP Strategy Lab
 
-A production-grade research terminal for Uniswap V3 concentrated liquidity provision strategies.
+A research terminal for Uniswap V3 concentrated-liquidity LP strategies. Built on real
+data only — no mocks, no fabricated pools, no paid APIs.
 
-**🎉 NOW WITH FREE DATA SOURCES - NO API KEYS REQUIRED!**
+**Backend data sources are FREE.** No API keys required.
+
+## ⚠️ Read this before deploying capital
+
+The simulator's accuracy against historical ground-truth LP P&L was measured in
+[`NORTH_STAR_REPORT.md`](./NORTH_STAR_REPORT.md). As of the most recent run:
+
+- **13 of 20 pools** completed the validation (7 failed upstream-data gaps).
+- **Median absolute error: 7.9% APR.** **Mean absolute error: 28.3% APR.**
+- **% within ±20% relative error: 7.7%** (target was ≥ 80%).
+
+**The simulator is directionally correct but not precise enough to size capital on.**
+Treat projections as ranges, not point estimates. The validation harness
+(`npm run validate:northstar`) is reproducible end-to-end against real data.
 
 ## Overview
 
-**UniV3 LP Strategy Lab** is a comprehensive tool designed for serious DeFi strategists, treasury managers, and quantitative analysts to simulate, backtest, and monitor LP positions with institutional-grade precision.
+**UniV3 LP Strategy Lab** is a research tool for serious DeFi strategists and
+quantitative analysts to simulate, backtest, and monitor LP positions.
 
 ### Key Features
 
 - **Strategy Explorer**: Discover and analyze pools, understand risk/reward profiles
 - **Historical Replay**: Backtest strategies against real market data
+- **Confidence Bands**: Type-7 percentile bands + bootstrap on every backtest
+- **Pre-Deposit Checklist**: 10 red-flag rules with a severity ladder
 - **Live Monitoring**: Import and track actual positions with real-time analytics
 
 ## What's New: Free Data Sources
@@ -218,12 +235,28 @@ lib/
 - Monte Carlo simulation
 - Fee income projections
 
-### 5. Historical Replay
+### 5. Historical Replay + Confidence Bands + Pre-Deposit Checklist
 - Backtest against historical data
-- Equity curve analysis
-- Performance attribution
+- Equity curve analysis with confidence bands (P5/P50/P95 via bootstrap)
+- Pre-deposit checklist with 10 red-flag rules and severity ladder
 
-### 6. Live Position Monitoring
+### 6. Validation Harness (Honest Measurement)
+
+The simulator is verified end-to-end against real historical data:
+
+```bash
+npm run validate:northstar              # local — prints results, exits 0
+npm run validate:northstar:ci           # CI — exits non-zero if star regressed
+```
+
+The harness runs the simulator across 20 V3 pools spanning major pairs,
+stables, mid-cap ETH pairs, and volatile tokens, against a ground-truth LP
+replay computed from real DeFi Llama daily fees + Binance OHLC. See
+[`NORTH_STAR_REPORT.md`](./NORTH_STAR_REPORT.md) for the latest numbers,
+the methodology, and what's required to actually reach the ±5% APR accuracy
+target (per-swap historical events from The Graph / Covalent need an API key).
+
+### 7. Live Position Monitoring
 - Wallet connection via RainbowKit
 - Position import from NFT manager
 - Real-time position analytics
@@ -246,14 +279,30 @@ NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID=""
 
 ## Key Product Principles
 
-✅ **No fake precision** - All estimates clearly labeled as projections  
-✅ **Transparent data quality** - Warnings for low liquidity, sparse data  
-✅ **Real data only** - No hardcoded demo values  
-✅ **Clear assumptions** - All parameters user-configurable  
-✅ **Educational** - Help users understand IL, fees, range selection  
-✅ **Professional UX** - Dark institutional theme  
-✅ **Mobile responsive** - Works on all devices  
-✅ **Free data sources** - No API keys required  
+✅ **No fake precision** - All estimates are clearly labeled as projections. Confidence bands are returned on every backtest so users see uncertainty.
+✅ **Transparent data quality** - Warnings for low liquidity, sparse data, missing OHLC
+✅ **Real data only** - No hardcoded demo values
+✅ **Measured accuracy** - The north-star validation harness runs against ground-truth LP P&L and reports honestly when the simulator is off
+✅ **Clear assumptions** - All parameters user-configurable
+✅ **Educational** - Help users understand IL, fees, range selection
+✅ **Professional UX** - Dark institutional theme
+✅ **Mobile responsive** - Works on all devices
+✅ **Free data sources** - No API keys required
+
+## Accuracy Limits (Read Before Sizing Capital)
+
+The simulator's fee model is intentionally simple — it projects using current
+volume + fee tier. It does not yet model:
+
+- **Tick-distribution within a position** — fees accrue non-linearly across the range
+- **Concentrated-LP IL** — the closed-form `sqrt(r) - (r+1)/2` approximation
+  assumes a 50/50 position; for tight ranges this can be off by 2-3×.
+- **Per-swap fee accrual** — daily aggregates hide intra-day volume spikes.
+
+Reaching the ±5% APR accuracy bar requires per-swap historical events, which
+in turn requires an API key on The Graph's decentralized gateway or Covalent
+GoldRush. See [`NORTH_STAR_REPORT.md`](./NORTH_STAR_REPORT.md) for the gap
+analysis and what changes when those land.
 
 ## Performance
 
@@ -269,7 +318,13 @@ MIT License - see LICENSE file for details
 
 ## Disclaimer
 
-This tool is for research and educational purposes only. All projections are estimates based on historical data and assumptions. Past performance does not guarantee future results. Always do your own research (DYOR) before making investment decisions.
+This tool is for research and educational purposes only. Projections are
+estimates based on historical data and assumptions, and the simulator's
+accuracy is bounded by the limitations described in **Accuracy Limits** above
+and in [`NORTH_STAR_REPORT.md`](./NORTH_STAR_REPORT.md). **Do not use this
+tool to size capital on individual positions.** Past performance does not
+guarantee future results. Always do your own research (DYOR) before making
+investment decisions.
 
 ## Support
 

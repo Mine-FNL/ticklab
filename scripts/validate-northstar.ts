@@ -500,8 +500,28 @@ interface ValidationRow {
   pctError: number;
 }
 
+// CLI args
+const CLI_ARGS = process.argv.slice(2);
+function getFlag(name: string, fallback: string): string {
+  const idx = CLI_ARGS.indexOf(name);
+  if (idx >= 0 && idx + 1 < CLI_ARGS.length) return CLI_ARGS[idx + 1];
+  return fallback;
+}
+/**
+ * CI mode: in addition to writing CSV/console output, exit with code 1 if:
+ *   - fewer than `--require-pools` pools returned valid results, OR
+ *   - the north-star acceptance criterion (`% within 20%` >= 80%) is not met.
+ *
+ * This is opt-in because the harness currently produces honest-but-bad numbers
+ * and we don't want every dev push to be blocked by it. Turn on via the
+ * `validate:northstar:ci` npm script or `tsx scripts/validate-northstar.ts --ci`.
+ */
+const CI_MODE = CLI_ARGS.includes('--ci');
+const REQUIRE_POOLS = Number(getFlag('--require-pools', '5'));
+
 async function main() {
-  console.log(`Running north-star validation across ${POOLS.length} pools × ~${STRATEGY.horizonDays} days.\n`);
+  console.log(`Running north-star validation across ${POOLS.length} pools × ~${STRATEGY.horizonDays} days.`);
+  console.log(`Mode: ${CI_MODE ? 'CI (will exit non-zero on star miss or insufficient pools)' : 'local'}\n`);
 
   const rows: ValidationRow[] = [];
   const errors: Array<{ pool: string; reason: string }> = [];
@@ -641,6 +661,22 @@ async function main() {
   );
   writeFileSync(csvPath, header + lines.join('\n') + '\n');
   console.log(`\nWrote ${csvPath}`);
+
+  // CI gate: don't block dev workflow, but do block if results degraded
+  // significantly (e.g. upstream data source changed shape).
+  if (CI_MODE) {
+    if (rows.length < REQUIRE_POOLS) {
+      console.error(`\n✗ CI FAIL: only ${rows.length} pool(s) completed, required ${REQUIRE_POOLS}.`);
+      console.error('  Data sources may have changed. See errors above.');
+      process.exit(2);
+    }
+    if (!starReached) {
+      console.error(`\n✗ CI FAIL: north star not reached (${(within5 / rows.length) * 100} < 80%).`);
+      console.error('  Either the simulator regressed or upstream data quality changed.');
+      console.error('  Fix the regression or update NORTH_STAR_REPORT.md with the new numbers.');
+      process.exit(1);
+    }
+  }
 }
 
 main().catch((err) => {
