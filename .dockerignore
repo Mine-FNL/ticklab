@@ -1,0 +1,61 @@
+# Dependencies
+node_modules
+**/node_modules
+node_modules.cjs
+
+# Build output
+.next
+out
+dist
+build
+
+# VCS / CI
+.git
+.gitignore
+.gitattributes
+.github
+
+# Tests + validation artifacts
+tests
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+validation-results
+coverage
+.nyc_output
+
+# Editor / OS
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Env files (secrets; only build-time ARGs/GHA secrets should reach the image)
+.env
+.env.*
+!.env.example
+!.env.local.template
+
+# Repo root markdown (kept in repo for readers, not needed in image)
+*.md
+README.md
+CHANGES.md
+NORTH_STAR_REPORT.md
+PRODUCTION_READY.md
+FREE_DATA_SOURCES.md
+IMPLEMENTATION_COMPLETE.md
+REAL_DATA_IMPLEMENTATION.md
+STRATEGY_BUILDER_FIX.md
+UNIVERSAL_TOKEN_SUPPORT.md
+docs/*.md
+
+# Data files that should not bake into the image
+*.csv
+*.tsv
+*.jsonl
+*.parquet
+
+# TS build cache (regenerated)
+*.tsbuildinfo
+next-env.d.ts

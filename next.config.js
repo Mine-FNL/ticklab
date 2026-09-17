@@ -2,6 +2,10 @@
 const path = require('path')
 
 const nextConfig = {
+  // Single-image deployable build. Emits `.next/standalone/` containing a
+  // minimal `server.js` + pruned `node_modules/` for Docker and self-hosted
+  // production. `next dev` and `next build` keep working as before.
+  output: 'standalone',
   reactStrictMode: true,
   swcMinify: true,
   images: {
