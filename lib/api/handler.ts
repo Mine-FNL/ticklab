@@ -22,6 +22,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ZodError, ZodSchema } from 'zod';
 import { consume, clientIp, RateLimitConfig } from './rate-limit';
 import { cached } from './cache';
+import { recordMetric } from './metrics';
 
 /* -------------------------------------------------------------------------- */
 /* Route module config (dynamic, runtime)                                      */
@@ -148,88 +149,113 @@ export function apiHandler<TParams = unknown, TResult = unknown>(
     const startedAt = Date.now();
     const logBase: LogContext = { requestId, route: opts.name, ip };
 
-    // --- rate limit ---
-    if (opts.rateLimit) {
-      const key = `${opts.name}:${ip}`;
-      const rl = consume(key, opts.rateLimit);
-      if (!rl.allowed) {
-        const res = apiFail(429, {
-          error: 'rate_limited',
-          message: `Too many requests for ${opts.name}`,
-          suggestion: `Retry after ${rl.retryAfterMs}ms`,
+    let resultResponse: NextResponse | null = null;
+    try {
+      // --- rate limit ---
+      if (opts.rateLimit) {
+        const key = `${opts.name}:${ip}`;
+        const rl = consume(key, opts.rateLimit);
+        if (!rl.allowed) {
+          const res = apiFail(429, {
+            error: 'rate_limited',
+            message: `Too many requests for ${opts.name}`,
+            suggestion: `Retry after ${rl.retryAfterMs}ms`,
+            requestId,
+          });
+          res.headers.set('Retry-After', String(Math.ceil(rl.retryAfterMs / 1000)));
+          log({ ...logBase, status: 429, durationMs: Date.now() - startedAt });
+          resultResponse = res;
+          return res;
+        }
+      }
+
+      // --- parse + validate ---
+      let params: TParams;
+      try {
+        if (source === 'body') {
+          const raw = await request.json().catch(() => ({}));
+          if (!opts.schema) {
+            params = raw as TParams;
+          } else {
+            params = (opts.schema as ZodSchema<TParams>).parse(raw);
+          }
+        } else {
+          params = parseInput(request, opts.schema as ZodSchema<TParams> | null, source);
+        }
+      } catch (err) {
+        if (err instanceof ZodError) {
+          const res = apiFail(400, {
+            error: 'invalid_request',
+            message: 'Request did not match expected schema',
+            details: err.flatten(),
+            requestId,
+          });
+          log({ ...logBase, status: 400, durationMs: Date.now() - startedAt, error: 'zod' });
+          resultResponse = res;
+          return res;
+        }
+        const res = apiFail(400, {
+          error: 'bad_request',
+          message: err instanceof Error ? err.message : String(err),
           requestId,
         });
-        res.headers.set('Retry-After', String(Math.ceil(rl.retryAfterMs / 1000)));
-        log({ ...logBase, status: 429, durationMs: Date.now() - startedAt });
+        log({ ...logBase, status: 400, durationMs: Date.now() - startedAt, error: 'parse' });
+        resultResponse = res;
         return res;
       }
-    }
 
-    // --- parse + validate ---
-    let params: TParams;
-    try {
-      if (source === 'body') {
-        const raw = await request.json().catch(() => ({}));
-        if (!opts.schema) {
-          params = raw as TParams;
-        } else {
-          params = (opts.schema as ZodSchema<TParams>).parse(raw);
+      // --- execute (with optional cache) ---
+      try {
+        const exec = () =>
+          opts.handler({ params, request, requestId });
+
+        const result = opts.cacheTtlMs
+          ? await cached(opts.name, cacheKeyFromParams(params, request), opts.cacheTtlMs, exec)
+          : await exec();
+
+        const res = apiOk(result);
+        res.headers.set('x-request-id', requestId);
+        log({ ...logBase, status: 200, durationMs: Date.now() - startedAt });
+        resultResponse = res;
+        return res;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        const isClientError = /not.found|invalid|unsupported|not.found/i.test(message);
+        const status = isClientError ? 404 : 500;
+        const res = apiFail(status, {
+          error: isClientError ? 'not_found' : 'internal_error',
+          message,
+          requestId,
+          suggestion: isClientError
+            ? 'Check inputs (chainId, addresses, poolId) and retry.'
+            : 'Server error — please retry. Check /api/health for status.',
+        });
+        log({
+          ...logBase,
+          status,
+          durationMs: Date.now() - startedAt,
+          error: message.slice(0, 240),
+        });
+        resultResponse = res;
+        return res;
+      }
+    } finally {
+      // Always record metrics — even when an unexpected throw escapes
+      // the handler. Cardinality is bounded (route + method + status_class
+      // only), so this is safe at any request volume.
+      if (resultResponse) {
+        try {
+          recordMetric(opts.name, request.method, resultResponse.status, Date.now() - startedAt);
+        } catch {
+          // Metrics must never break the response.
         }
       } else {
-        params = parseInput(request, opts.schema as ZodSchema<TParams> | null, source);
+        try {
+          recordMetric(opts.name, request.method, 500, Date.now() - startedAt);
+        } catch {
+          // ignore
+        }
       }
-    } catch (err) {
-      if (err instanceof ZodError) {
-        const res = apiFail(400, {
-          error: 'invalid_request',
-          message: 'Request did not match expected schema',
-          details: err.flatten(),
-          requestId,
-        });
-        log({ ...logBase, status: 400, durationMs: Date.now() - startedAt, error: 'zod' });
-        return res;
-      }
-      const res = apiFail(400, {
-        error: 'bad_request',
-        message: err instanceof Error ? err.message : String(err),
-        requestId,
-      });
-      log({ ...logBase, status: 400, durationMs: Date.now() - startedAt, error: 'parse' });
-      return res;
-    }
-
-    // --- execute (with optional cache) ---
-    try {
-      const exec = () =>
-        opts.handler({ params, request, requestId });
-
-      const result = opts.cacheTtlMs
-        ? await cached(opts.name, cacheKeyFromParams(params, request), opts.cacheTtlMs, exec)
-        : await exec();
-
-      const res = apiOk(result);
-      res.headers.set('x-request-id', requestId);
-      log({ ...logBase, status: 200, durationMs: Date.now() - startedAt });
-      return res;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      const isClientError = /not.found|invalid|unsupported|not.found/i.test(message);
-      const status = isClientError ? 404 : 500;
-      const res = apiFail(status, {
-        error: isClientError ? 'not_found' : 'internal_error',
-        message,
-        requestId,
-        suggestion: isClientError
-          ? 'Check inputs (chainId, addresses, poolId) and retry.'
-          : 'Server error — please retry. Check /api/health for status.',
-      });
-      log({
-        ...logBase,
-        status,
-        durationMs: Date.now() - startedAt,
-        error: message.slice(0, 240),
-      });
-      return res;
     }
   };
 }
