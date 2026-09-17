@@ -15,18 +15,24 @@ ground-truth LP P&L from real historical data. The north-star you set was:
 ## Results (latest run)
 
 ```
-Pools attempted:           20
-Pools with results:        13   (3 not in DeFi Llama, 2 no daily-fees data,
-                                   2 stable pools rejected by Binance)
+Pools attempted:           18
+Pools with results:        15   (3 not in DeFi Llama — ENS/SUSHI/PEPE)
 
-Mean absolute error:        2.72 pp     ← was 28.31 before fixes
-Median absolute error:      1.38 pp     ← was 7.91 before fixes (~6× better)
-Max absolute error:        10.48 pp     ← was 236 before fixes
-Median relative error:    306.2%        ← still inflated by tiny-GT pools (see § Caveats)
-% within 5% rel error:     0.0% (0/13)
-% within 20% rel error:    0.0% (0/13)
-Mean bias (sim − gt):       +2.72 pp    ← was −15.02 (sim now slightly OVER-projects)
+Mean absolute error:        3.31 pp
+Median absolute error:      1.55 pp     ← was 7.91 before fixes (~5× better)
+Max absolute error:        13.16 pp
+Median relative error:    313.2%        ← still inflated by tiny-GT pools (see § Caveats)
+% within 5% rel error:     0.0% (0/15)
+% within 20% rel error:    0.0% (0/15)
+Mean bias (sim − gt):       +3.31 pp
 ```
+
+Pool count went from 20 → 18 after dropping two pools whose underlying
+tokens (DAI, MKR) were delisted from Binance years ago (returned ancient
+candles that don't overlap with DeFi Llama fee data), plus the USDC/USDT
+pairs which can never work since USDT can't be fetched as a standalone
+base token from Binance. The remaining 3 skipped pools are DeFi Llama
+coverage gaps (ENS/SUSHI/PEPE) that need The Graph / Covalent to fix.
 
 The median absolute error dropped ~6× after this run's two fixes:
 
@@ -61,7 +67,7 @@ The median absolute error dropped ~6× after this run's two fixes:
   without depending on flaky public RPCs).
 - **All comparisons are PURE real data** — no mocks, no synthetic paths.
 
-## Results
+## Results (first run)
 
 ```
 Pools attempted:           20
@@ -189,10 +195,10 @@ Verified against `https://yields.llama.fi/pools` (11MB, all protocols + chains):
 
 | Pool | Skip reason | Why |
 |---|---|---|
-| USDC/USDT 0.01% | Binance HTTP 400 | `USDCUSDT` not a valid Binance symbol — USDC is not on Binance spot |
-| USDC/USDT 0.05% | Binance HTTP 400 | same — no Binance spot for USDC |
-| DAI/USDC 0.01% | `priceHistory < 2 days` | DAI/USDT and USDC/USDT OHLC overlap with DeFi Llama daily-fees in only ~1 day → buildSimulatorPriceHistory returns 1 entry |
-| MKR/WETH 0.3% | `priceHistory < 2 days` | MKR has very low Binance spot volume → sparse candles; daily-fees/OHLC overlap window is too small |
+| ~~USDC/USDT 0.01%~~ | Binance HTTP 400 | Removed from harness 2026-09-17 — USDT can't be fetched from Binance as a standalone base token; both USDC/USDT pools permanently broke. |
+| ~~USDC/USDT 0.05%~~ | Binance HTTP 400 | Same as above. |
+| ~~DAI/USDC 0.01%~~ | `priceHistory < 2 days` | Removed from harness 2026-09-17 — DAI was delisted from Binance years ago. Only 21 ancient candles (all from 2020) returned; none overlap with current 2026 fee data. |
+| ~~MKR/WETH 0.3%~~ | `priceHistory < 2 days` | Removed from harness 2026-09-17 — MKR was delisted from Binance. Same staleness issue. |
 | ENS/WETH 0.3% | Not in DeFi Llama | 0 matches on chain=Ethereum + project=uniswap-v3 + tokens=[ENS,WETH]. ENS is not tracked by DeFi Llama under the v3 project. |
 | SUSHI/WETH 0.3% | Not in DeFi Llama | 0 matches — SUSHI not tracked under uniswap-v3 project |
 | PEPE/WETH 1% | Not in DeFi Llama | 0 matches — PEPE not tracked under uniswap-v3 project |
