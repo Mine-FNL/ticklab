@@ -2,7 +2,7 @@
 
 ## Summary
 
-The UniV3 LP Strategy Lab now uses **completely free data sources** - no API keys required for basic functionality!
+The Ticklab now uses **completely free data sources** - no API keys required for basic functionality!
 
 ## Data Sources
 

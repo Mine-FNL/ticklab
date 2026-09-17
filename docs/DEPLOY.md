@@ -11,7 +11,7 @@ supported targets:
 
 ## 1. Quick start — Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyour-org%2Funiv3-strategy-lab)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyour-org%2Fticklab)
 
 ```bash
 npm i -g vercel
@@ -34,10 +34,10 @@ are used by default; RPC API keys are optional upgrades.
 Next.js standalone output, multi-stage Alpine build.
 
 ```bash
-docker build -t univ3-strategy-lab:latest .
+docker build -t ticklab:latest .
 docker run --rm -p 3000:3000 \
   -e BUILD_SHA="$(git rev-parse --short HEAD)" \
-  univ3-strategy-lab:latest
+  ticklab:latest
 curl -s http://localhost:3000/api/health | jq
 ```
 
@@ -152,7 +152,7 @@ Full canonical list in [`.env.example`](../.env.example).
 Roll back by promoting the last known-good tag — on Vercel open
 **Deployments → ⋮ → Promote to Production** on a prior green build; on
 Docker re-run the container pinned to the previous image tag
-(`univ3-strategy-lab:v0.1.3-1`); on self-hosted
+(`ticklab:v0.1.3-1`); on self-hosted
 `git checkout <last-good-sha>` inside `/srv/univ3` and
 `systemctl restart univ3`. Confirm with `/api/health` returning
 `status:"ok"`. **Always pin a specific image tag or git SHA in production

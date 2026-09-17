@@ -1,15 +1,15 @@
 [![Hero](./marketing/hero-banner.png)](#)
 
-# UniV3 LP Strategy Lab
+# Ticklab
 
 > **Production-grade backtest, risk analytics, and validation harness for
 > Uniswap V3 LP strategies. Built on real data — zero API keys, zero mocks,
 > zero paid tiers.**
 
-[![Tests](https://img.shields.io/badge/tests-257_passing-brightgreen)](https://github.com/0xBingBong69/univ3-strategy-lab)
-[![SDK Tests](https://img.shields.io/badge/sdk-35_passing-brightgreen)](https://github.com/0xBingBong69/univ3-strategy-lab/tree/main/packages/sdk)
+[![Tests](https://img.shields.io/badge/tests-257_passing-brightgreen)](https://github.com/Mine-FNL/ticklab)
+[![SDK Tests](https://img.shields.io/badge/sdk-35_passing-brightgreen)](https://github.com/Mine-FNL/ticklab/tree/main/packages/sdk)
 [![E2E](https://img.shields.io/badge/e2e-7%2F8-blue)](./e2e)
-[![TypeScript](https://img.shields.io/badge/typescript-strict-blue)](https://github.com/0xBingBong69/univ3-strategy-lab)
+[![TypeScript](https://img.shields.io/badge/typescript-strict-blue)](https://github.com/Mine-FNL/ticklab)
 [![License](https://img.shields.io/badge/license-MIT-yellow)](./LICENSE)
 [![North-Star](https://img.shields.io/badge/north_star-1.55pp_median_err-ff007a)](./NORTH_STAR_REPORT.md)
 
@@ -17,7 +17,7 @@
 
 ## What it does
 
-UniV3 LP Strategy Lab is an A16Z-grade simulator for Uniswap V3 concentrated-liquidity positions. Backtest strategies against real DeFi Llama + Binance data, score them with institutional risk metrics, and verify the simulator itself against ground-truth LP P&L — every number reproducible via `npm run validate:northstar`.
+Ticklab is an A16Z-grade simulator for Uniswap V3 concentrated-liquidity positions. Backtest strategies against real DeFi Llama + Binance data, score them with institutional risk metrics, and verify the simulator itself against ground-truth LP P&L — every number reproducible via `npm run validate:northstar`.
 
 ## Live demo
 
@@ -29,13 +29,13 @@ UniV3 LP Strategy Lab is an A16Z-grade simulator for Uniswap V3 concentrated-liq
 - **Production-grade engineering** — Prometheus `/api/metrics`, OpenAPI 3.1 spec, standalone SDK at `packages/sdk/`, CI (3 workflows), Playwright E2E suite. **257 root tests + 35 SDK tests + 7/8 E2E passing**.
 - **Zero API keys** — runs entirely on free public endpoints: DeFi Llama, Binance OHLC, public RPCs. No paid tier, no signup.
 - **V3 + V4** — concentrated-liquidity V3 simulators (in-range + portfolio) and **V4 hooks discovery + recommendation**.
-- **Open-source SDK** — `@univ3-strategy-lab/sdk` (TypeScript, zero runtime deps, tree-shakable) for downstream apps.
+- **Open-source SDK** — `@ticklab/sdk` (TypeScript, zero runtime deps, tree-shakable) for downstream apps.
 
 ## Quickstart (5 commands)
 
 ```bash
-git clone https://github.com/0xBingBong69/univ3-strategy-lab.git
-cd univ3-strategy-lab
+git clone https://github.com/Mine-FNL/ticklab.git
+cd ticklab
 npm install
 npm run validate:northstar    # reproduce every metric in this README
 npm run dev                   # http://localhost:3000
@@ -121,8 +121,8 @@ Full schema → `/api/openapi.json`.
 ## Deployment
 
 ```bash
-docker build -t univ3-strategy-lab .
-docker run --rm -p 3000:3000 univ3-strategy-lab
+docker build -t ticklab .
+docker run --rm -p 3000:3000 ticklab
 ```
 
 Or one-click Vercel (`vercel.json` regions: `iad1`, `fra1`). For self-hosted / systemd / nginx, see [`docs/DEPLOY.md`](./docs/DEPLOY.md).
@@ -134,7 +134,7 @@ Or one-click Vercel (`vercel.json` regions: `iad1`, `fra1`). For self-hosted / s
 
 ## Contributing
 
-Open an issue or PR: [github.com/0xBingBong69/univ3-strategy-lab/issues](https://github.com/0xBingBong69/univ3-strategy-lab/issues). Tag `@maintainer` in security-sensitive reports.
+Open an issue or PR: [github.com/Mine-FNL/ticklab/issues](https://github.com/Mine-FNL/ticklab/issues). Tag `@maintainer` in security-sensitive reports.
 
 ## License
 
@@ -144,4 +144,4 @@ MIT — see [`LICENSE`](./LICENSE).
 
 > If you're running an LP strategy on Uniswap V3, this tool tells you honestly whether the simulator agrees with reality.
 > If it doesn't help — close the tab.
-> If it does — **[star the repo](https://github.com/0xBingBong69/univ3-strategy-lab)** so other people find it.
+> If it does — **[star the repo](https://github.com/Mine-FNL/ticklab)** so other people find it.

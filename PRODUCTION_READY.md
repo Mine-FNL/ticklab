@@ -1,4 +1,4 @@
-# Production Readiness — `univ3-strategy-lab`
+# Production Readiness — `ticklab`
 
 This document captures the production-readiness work applied on top of the
 existing V3 codebase, and what was added to make the V4 hooks support

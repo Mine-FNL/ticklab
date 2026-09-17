@@ -1,7 +1,7 @@
 {
-  "name": "@univ3-strategy-lab/sdk",
+  "name": "@ticklab/sdk",
   "version": "0.1.0",
-  "description": "TypeScript SDK for the univ3-strategy-lab backtest / risk-analytics / simulation API.",
+  "description": "TypeScript SDK for the ticklab backtest / risk-analytics / simulation API.",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

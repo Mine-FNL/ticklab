@@ -102,7 +102,7 @@ const HealthReportSchema: JsonSchema = {
     'Always returned with HTTP 200. Inspect `status` (`ok` vs `degraded`) and `checks[]` for the real signal.',
   properties: {
     status: { type: 'string', enum: ['ok', 'degraded'] },
-    service: { type: 'string', examples: ['univ3-strategy-lab'] },
+    service: { type: 'string', examples: ['ticklab'] },
     uptimeSeconds: {
       type: 'integer',
       description: 'Rounded process uptime in seconds (back-compat field).',

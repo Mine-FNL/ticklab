@@ -1,5 +1,5 @@
 /**
- * Performance benchmark harness — `univ3-strategy-lab` HTTP API.
+ * Performance benchmark harness — `ticklab` HTTP API.
  *
  * Goal: A16Z-grade production readiness means knowing your p50/p95/p99
  * latency under load, not guessing. This harness measures:
@@ -477,7 +477,7 @@ export function renderTable(result: BenchResult): string {
   const groups = groupByRoute(result.combinations);
 
   lines.push('');
-  lines.push(`univ3-strategy-lab benchmark — ${result.baseUrl}`);
+  lines.push(`ticklab benchmark — ${result.baseUrl}`);
   lines.push(`started ${result.startedAt}   finished ${result.finishedAt}`);
   lines.push(`samples=${result.options.samples}  warmup=${result.options.warmup}  concurrency=[${result.options.concurrency.join(', ')}]`);
   lines.push(rule);

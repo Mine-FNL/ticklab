@@ -1,7 +1,7 @@
 /**
- * Typed error surface for the @univ3-strategy-lab/sdk package.
+ * Typed error surface for the @ticklab/sdk package.
  *
- * All non-success responses from the API are surfaced as `UnivariateError`,
+ * All non-success responses from the API are surfaced as `TicklabError`,
  * carrying enough metadata for a consumer to:
  *   - retry safely based on `code` + `status`
  *   - correlate with logs using `requestId`
@@ -15,7 +15,7 @@
  * `error` field where present, and SDK-internal categories (`network`,
  * `aborted`) that the API cannot return.
  */
-export type UnivariateErrorCode =
+export type TicklabErrorCode =
   | 'rate_limit' // 429 — server told us to back off (Retry-After honoured)
   | 'validation' // 4xx — caller-side problem (bad params, unknown pool)
   | 'upstream' // 502/503/504 — upstream provider (CoinGecko, DeFi Llama, RPC)
@@ -25,14 +25,14 @@ export type UnivariateErrorCode =
   | 'unknown'; // anything we cannot classify
 
 /**
- * Options accepted by the {@link UnivariateError} constructor.
+ * Options accepted by the {@link TicklabError} constructor.
  */
-export interface UnivariateErrorOptions {
+export interface TicklabErrorOptions {
   message: string;
   /** HTTP status. `0` when the request never reached the server. */
   status: number;
   /** High-level category. */
-  code: UnivariateErrorCode;
+  code: TicklabErrorCode;
   /** `x-request-id` header from the response, or `null` if unknown. */
   requestId: string | null;
   /** Parsed response body (object / null / undefined). Useful for surfacing upstream messages. */
@@ -51,10 +51,10 @@ export interface UnivariateErrorOptions {
  * Properties are all `readonly` and are also exposed via {@link toJSON} for
  * structured logging.
  */
-export class UnivariateError extends Error {
-  readonly name = 'UnivariateError';
+export class TicklabError extends Error {
+  readonly name = 'TicklabError';
   readonly status: number;
-  readonly code: UnivariateErrorCode;
+  readonly code: TicklabErrorCode;
   readonly requestId: string | null;
   readonly body: unknown;
   readonly url: string;
@@ -62,7 +62,7 @@ export class UnivariateError extends Error {
   /** Underlying error from fetch or upstream parser. `unknown` is intentional. */
   readonly cause: unknown;
 
-  constructor(opts: UnivariateErrorOptions) {
+  constructor(opts: TicklabErrorOptions) {
     super(opts.message);
     this.status = opts.status;
     this.code = opts.code;
@@ -84,7 +84,7 @@ export class UnivariateError extends Error {
     name: string;
     message: string;
     status: number;
-    code: UnivariateErrorCode;
+    code: TicklabErrorCode;
     requestId: string | null;
     url: string;
     method: string;
@@ -121,7 +121,7 @@ export class UnivariateError extends Error {
 export function classifyApiError(
   errorField: unknown,
   status: number,
-): UnivariateErrorCode {
+): TicklabErrorCode {
   if (typeof errorField === 'string') {
     const e = errorField.toLowerCase();
     if (e === 'rate_limited' || e === 'rate_limit') return 'rate_limit';
@@ -152,9 +152,9 @@ export function classifyApiError(
 }
 
 /**
- * Type guard for {@link UnivariateError}. Useful in callers that want to
+ * Type guard for {@link TicklabError}. Useful in callers that want to
  * branch on error category without catching every error.
  */
-export function isUnivariateError(err: unknown): err is UnivariateError {
-  return err instanceof UnivariateError;
+export function isTicklabError(err: unknown): err is TicklabError {
+  return err instanceof TicklabError;
 }

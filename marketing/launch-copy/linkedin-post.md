@@ -6,7 +6,7 @@
 
 I spent the last shipping round doing something most LP tools skip: building a validation harness that measures the simulator's own accuracy against real ground-truth data.
 
-The result is `univ3-strategy-lab` — an open-source Uniswap V3 concentrated-liquidity strategy simulator.
+The result is `ticklab` — an open-source Uniswap V3 concentrated-liquidity strategy simulator.
 
 What "production-grade" looks like in this build:
 
@@ -22,6 +22,6 @@ I also shipped the failures. The relative-error north-star metric is 0/15, three
 
 If you LP on V3 or build tooling on top of it, I'd value your look. The repo is here:
 
-https://github.com/0xBingBong69/univ3-strategy-lab
+https://github.com/Mine-FNL/ticklab
 
 What's your take — should an LP simulator's accuracy be reported as absolute error in percentage points, or is there a domain-specific metric that would be more useful for real capital deployment decisions?

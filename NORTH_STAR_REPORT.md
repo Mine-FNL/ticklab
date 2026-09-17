@@ -1,4 +1,4 @@
-# North-Star Validation Report — `univ3-strategy-lab`
+# North-Star Validation Report — `ticklab`
 
 **Date:** 2026-09-17
 **Status:** ✗ NORTH STAR NOT REACHED — but with honest numbers AND a real engineering improvement

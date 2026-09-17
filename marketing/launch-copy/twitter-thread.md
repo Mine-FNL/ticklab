@@ -6,7 +6,7 @@
 
 (1/n) LP simulators ship projected APR like it's gospel. Then you deposit, the range goes out, and the realized number is a joke. I got tired of it, so I built one that publishes its own error against real ground truth.
 
-(2/n) `univ3-strategy-lab` — open-source Uniswap V3 LP simulator. Next.js 14, TypeScript strict, 17 API routes, OpenAPI 3.1, Prometheus /metrics, Playwright E2E, standalone TS SDK at packages/sdk/. Zero API keys. Free public endpoints only.
+(2/n) `ticklab` — open-source Uniswap V3 LP simulator. Next.js 14, TypeScript strict, 17 API routes, OpenAPI 3.1, Prometheus /metrics, Playwright E2E, standalone TS SDK at packages/sdk/. Zero API keys. Free public endpoints only.
 
 (3/n) It does V3 in-range with proper token0/token1 leg rebalancing, V4 hooks discovery, multi-position portfolio aggregation with Pearson correlation, and the full risk module — VaR, CVaR, Sharpe, Sortino, Calmar, Ulcer, Burke.
 
@@ -18,4 +18,4 @@
 
 (7/n) This is the project I wanted to exist when I started LPing. Free, open-source, no paid tier, every claim is verifiable, every failure is named in NORTH_STAR_REPORT.md. If you've been burned by LP sims, look at the report before you look at the marketing.
 
-(8/n) Repo + validation report: https://github.com/0xBingBong69/univ3-strategy-lab If you LP V3 or build on top of it, I'd take a star. If you spot a bug, open an issue — the harness will catch it.
+(8/n) Repo + validation report: https://github.com/Mine-FNL/ticklab If you LP V3 or build on top of it, I'd take a star. If you spot a bug, open an issue — the harness will catch it.

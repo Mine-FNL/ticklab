@@ -12,7 +12,7 @@
 
 **Body:**
 
-Hey r/ethfinance — long-time lurker, first-time poster on this side. I've been working on `univ3-strategy-lab`, a simulator for concentrated-liquidity strategies on Uniswap V3 (and now V4 hooks discovery). It's free, runs on public endpoints (DeFi Llama + Binance + public RPCs), and the code is open.
+Hey r/ethfinance — long-time lurker, first-time poster on this side. I've been working on `ticklab`, a simulator for concentrated-liquidity strategies on Uniswap V3 (and now V4 hooks discovery). It's free, runs on public endpoints (DeFi Llama + Binance + public RPCs), and the code is open.
 
 What makes it different from the usual dashboards:
 
@@ -26,6 +26,6 @@ What makes it different from the usual dashboards:
 
 If you LP WETH/USDC, WBTC/ETH, stables, or any of the mid-cap pairs, give it a spin. The repo and a full transparent report are here:
 
-https://github.com/0xBingBong69/univ3-strategy-lab
+https://github.com/Mine-FNL/ticklab
 
 Would love feedback from anyone who's been burned by LP simulator projections that don't survive contact with reality.

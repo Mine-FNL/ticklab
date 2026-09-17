@@ -1,5 +1,5 @@
 # Outreach Targets
-**Audience:** solo builder / small team running a star campaign on `univ3-strategy-lab`
+**Audience:** solo builder / small team running a star campaign on `ticklab`
 **One-line:** Categorized list of people and communities worth a direct message, each with a one-sentence "why they'd care" hook.
 
 > All numbers below are approximate at the time of writing and intended for sizing, not for hard filtering. Always verify a current handle and audience before reaching out.

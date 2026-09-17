@@ -1,19 +1,19 @@
 /**
- * @univ3-strategy-lab/sdk — public API surface.
+ * @ticklab/sdk — public API surface.
  *
  * Two import shapes are supported:
  *
- *   import { UnivariateClient } from '@univ3-strategy-lab/sdk';
- *   const client = new UnivariateClient({ baseUrl });
+ *   import { TicklabClient } from '@ticklab/sdk';
+ *   const client = new TicklabClient({ baseUrl });
  *   const r = await client.backtests.run({ ... });
  *
  *   // Tree-shakeable: pull only the endpoint you need.
- *   import { backtestsRun, UnivariateClient } from '@univ3-strategy-lab/sdk';
+ *   import { backtestsRun, TicklabClient } from '@ticklab/sdk';
  *   const r = await backtestsRun(client, { ... });
  */
 
 export {
-  UnivariateClient,
+  TicklabClient,
   backtestsRun,
   riskCompute,
   poolsDiscover,
@@ -22,11 +22,11 @@ export {
 } from './client.js';
 
 export {
-  UnivariateError,
-  isUnivariateError,
+  TicklabError,
+  isTicklabError,
   classifyApiError,
-  type UnivariateErrorCode,
-  type UnivariateErrorOptions,
+  type TicklabErrorCode,
+  type TicklabErrorOptions,
 } from './errors.js';
 
 export type {

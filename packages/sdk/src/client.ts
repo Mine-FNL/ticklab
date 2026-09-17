@@ -1,14 +1,14 @@
 /**
- * @univ3-strategy-lab/sdk — client implementation.
+ * @ticklab/sdk — client implementation.
  *
  * Architectural notes:
  *   - Zero runtime dependencies. Uses native `fetch` (Node 18+ & browser).
  *   - Tree-shakeable: every public endpoint is a top-level exportable
  *     function (`backtestsRun`, `riskCompute`, `poolsDiscover`,
- *     `v4HooksDiscover`, `simulationsRun`) that takes a `UnivariateClient`.
+ *     `v4HooksDiscover`, `simulationsRun`) that takes a `TicklabClient`.
  *     The class's namespace objects (`client.backtests.run`, …) are thin
  *     delegates, so bundlers can drop unused endpoints.
- *   - All non-2xx responses are normalised into `UnivariateError`.
+ *   - All non-2xx responses are normalised into `TicklabError`.
  *   - Retries: 429 + 5xx, exponential backoff with full jitter,
  *     `Retry-After` honoured when present.
  *   - Every method accepts an optional `AbortSignal`; cancellation
@@ -18,9 +18,9 @@
  */
 
 import {
-  UnivariateError,
+  TicklabError,
   classifyApiError,
-  type UnivariateErrorCode,
+  type TicklabErrorCode,
 } from './errors.js';
 import type {
   BacktestRunParams,
@@ -45,7 +45,7 @@ import type {
 const DEFAULT_MAX_RETRIES = 3;
 const DEFAULT_BASE_BACKOFF_MS = 250;
 const DEFAULT_TIMEOUT_MS = 30_000;
-const USER_AGENT = '@univ3-strategy-lab/sdk/0.1.0';
+const USER_AGENT = '@ticklab/sdk/0.1.0';
 /** Hard cap on per-attempt backoff so we never sleep for minutes. */
 const MAX_BACKOFF_MS = 8_000;
 /** Hard cap on configured retries so a misconfigured caller cannot DOS us. */
@@ -204,14 +204,14 @@ function buildSimulationBody(p: SimulationsRunParams): Record<string, unknown> {
 /* -------------------------------------------------------------------------- */
 
 /**
- * Typed API client for the univ3-strategy-lab service.
+ * Typed API client for the ticklab service.
  *
  * Construct with a {@link ClientConfig}, then call methods on the
  * namespace objects (`client.backtests.run`, `client.risk.compute`, …).
  * Each namespace method is also exported as a standalone function so
  * unused endpoints can be tree-shaken.
  */
-export class UnivariateClient {
+export class TicklabClient {
   readonly baseUrl: string;
   readonly apiKey: string | undefined;
   readonly maxRetries: number;
@@ -222,7 +222,7 @@ export class UnivariateClient {
 
   constructor(config: ClientConfig) {
     if (!config || typeof config.baseUrl !== 'string' || config.baseUrl.length === 0) {
-      throw new Error('UnivariateClient: `baseUrl` is required.');
+      throw new Error('TicklabClient: `baseUrl` is required.');
     }
     this.baseUrl = config.baseUrl.replace(/\/+$/, '');
     this.apiKey = config.apiKey;
@@ -233,7 +233,7 @@ export class UnivariateClient {
     this._fetch = config.fetch ?? globalThis.fetch;
     if (typeof this._fetch !== 'function') {
       throw new Error(
-        'UnivariateClient: global `fetch` is unavailable. Pass `config.fetch` explicitly (Node 18+ has fetch built-in).',
+        'TicklabClient: global `fetch` is unavailable. Pass `config.fetch` explicitly (Node 18+ has fetch built-in).',
       );
     }
   }
@@ -273,7 +273,7 @@ export class UnivariateClient {
    * Low-level request runner. Exposed so SDK consumers can hit routes
    * the typed methods don't cover yet.
    *
-   * Always throws `UnivariateError` on non-2xx, never returns null.
+   * Always throws `TicklabError` on non-2xx, never returns null.
    */
   async request<T extends WithRequestIdHeader>(
     method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
@@ -306,7 +306,7 @@ export class UnivariateClient {
       body = JSON.stringify(init.json);
     }
 
-    let lastErr: UnivariateError | null = null;
+    let lastErr: TicklabError | null = null;
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       // Per-attempt timeout via AbortSignal so we don't pollute the caller's.
       const controller = new AbortController();
@@ -330,7 +330,7 @@ export class UnivariateClient {
           const text = await res.text();
           const data = text.length > 0 ? safeJsonParse(text) : null;
           if (data === null || typeof data !== 'object') {
-            throw new UnivariateError({
+            throw new TicklabError({
               message: `Expected JSON response, got ${typeof data}`,
               status: res.status,
               code: 'internal',
@@ -355,7 +355,7 @@ export class UnivariateClient {
         const code = classifyApiError(errField, res.status);
         const message = errorMessageFromBody(bodyParsed, res.status);
 
-        const err = new UnivariateError({
+        const err = new TicklabError({
           message,
           status: res.status,
           code,
@@ -379,7 +379,7 @@ export class UnivariateClient {
           await sleep(backoffMs, init.signal);
         } catch (sleepErr) {
           // Caller aborted during retry sleep.
-          throw new UnivariateError({
+          throw new TicklabError({
             message: 'Request aborted during retry backoff',
             status: 0,
             code: 'aborted',
@@ -396,11 +396,11 @@ export class UnivariateClient {
         init.signal?.removeEventListener('abort', onCallerAbort);
 
         // Already normalised by this loop.
-        if (err instanceof UnivariateError) throw err;
+        if (err instanceof TicklabError) throw err;
 
         // Caller aborted.
         if (init.signal?.aborted || controller.signal.aborted) {
-          throw new UnivariateError({
+          throw new TicklabError({
             message: 'Request aborted',
             status: 0,
             code: 'aborted',
@@ -413,8 +413,8 @@ export class UnivariateClient {
         }
 
         // Network / TLS / DNS / etc. Retryable up to maxRetries.
-        const code: UnivariateErrorCode = 'network';
-        const wrapped = new UnivariateError({
+        const code: TicklabErrorCode = 'network';
+        const wrapped = new TicklabError({
           message: err instanceof Error ? err.message : 'Network error',
           status: 0,
           code,
@@ -430,7 +430,7 @@ export class UnivariateClient {
         try {
           await sleep(backoffMs, init.signal);
         } catch (sleepErr) {
-          throw new UnivariateError({
+          throw new TicklabError({
             message: 'Request aborted during retry backoff',
             status: 0,
             code: 'aborted',
@@ -445,7 +445,7 @@ export class UnivariateClient {
     }
 
     // Unreachable in practice — loop either returns or throws.
-    throw lastErr ?? new UnivariateError({
+    throw lastErr ?? new TicklabError({
       message: 'Request failed',
       status: 0,
       code: 'unknown',
@@ -463,7 +463,7 @@ export class UnivariateClient {
 
 /** `POST /api/backtests` */
 export function backtestsRun(
-  client: UnivariateClient,
+  client: TicklabClient,
   params: BacktestRunParams,
   opts?: RequestOptions,
 ): Promise<BacktestRunResponse> {
@@ -477,7 +477,7 @@ export function backtestsRun(
 
 /** `POST /api/analytics/risk` */
 export function riskCompute(
-  client: UnivariateClient,
+  client: TicklabClient,
   params: RiskComputeParams,
   opts?: RequestOptions,
 ): Promise<RiskReportResponse> {
@@ -495,7 +495,7 @@ export function riskCompute(
 
 /** `GET /api/pools` */
 export function poolsDiscover(
-  client: UnivariateClient,
+  client: TicklabClient,
   params?: PoolsDiscoverParams,
   opts?: RequestOptions,
 ): Promise<PoolsDiscoverResponse> {
@@ -516,7 +516,7 @@ export function poolsDiscover(
 
 /** `GET /api/v4/hooks` */
 export function v4HooksDiscover(
-  client: UnivariateClient,
+  client: TicklabClient,
   params?: V4HooksDiscoverParams,
   opts?: RequestOptions,
 ): Promise<V4HooksDiscoverResponse> {
@@ -538,7 +538,7 @@ export function v4HooksDiscover(
 
 /** `POST /api/simulations` */
 export function simulationsRun(
-  client: UnivariateClient,
+  client: TicklabClient,
   params: SimulationsRunParams,
   opts?: RequestOptions,
 ): Promise<SimulationsRunResponse> {

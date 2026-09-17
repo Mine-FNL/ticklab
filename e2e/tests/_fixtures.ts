@@ -20,7 +20,7 @@ import testPool from '../fixtures/test-pool.json';
  *  on every navigation.
  */
 
-const STORE_KEY = 'univ3-strategy-lab-storage';
+const STORE_KEY = 'ticklab-storage';
 
 export interface SeededPool {
   chainId: number;

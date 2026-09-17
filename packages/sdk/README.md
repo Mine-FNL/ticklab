@@ -1,6 +1,6 @@
-# `@univ3-strategy-lab/sdk`
+# `@ticklab/sdk`
 
-TypeScript SDK for the [univ3-strategy-lab](https://app.example.com) API —
+TypeScript SDK for the [ticklab](https://app.example.com) API —
 backtests, risk analytics, simulations, pool discovery, and V4 hooks.
 
 - Zero runtime dependencies (uses native `fetch`)
@@ -13,15 +13,15 @@ backtests, risk analytics, simulations, pool discovery, and V4 hooks.
 ## Install
 
 ```bash
-npm install @univ3-strategy-lab/sdk
+npm install @ticklab/sdk
 ```
 
 ## Quick start
 
 ```typescript
-import { UnivariateClient, UnivariateError } from '@univ3-strategy-lab/sdk';
+import { TicklabClient, TicklabError } from '@ticklab/sdk';
 
-const client = new UnivariateClient({
+const client = new TicklabClient({
   baseUrl: 'https://app.example.com',
   apiKey: process.env.UNIVARIATE_API_KEY, // optional
 });
@@ -65,12 +65,12 @@ const hooks = await client.v4.hooks.discover();
 ## Tree-shakeable imports
 
 If you only need one endpoint, import the standalone function instead of
-the whole `UnivariateClient`:
+the whole `TicklabClient`:
 
 ```typescript
-import { UnivariateClient, backtestsRun } from '@univ3-strategy-lab/sdk';
+import { TicklabClient, backtestsRun } from '@ticklab/sdk';
 
-const client = new UnivariateClient({ baseUrl: 'https://app.example.com' });
+const client = new TicklabClient({ baseUrl: 'https://app.example.com' });
 const backtest = await backtestsRun(client, { /* … */ });
 ```
 
@@ -87,7 +87,7 @@ setTimeout(() => controller.abort(), 5_000);
 try {
   await client.backtests.run(params, { signal: controller.signal });
 } catch (err) {
-  if (err instanceof UnivariateError && err.code === 'aborted') {
+  if (err instanceof TicklabError && err.code === 'aborted') {
     console.log('cancelled');
   }
 }
@@ -96,12 +96,12 @@ try {
 ## Error handling
 
 ```typescript
-import { UnivariateError, isUnivariateError } from '@univ3-strategy-lab/sdk';
+import { TicklabError, isTicklabError } from '@ticklab/sdk';
 
 try {
   await client.risk.compute({ equityCurve: [] }); // too short → 400
 } catch (err) {
-  if (isUnivariateError(err)) {
+  if (isTicklabError(err)) {
     switch (err.code) {
       case 'validation':  // bad caller input → don't retry
       case 'rate_limit':  // 429 → safe to retry with backoff
@@ -126,7 +126,7 @@ automatically (default 3 attempts with exponential backoff + jitter). Pass
 ## Configuration
 
 ```typescript
-new UnivariateClient({
+new TicklabClient({
   baseUrl: 'https://app.example.com',
   apiKey: 'sk_…',
   maxRetries: 3,        // default; cap is 5

@@ -14,12 +14,12 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'UniV3 LP Strategy Lab',
+  title: 'Ticklab',
   description: 'Research terminal for Uniswap V3 concentrated liquidity strategies',
   keywords: ['Uniswap', 'DeFi', 'LP', 'liquidity', 'yield', 'strategy', 'backtest'],
   authors: [{ name: 'UniV3 LP Lab' }],
   openGraph: {
-    title: 'UniV3 LP Strategy Lab',
+    title: 'Ticklab',
     description: 'Research terminal for Uniswap V3 concentrated liquidity strategies',
     type: 'website',
   },

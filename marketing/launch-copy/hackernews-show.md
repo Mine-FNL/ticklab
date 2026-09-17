@@ -12,7 +12,7 @@
 
 **Body:**
 
-`univ3-strategy-lab` is a Next.js 14 / TypeScript-strict simulator for Uniswap V3 concentrated-liquidity strategies. It runs entirely on free public endpoints — DeFi Llama for pool metrics, Binance daily OHLC for prices, public RPCs for on-chain state. No API keys, no paid tier, no mocked data.
+`ticklab` is a Next.js 14 / TypeScript-strict simulator for Uniswap V3 concentrated-liquidity strategies. It runs entirely on free public endpoints — DeFi Llama for pool metrics, Binance daily OHLC for prices, public RPCs for on-chain state. No API keys, no paid tier, no mocked data.
 
 What I think is interesting:
 
@@ -22,6 +22,6 @@ What I think is interesting:
 
 **Honest caveat.** The north-star metric — % of pool-days within ±20% relative error — is currently **0/15**. The absolute-error metric is the one to trust, and it passes. The relative metric is dominated by pools with near-zero GT cumulative return, and the remaining gaps are gated on per-swap data (Covalent / The Graph) and DeFi Llama coverage for ENS/SUSHI/PEPE. Read `NORTH_STAR_REPORT.md` for the full picture.
 
-Repo: https://github.com/0xBingBong69/univ3-strategy-lab
+Repo: https://github.com/Mine-FNL/ticklab
 
 **Question for the community:** What's the right way to define "accuracy" for an LP simulator — absolute error in pp, relative error vs GT, or something domain-specific like a percentile of the realized-vs-projected fee distribution? I'd rather have a defensible metric than a flattering one.

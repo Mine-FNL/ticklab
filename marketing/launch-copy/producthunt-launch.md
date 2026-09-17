@@ -1,6 +1,6 @@
 # Product Hunt Launch
 **Audience:** Product Hunt hunters, maker community, fintech/DeFi early adopters
-**One-line:** PH-ready assets, tagline, maker comment, and hunter outreach for `univ3-strategy-lab`.
+**One-line:** PH-ready assets, tagline, maker comment, and hunter outreach for `ticklab`.
 
 ---
 

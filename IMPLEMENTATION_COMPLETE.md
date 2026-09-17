@@ -1,8 +1,8 @@
-# UniV3 LP Strategy Lab - Implementation Complete
+# Ticklab - Implementation Complete
 
 ## ✅ All Changes Implemented
 
-The UniV3 LP Strategy Lab has been successfully updated to use **completely free data sources** - no API keys required!
+The Ticklab has been successfully updated to use **completely free data sources** - no API keys required!
 
 ## Summary of Changes
 
@@ -75,7 +75,7 @@ Major Uniswap V3 pools per chain:
 ## File Structure
 
 ```
-univ3-strategy-lab/
+ticklab/
 ├── app/
 │   ├── api/                    # API routes (updated)
 │   ├── (pages)/                # Page routes
@@ -114,7 +114,7 @@ univ3-strategy-lab/
 
 ```bash
 # Navigate to project
-cd /mnt/okcomputer/output/univ3-strategy-lab
+cd /mnt/okcomputer/output/ticklab
 
 # Install dependencies
 npm install
@@ -169,7 +169,7 @@ NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID=""
 
 ## Support
 
-- GitHub Issues: [https://github.com/0xBingBong69/univ3-strategy-lab/issues](https://github.com/0xBingBong69/univ3-strategy-lab/issues)
+- GitHub Issues: [https://github.com/Mine-FNL/ticklab/issues](https://github.com/Mine-FNL/ticklab/issues)
 
 ## License
 

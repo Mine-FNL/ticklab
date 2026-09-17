@@ -1,14 +1,14 @@
 /**
  * End-to-end integration tests against a running dev server.
  *
- * Skipped unless `UNIVARIATE_TEST_BASE_URL` is set. To run:
+ * Skipped unless `TICKLAB_TEST_BASE_URL` is set. To run:
  *
  *   # Terminal A
- *   cd univ3-strategy-lab && npm run dev
+ *   cd ticklab && npm run dev
  *
  *   # Terminal B
- *   cd univ3-strategy-lab/packages/sdk && \
- *     UNIVARIATE_TEST_BASE_URL=http://localhost:3000 npm test
+ *   cd ticklab/packages/sdk && \
+ *     TICKLAB_TEST_BASE_URL=http://localhost:3000 npm test
  *
  * The real-data backtest path may fail because the upstream price/volume
  * providers (CoinGecko, DeFi Llama) are flaky. We don't fail the suite
@@ -17,19 +17,19 @@
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { UnivariateClient, UnivariateError, isUnivariateError } from '../src/index.js';
+import { TicklabClient, TicklabError, isTicklabError } from '../src/index.js';
 
-const BASE_URL = process.env.UNIVARIATE_TEST_BASE_URL;
+const BASE_URL = process.env.TICKLAB_TEST_BASE_URL;
 const API_KEY = process.env.UNIVARIATE_TEST_API_KEY; // optional
 const RUN = typeof BASE_URL === 'string' && BASE_URL.length > 0;
 
 const skipIfDisabled = RUN ? it : it.skip;
 
 describe.skipIf(!RUN)('integration: live API', () => {
-  let client: UnivariateClient;
+  let client: TicklabClient;
 
   beforeAll(() => {
-    client = new UnivariateClient({
+    client = new TicklabClient({
       baseUrl: BASE_URL as string,
       ...(API_KEY ? { apiKey: API_KEY } : {}),
       timeoutMs: 60_000,
@@ -86,7 +86,7 @@ describe.skipIf(!RUN)('integration: live API', () => {
       });
     } catch (err) {
       // Real-data path is flaky; rethrow to surface in test logs.
-      if (isUnivariateError(err) && (err.code === 'upstream' || err.code === 'validation')) {
+      if (isTicklabError(err) && (err.code === 'upstream' || err.code === 'validation')) {
         // The synthetic path should not produce upstream errors. Re-throw.
         throw err;
       }
@@ -115,7 +115,7 @@ describe.skipIf(!RUN)('integration: live API', () => {
         useRealData: true,
       });
     } catch (err) {
-      if (err instanceof UnivariateError) {
+      if (err instanceof TicklabError) {
         // Either upstream failure (502) or upstream_failure (404 if not indexed).
         expect(['upstream', 'validation', 'internal']).toContain(err.code);
       } else {

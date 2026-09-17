@@ -173,7 +173,7 @@ describe('GET /api/health', () => {
     ]);
 
     const body = await callHandler();
-    expect(body.service).toBe('univ3-strategy-lab');
+    expect(body.service).toBe('ticklab');
     expect(body.timestamp).toMatch(/T.+Z$/);
     expect(body.node).toMatch(/^v\d+\./);
   });

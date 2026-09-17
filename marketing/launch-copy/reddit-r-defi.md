@@ -12,7 +12,7 @@
 
 **Body:**
 
-Most LP tools — Apwine, Beefy, the various yield dashboards — publish a projected APR and stop there. `univ3-strategy-lab` is the project I want to use, so I built the thing I wanted: a V3 strategy simulator that ships **its own error measurement** against real ground-truth data, end-to-end reproducible.
+Most LP tools — Apwine, Beefy, the various yield dashboards — publish a projected APR and stop there. `ticklab` is the project I want to use, so I built the thing I wanted: a V3 strategy simulator that ships **its own error measurement** against real ground-truth data, end-to-end reproducible.
 
 What's in the box:
 
@@ -29,6 +29,6 @@ What's in the box:
 
 Free, open-source, no API keys, no paid tier. Five chains supported: Ethereum, Arbitrum, Base, Optimism, Polygon.
 
-Repo: https://github.com/0xBingBong69/univ3-strategy-lab
+Repo: https://github.com/Mine-FNL/ticklab
 
 If you've ever looked at an LP simulator's "projected APR" and wondered how anyone could ship that with a straight face — this is what I'm trying to do differently.

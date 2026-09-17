@@ -1,4 +1,4 @@
-# UniV3 LP Strategy Lab - Changes Summary
+# Ticklab - Changes Summary
 
 ## Overview
 Updated the application to use **FREE data sources only** - no API keys required for basic functionality.

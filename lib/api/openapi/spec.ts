@@ -179,7 +179,7 @@ export const OPENAPI_SPEC = {
     ].join('\n'),
     contact: {
       name: 'UniV3 Strategy Lab maintainers',
-      url: 'https://github.com/qscreen/univ3-strategy-lab',
+      url: 'https://github.com/qscreen/ticklab',
     },
     license: {
       name: 'MIT',
@@ -188,7 +188,7 @@ export const OPENAPI_SPEC = {
   },
   servers: [
     {
-      url: 'https://app.univ3-strategy-lab.com',
+      url: 'https://app.ticklab.com',
       description: 'Production (placeholder — update before public release)',
     },
     {

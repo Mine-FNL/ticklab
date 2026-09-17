@@ -142,7 +142,7 @@ export const useAppStore = create<AppState>()(
         }),
     }),
     {
-      name: 'univ3-strategy-lab-storage',
+      name: 'ticklab-storage',
       partialize: (state) => ({
         settings: state.settings,
         selectedChain: state.selectedChain,

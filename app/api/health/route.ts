@@ -91,7 +91,7 @@ export const GET = apiHandler<unknown, HealthReport>({
 
     return {
       status: degraded ? 'degraded' : 'ok',
-      service: 'univ3-strategy-lab',
+      service: 'ticklab',
       version: process.env.npm_package_version ?? '0.1.0',
       buildSha: process.env.BUILD_SHA ?? 'unknown',
       uptimeSeconds: Math.round(process.uptime()),

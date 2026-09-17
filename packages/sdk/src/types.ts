@@ -1,5 +1,5 @@
 /**
- * Public TypeScript types for @univ3-strategy-lab/sdk.
+ * Public TypeScript types for @ticklab/sdk.
  *
  * These mirror the upstream API contracts in lib/validation/schemas.ts,
  * lib/analytics/risk-types.ts, lib/simulation/backtest.ts, and
@@ -103,7 +103,7 @@ export interface Pool {
 /* Backtests                                                                   */
 /* -------------------------------------------------------------------------- */
 
-/** Caller-facing input to {@link UnivariateClient.backtests.run}. */
+/** Caller-facing input to {@link TicklabClient.backtests.run}. */
 export interface BacktestRunParams {
   chainId?: number;
   poolAddress: Address;
@@ -209,7 +209,7 @@ export interface RiskComputeParams {
 }
 
 /**
- * Output of {@link UnivariateClient.risk.compute}. Mirrors the upstream
+ * Output of {@link TicklabClient.risk.compute}. Mirrors the upstream
  * `RiskReport` interface (lib/analytics/risk-types.ts) with `requestId`
  * attached for tracing.
  */

@@ -5,8 +5,8 @@
 # Final image: ~150 MB on Alpine, runs as non-root, ships only what the
 # standalone server needs (no dev deps, no full node_modules, no source).
 #
-# Build:   docker build -t univ3-strategy-lab:latest .
-# Run:     docker run --rm -p 3000:3000 univ3-strategy-lab:latest
+# Build:   docker build -t ticklab:latest .
+# Run:     docker run --rm -p 3000:3000 ticklab:latest
 #
 # Required env (optional at runtime; see docs/DEPLOY.md):
 #   PORT      default 3000

@@ -59,7 +59,7 @@ npx tsx scripts/perf-bench.ts --routes /api/health /api/metrics
 ### The summary table
 
 ```
-univ3-strategy-lab benchmark — http://localhost:3000
+ticklab benchmark — http://localhost:3000
 samples=100  warmup=5  concurrency=[1, 5, 20, 50]
 ──────────────────────────────────────────────────────────────────────────────
 

@@ -1,5 +1,5 @@
 {
-  "name": "univ3-strategy-lab-e2e",
+  "name": "ticklab-e2e",
   "version": "0.1.0",
   "private": true,
   "description": "Playwright end-to-end browser tests for the UniV3 Strategy Lab",

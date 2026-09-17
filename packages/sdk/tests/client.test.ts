@@ -1,10 +1,10 @@
 /**
- * Unit tests for @univ3-strategy-lab/sdk.
+ * Unit tests for @ticklab/sdk.
  *
  * Verifies:
  *   - request shape (URL, method, headers, body)
  *   - each public method returns the right typed shape
- *   - UnivariateError is thrown on 4xx/5xx with `code` + `status`
+ *   - TicklabError is thrown on 4xx/5xx with `code` + `status`
  *   - AbortSignal propagation
  *   - retry logic (3 attempts on 5xx, exponential backoff, jitter,
  *     429 honours Retry-After)
@@ -14,10 +14,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
-  UnivariateClient,
-  UnivariateError,
+  TicklabClient,
+  TicklabError,
   backtestsRun,
-  isUnivariateError,
+  isTicklabError,
   poolsDiscover,
   riskCompute,
   simulationsRun,
@@ -78,14 +78,14 @@ function installFetchMock(impl: (input: RequestInfo | URL, init?: RequestInit) =
 /* Construction & basic request shape                                           */
 /* -------------------------------------------------------------------------- */
 
-describe('UnivariateClient construction', () => {
+describe('TicklabClient construction', () => {
   it('requires baseUrl', () => {
-    expect(() => new UnivariateClient({ baseUrl: '' })).toThrow();
-    expect(() => new UnivariateClient({} as ClientConfig)).toThrow();
+    expect(() => new TicklabClient({ baseUrl: '' })).toThrow();
+    expect(() => new TicklabClient({} as ClientConfig)).toThrow();
   });
 
   it('strips trailing slashes from baseUrl', () => {
-    const c = new UnivariateClient({ baseUrl: 'https://x.example.com///' });
+    const c = new TicklabClient({ baseUrl: 'https://x.example.com///' });
     expect(c.baseUrl).toBe('https://x.example.com');
   });
 
@@ -93,7 +93,7 @@ describe('UnivariateClient construction', () => {
     const saved = globalThis.fetch;
     (globalThis as { fetch?: typeof fetch }).fetch = undefined;
     try {
-      expect(() => new UnivariateClient({ baseUrl: 'https://x' })).toThrow(/fetch/);
+      expect(() => new TicklabClient({ baseUrl: 'https://x' })).toThrow(/fetch/);
     } finally {
       globalThis.fetch = saved;
     }
@@ -128,7 +128,7 @@ describe('backtests.run', () => {
       }, { requestId: 'req_abc' }),
     );
 
-    const client = new UnivariateClient({ baseUrl: 'https://x.example.com' });
+    const client = new TicklabClient({ baseUrl: 'https://x.example.com' });
     const out = await client.backtests.run(validParams);
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -137,7 +137,7 @@ describe('backtests.run', () => {
     expect(init.method).toBe('POST');
     expect((init.headers as Record<string, string>)['Content-Type']).toBe('application/json');
     expect((init.headers as Record<string, string>)['Accept']).toBe('application/json');
-    expect((init.headers as Record<string, string>)['User-Agent']).toContain('@univ3-strategy-lab/sdk');
+    expect((init.headers as Record<string, string>)['User-Agent']).toContain('@ticklab/sdk');
     const body = JSON.parse(init.body as string);
     expect(body.poolAddress).toBe(validParams.poolAddress);
     expect(body.depositAmount).toBe('10000');
@@ -158,12 +158,12 @@ describe('backtests.run', () => {
       // Simulate fetch respecting the abort
       return makeResponse(200, { backtestId: 'bt_x', results: {}, warnings: [], requestId: 'req_x' });
     });
-    const client = new UnivariateClient({ baseUrl: 'https://x.example.com' });
+    const client = new TicklabClient({ baseUrl: 'https://x.example.com' });
     const controller = new AbortController();
     await client.backtests.run(validParams, { signal: controller.signal });
   });
 
-  it('throws UnivariateError on 400 with code=validation', async () => {
+  it('throws TicklabError on 400 with code=validation', async () => {
     installFetchMock(async () =>
       makeResponse(400, {
         error: 'invalid_request',
@@ -171,9 +171,9 @@ describe('backtests.run', () => {
         requestId: 'req_bad',
       }, { requestId: 'req_bad' }),
     );
-    const client = new UnivariateClient({ baseUrl: 'https://x.example.com' });
+    const client = new TicklabClient({ baseUrl: 'https://x.example.com' });
     await expect(client.backtests.run(validParams)).rejects.toMatchObject({
-      name: 'UnivariateError',
+      name: 'TicklabError',
       status: 400,
       code: 'validation',
       requestId: 'req_bad',
@@ -181,14 +181,14 @@ describe('backtests.run', () => {
     });
   });
 
-  it('throws UnivariateError on 400 with code=validation and does not retry', async () => {
+  it('throws TicklabError on 400 with code=validation and does not retry', async () => {
     // 4xx is caller-side and never retried.
     const fetchMock = installFetchMock(async () =>
       makeResponse(400, { error: 'invalid_request', message: 'bad range', requestId: 'req_400' }, { requestId: 'req_400' }),
     );
-    const client = new UnivariateClient({ baseUrl: 'https://x.example.com' });
+    const client = new TicklabClient({ baseUrl: 'https://x.example.com' });
     await expect(client.backtests.run(validParams)).rejects.toMatchObject({
-      name: 'UnivariateError',
+      name: 'TicklabError',
       status: 400,
       code: 'validation',
       requestId: 'req_400',
@@ -196,16 +196,16 @@ describe('backtests.run', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it('throws UnivariateError on 500 with code=internal (retries internally)', async () => {
+  it('throws TicklabError on 500 with code=internal (retries internally)', async () => {
     const fetchMock = installFetchMock(async () =>
       makeResponse(500, { error: 'internal_error', message: 'boom', requestId: 'req_500' }, { requestId: 'req_500' }),
     );
-    const client = new UnivariateClient({
+    const client = new TicklabClient({
       baseUrl: 'https://x.example.com',
       baseBackoffMs: 1, // keep the test fast
     });
     await expect(client.backtests.run(validParams)).rejects.toMatchObject({
-      name: 'UnivariateError',
+      name: 'TicklabError',
       status: 500,
       code: 'internal',
       requestId: 'req_500',
@@ -218,7 +218,7 @@ describe('backtests.run', () => {
     installFetchMock(async () =>
       makeResponse(200, { backtestId: 'bt_x', results: { totalReturn: 0 }, warnings: [], requestId: 'req_x' }),
     );
-    const client = new UnivariateClient({ baseUrl: 'https://x.example.com' });
+    const client = new TicklabClient({ baseUrl: 'https://x.example.com' });
     const out = await backtestsRun(client, validParams);
     expect(out.backtestId).toBe('bt_x');
   });
@@ -260,7 +260,7 @@ describe('risk.compute', () => {
     installFetchMock(async () =>
       makeResponse(200, report, { requestId: 'req_risk' }),
     );
-    const client = new UnivariateClient({ baseUrl: 'https://x.example.com' });
+    const client = new TicklabClient({ baseUrl: 'https://x.example.com' });
     const out = await client.risk.compute(params);
     expect(out.sharpeRatio).toBe(0.8);
     expect(out.maxDrawdown).toBe(0.05);
@@ -277,7 +277,7 @@ describe('risk.compute', () => {
     installFetchMock(async () =>
       makeResponse(200, report, { requestId: 'req_only_header' }),
     );
-    const client = new UnivariateClient({ baseUrl: 'https://x.example.com' });
+    const client = new TicklabClient({ baseUrl: 'https://x.example.com' });
     const out = await client.risk.compute(params);
     expect(out.requestId).toBe('req_only_header');
   });
@@ -291,7 +291,7 @@ describe('risk.compute', () => {
         ulcerIndex: 0, burkeRatio: 0, sampleSize: 0, annualizationFactor: 252, riskFreeRate: 0,
       }, { requestId: 'req_standalone' }),
     );
-    const client = new UnivariateClient({ baseUrl: 'https://x.example.com' });
+    const client = new TicklabClient({ baseUrl: 'https://x.example.com' });
     const out = await riskCompute(client, params);
     expect(out.requestId).toBe('req_standalone');
   });
@@ -311,7 +311,7 @@ describe('pools.discover', () => {
         sortOptions: ['tvl'],
       }, { requestId: 'req_pools' }),
     );
-    const client = new UnivariateClient({ baseUrl: 'https://x.example.com' });
+    const client = new TicklabClient({ baseUrl: 'https://x.example.com' });
     const out = await client.pools.discover({ chainId: 1, limit: 5 });
     const [url, init] = fetchMock.mock.calls[0]!;
     expect(init.method).toBe('GET');
@@ -326,7 +326,7 @@ describe('pools.discover', () => {
     const fetchMock = installFetchMock(async () =>
       makeResponse(200, { pools: [], count: 0, chainId: 1, sortOptions: [] }),
     );
-    const client = new UnivariateClient({ baseUrl: 'https://x.example.com' });
+    const client = new TicklabClient({ baseUrl: 'https://x.example.com' });
     await poolsDiscover(client, {});
     const [url] = fetchMock.mock.calls[0]!;
     expect(url).toBe('https://x.example.com/api/pools');
@@ -345,7 +345,7 @@ describe('v4.hooks.discover', () => {
         count: 1,
       }, { requestId: 'req_hooks' }),
     );
-    const client = new UnivariateClient({ baseUrl: 'https://x.example.com' });
+    const client = new TicklabClient({ baseUrl: 'https://x.example.com' });
     const out = await client.v4.hooks.discover({ category: 'fee', auditedOnly: true });
     const [url] = fetchMock.mock.calls[0]!;
     expect(url).toContain('/api/v4/hooks');
@@ -359,7 +359,7 @@ describe('v4.hooks.discover', () => {
     installFetchMock(async () =>
       makeResponse(200, { hooks: [], count: 0 }),
     );
-    const client = new UnivariateClient({ baseUrl: 'https://x.example.com' });
+    const client = new TicklabClient({ baseUrl: 'https://x.example.com' });
     const out = await v4HooksDiscover(client);
     expect(out.count).toBe(0);
   });
@@ -384,7 +384,7 @@ describe('simulations.run', () => {
         requestId: 'req_sim',
       }, { requestId: 'req_sim' }),
     );
-    const client = new UnivariateClient({ baseUrl: 'https://x.example.com' });
+    const client = new TicklabClient({ baseUrl: 'https://x.example.com' });
     const out = await simulationsRun(client, {
       poolAddress: '0x8ad599c3a0cc1a8a26606766b157530d66f33675',
       depositAmount: 1000,
@@ -412,11 +412,11 @@ describe('retry behaviour', () => {
     ],
   };
 
-  it('retries up to maxRetries on 5xx and then throws UnivariateError', async () => {
+  it('retries up to maxRetries on 5xx and then throws TicklabError', async () => {
     const fetchMock = installFetchMock(async () =>
       makeResponse(503, { error: 'service_unavailable', message: 'down' }, { requestId: 'req_503' }),
     );
-    const client = new UnivariateClient({
+    const client = new TicklabClient({
       baseUrl: 'https://x.example.com',
       baseBackoffMs: 1, // keep test fast
     });
@@ -440,7 +440,7 @@ describe('retry behaviour', () => {
         ulcerIndex: 0, burkeRatio: 0, sampleSize: 0, annualizationFactor: 252, riskFreeRate: 0,
       }, { requestId: 'req_ok' });
     });
-    const client = new UnivariateClient({
+    const client = new TicklabClient({
       baseUrl: 'https://x.example.com',
       baseBackoffMs: 1,
     });
@@ -453,7 +453,7 @@ describe('retry behaviour', () => {
     const fetchMock = installFetchMock(async () =>
       makeResponse(429, { error: 'rate_limited' }, { requestId: 'req_429', retryAfter: '0' }),
     );
-    const client = new UnivariateClient({ baseUrl: 'https://x.example.com' });
+    const client = new TicklabClient({ baseUrl: 'https://x.example.com' });
     await expect(client.risk.compute(params)).rejects.toMatchObject({
       status: 429,
       code: 'rate_limit',
@@ -473,7 +473,7 @@ describe('retry behaviour', () => {
         ulcerIndex: 0, burkeRatio: 0, sampleSize: 0, annualizationFactor: 252, riskFreeRate: 0,
       }, { requestId: 'req_recovered' });
     });
-    const client = new UnivariateClient({
+    const client = new TicklabClient({
       baseUrl: 'https://x.example.com',
       baseBackoffMs: 1,
     });
@@ -486,8 +486,8 @@ describe('retry behaviour', () => {
     const fetchMock = installFetchMock(async () =>
       makeResponse(500, { error: 'internal_error' }),
     );
-    const client = new UnivariateClient({ baseUrl: 'https://x.example.com' });
-    await expect(client.risk.compute(params, { maxRetries: 0 })).rejects.toBeInstanceOf(UnivariateError);
+    const client = new TicklabClient({ baseUrl: 'https://x.example.com' });
+    await expect(client.risk.compute(params, { maxRetries: 0 })).rejects.toBeInstanceOf(TicklabError);
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
@@ -503,7 +503,7 @@ describe('retry behaviour', () => {
         ulcerIndex: 0, burkeRatio: 0, sampleSize: 0, annualizationFactor: 252, riskFreeRate: 0,
       }),
     );
-    const client = new UnivariateClient({ baseUrl: 'https://x.example.com' });
+    const client = new TicklabClient({ baseUrl: 'https://x.example.com' });
     await client.risk.compute(params, { baseBackoffMs: 1 });
   });
 });
@@ -521,7 +521,7 @@ describe('abort signal', () => {
     depositToken: 'usd' as const,
   };
 
-  it('throws UnivariateError(code=aborted) when caller aborts mid-request', async () => {
+  it('throws TicklabError(code=aborted) when caller aborts mid-request', async () => {
     installFetchMock(async (_input, init) => {
       // Throw an AbortError when fetch's signal is aborted.
       return await new Promise<Response>((_resolve, reject) => {
@@ -537,7 +537,7 @@ describe('abort signal', () => {
         sig.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')), { once: true });
       });
     });
-    const client = new UnivariateClient({ baseUrl: 'https://x.example.com' });
+    const client = new TicklabClient({ baseUrl: 'https://x.example.com' });
     const controller = new AbortController();
     setTimeout(() => controller.abort(), 5);
     await expect(client.backtests.run(params, { signal: controller.signal })).rejects.toMatchObject({
@@ -545,14 +545,14 @@ describe('abort signal', () => {
     });
   });
 
-  it('isUnivariateError type guard works', () => {
-    const e = new UnivariateError({
+  it('isTicklabError type guard works', () => {
+    const e = new TicklabError({
       message: 'x', status: 400, code: 'validation', requestId: null, body: null, url: 'u', method: 'GET',
     });
-    expect(isUnivariateError(e)).toBe(true);
-    expect(isUnivariateError(new Error('plain'))).toBe(false);
-    expect(isUnivariateError('string')).toBe(false);
-    expect(isUnivariateError(null)).toBe(false);
+    expect(isTicklabError(e)).toBe(true);
+    expect(isTicklabError(new Error('plain'))).toBe(false);
+    expect(isTicklabError('string')).toBe(false);
+    expect(isTicklabError(null)).toBe(false);
   });
 });
 
@@ -560,20 +560,20 @@ describe('abort signal', () => {
 /* Error envelope toJSON                                                        */
 /* -------------------------------------------------------------------------- */
 
-describe('UnivariateError.toJSON', () => {
+describe('TicklabError.toJSON', () => {
   it('returns a serializable object without body/cause', async () => {
     installFetchMock(async () =>
       makeResponse(404, { error: 'Pool not found', requestId: 'req_404' }, { requestId: 'req_404' }),
     );
-    const client = new UnivariateClient({ baseUrl: 'https://x.example.com' });
+    const client = new TicklabClient({ baseUrl: 'https://x.example.com' });
     try {
       await client.pools.discover({ chainId: 1 });
       throw new Error('should not reach');
     } catch (err) {
-      expect(isUnivariateError(err)).toBe(true);
-      const e = err as UnivariateError;
+      expect(isTicklabError(err)).toBe(true);
+      const e = err as TicklabError;
       const j = e.toJSON();
-      expect(j.name).toBe('UnivariateError');
+      expect(j.name).toBe('TicklabError');
       expect(j.status).toBe(404);
       expect(j.code).toBe('validation');
       expect(j.requestId).toBe('req_404');
@@ -589,11 +589,11 @@ describe('UnivariateError.toJSON', () => {
 
   it('exposes retryable getter for transient categories', async () => {
     installFetchMock(async () => makeResponse(500, { error: 'internal_error' }));
-    const client = new UnivariateClient({ baseUrl: 'https://x.example.com', baseBackoffMs: 1, maxRetries: 0 });
+    const client = new TicklabClient({ baseUrl: 'https://x.example.com', baseBackoffMs: 1, maxRetries: 0 });
     try {
       await client.risk.compute({ equityCurve: [{ timestamp: 1, lpValue: 1 }, { timestamp: 2, lpValue: 2 }] });
     } catch (err) {
-      const e = err as UnivariateError;
+      const e = err as TicklabError;
       expect(e.code).toBe('internal');
       expect(e.retryable).toBe(true);
     }
@@ -601,11 +601,11 @@ describe('UnivariateError.toJSON', () => {
 
   it('non-retryable categories report retryable=false', async () => {
     installFetchMock(async () => makeResponse(400, { error: 'invalid_request' }));
-    const client = new UnivariateClient({ baseUrl: 'https://x.example.com' });
+    const client = new TicklabClient({ baseUrl: 'https://x.example.com' });
     try {
       await client.risk.compute({ equityCurve: [{ timestamp: 1, lpValue: 1 }, { timestamp: 2, lpValue: 2 }] });
     } catch (err) {
-      const e = err as UnivariateError;
+      const e = err as TicklabError;
       expect(e.code).toBe('validation');
       expect(e.retryable).toBe(false);
     }
@@ -621,7 +621,7 @@ describe('auth header', () => {
     const fetchMock = installFetchMock(async () =>
       makeResponse(200, { pools: [], count: 0, chainId: 1, sortOptions: [] }),
     );
-    const client = new UnivariateClient({
+    const client = new TicklabClient({
       baseUrl: 'https://x.example.com',
       apiKey: 'sk_test_123',
     });
@@ -634,7 +634,7 @@ describe('auth header', () => {
     const fetchMock = installFetchMock(async () =>
       makeResponse(200, { pools: [], count: 0, chainId: 1, sortOptions: [] }),
     );
-    const client = new UnivariateClient({ baseUrl: 'https://x.example.com' });
+    const client = new TicklabClient({ baseUrl: 'https://x.example.com' });
     await client.pools.discover();
     const [, init] = fetchMock.mock.calls[0]!;
     expect((init.headers as Record<string, string>).Authorization).toBeUndefined();
@@ -655,7 +655,7 @@ describe('x-request-id propagation', () => {
         ulcerIndex: 0, burkeRatio: 0, sampleSize: 0, annualizationFactor: 252, riskFreeRate: 0,
       }, { requestId: 'req_header_only' }),
     );
-    const client = new UnivariateClient({ baseUrl: 'https://x.example.com' });
+    const client = new TicklabClient({ baseUrl: 'https://x.example.com' });
     const out = await client.risk.compute({
       equityCurve: [{ timestamp: 1, lpValue: 1 }, { timestamp: 2, lpValue: 2 }],
     });
@@ -668,7 +668,7 @@ describe('x-request-id propagation', () => {
         backtestId: 'bt_1', useRealData: false, results: {}, warnings: [], requestId: 'req_body_only',
       }),
     );
-    const client = new UnivariateClient({ baseUrl: 'https://x.example.com' });
+    const client = new TicklabClient({ baseUrl: 'https://x.example.com' });
     const out = await client.backtests.run({
       poolAddress: '0x8ad599c3a0cc1a8a26606766b157530d66f33675',
       lowerPrice: 2200, upperPrice: 2700, depositAmount: 1000, depositToken: 'usd',
@@ -684,16 +684,16 @@ describe('x-request-id propagation', () => {
 describe('client.request() escape hatch', () => {
   it('returns the body on 200', async () => {
     installFetchMock(async () => makeResponse(200, { ok: true, requestId: 'req_low' }, { requestId: 'req_low' }));
-    const client = new UnivariateClient({ baseUrl: 'https://x.example.com' });
+    const client = new TicklabClient({ baseUrl: 'https://x.example.com' });
     const r = await client.request<{ ok: boolean } & { requestId: string }>('GET', '/api/health');
     expect(r.ok).toBe(true);
     expect(r.requestId).toBe('req_low');
   });
 
-  it('throws UnivariateError on malformed JSON body', async () => {
+  it('throws TicklabError on malformed JSON body', async () => {
     installFetchMock(async () => new Response('not json', { status: 200 }));
-    const client = new UnivariateClient({ baseUrl: 'https://x.example.com' });
-    await expect(client.request('GET', '/api/health')).rejects.toBeInstanceOf(UnivariateError);
+    const client = new TicklabClient({ baseUrl: 'https://x.example.com' });
+    await expect(client.request('GET', '/api/health')).rejects.toBeInstanceOf(TicklabError);
   });
 });
 
@@ -706,11 +706,11 @@ describe('retry timing', () => {
     const fetchMock = installFetchMock(async () =>
       makeResponse(500, { error: 'internal_error' }),
     );
-    const client = new UnivariateClient({ baseUrl: 'https://x.example.com' });
+    const client = new TicklabClient({ baseUrl: 'https://x.example.com' });
     const start = Date.now();
     await expect(client.risk.compute({
       equityCurve: [{ timestamp: 1, lpValue: 1 }, { timestamp: 2, lpValue: 2 }],
-    })).rejects.toBeInstanceOf(UnivariateError);
+    })).rejects.toBeInstanceOf(TicklabError);
     const elapsed = Date.now() - start;
     expect(fetchMock).toHaveBeenCalledTimes(4);
     // 3 sleeps with jittered backoff up to MAX_BACKOFF_MS (8s). We give a
