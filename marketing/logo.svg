@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="UniV3 Strategy Lab logo">
+  <title>ΣV3 — UniV3 Strategy Lab</title>
+
+  <!-- Rounded-square dark plate -->
+  <rect x="16" y="16" width="480" height="480" rx="112" ry="112" fill="#0b0b10"/>
+  <!-- Inner hairline for depth -->
+  <rect x="16.5" y="16.5" width="479" height="479" rx="111.5" ry="111.5" fill="none" stroke="#1c1c26" stroke-width="1.5"/>
+
+  <!-- Greek capital Sigma, single path, centered, generous -->
+  <path d="
+    M 110 128
+    L 402 128
+    Q 416 128 408 140
+    L 296 240
+    Q 288 256 296 272
+    L 408 372
+    Q 416 384 402 384
+    L 110 384
+    Q 96 384 104 372
+    L 216 264
+    Q 224 256 216 248
+    L 104 140
+    Q 96 128 110 128
+    Z" fill="#ff007a"/>
+
+  <!-- V3 subscript, monospace, in lower-right corner of plate -->
+  <g transform="translate(296 410)">
+    <text
+      x="0" y="0"
+      font-family="ui-monospace, 'SF Mono', 'Menlo', 'Consolas', monospace"
+      font-size="56"
+      font-weight="700"
+      letter-spacing="2"
+      fill="#ffffff"
+      text-anchor="middle"
+      dominant-baseline="middle">V3</text>
+  </g>
+
+  <!-- Tiny corner mark, top-right, for polish -->
+  <circle cx="408" cy="104" r="6" fill="#ff007a"/>
+</svg>

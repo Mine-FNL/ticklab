@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 28" width="760" height="28" role="img" aria-label="UniV3 Strategy Lab status badges">
+  <title>Project status badges</title>
+  <style>
+    .b-label { font: 600 11px -apple-system, 'SF Pro Text', 'Segoe UI', Helvetica, Arial, sans-serif; fill: #ffffff; }
+    .b-value { font: 600 11px -apple-system, 'SF Pro Text', 'Segoe UI', Helvetica, Arial, sans-serif; fill: #ffffff; }
+    .b-sub   { font: 600 11px 'SF Mono', 'Menlo', 'Consolas', monospace; fill: rgba(255,255,255,0.85); }
+  </style>
+
+  <!-- Badge 1: Tests passing (green) -->
+  <g transform="translate(0 0)">
+    <rect width="120" height="20" rx="3" fill="#555"/>
+    <rect x="60" width="60" height="20" rx="3" fill="#22c55e"/>
+    <rect width="120" height="20" rx="3" fill="url(#shine)"/>
+    <text x="30" y="14.5" class="b-label" text-anchor="middle">tests</text>
+    <text x="90" y="14.5" class="b-value" text-anchor="middle">passing</text>
+  </g>
+
+  <!-- Badge 2: TypeScript strict (blue) -->
+  <g transform="translate(128 0)">
+    <rect width="150" height="20" rx="3" fill="#555"/>
+    <rect x="80" width="70" height="20" rx="3" fill="#3178c6"/>
+    <text x="40" y="14.5" class="b-label" text-anchor="middle">typescript</text>
+    <text x="115" y="14.5" class="b-value" text-anchor="middle">strict</text>
+  </g>
+
+  <!-- Badge 3: Next.js 14 (black) -->
+  <g transform="translate(286 0)">
+    <rect width="110" height="20" rx="3" fill="#555"/>
+    <rect x="48" width="62" height="20" rx="3" fill="#000000"/>
+    <text x="24" y="14.5" class="b-label" text-anchor="middle">next</text>
+    <text x="79" y="14.5" class="b-value" text-anchor="middle">.js 14</text>
+  </g>
+
+  <!-- Badge 4: V3 + V4 (pink, Uniswap) -->
+  <g transform="translate(404 0)">
+    <rect width="100" height="20" rx="3" fill="#555"/>
+    <rect x="42" width="58" height="20" rx="3" fill="#ff007a"/>
+    <text x="21" y="14.5" class="b-label" text-anchor="middle">uniswap</text>
+    <text x="71" y="14.5" class="b-value" text-anchor="middle">v3 + v4</text>
+  </g>
+
+  <!-- Badge 5: Zero API keys (cyan) -->
+  <g transform="translate(512 0)">
+    <rect width="138" height="20" rx="3" fill="#555"/>
+    <rect x="80" width="58" height="20" rx="3" fill="#06b6d4"/>
+    <text x="40" y="14.5" class="b-label" text-anchor="middle">zero api keys</text>
+    <text x="109" y="14.5" class="b-value" text-anchor="middle">needed</text>
+  </g>
+
+  <!-- Badge 6: MIT (yellow) -->
+  <g transform="translate(658 0)">
+    <rect width="100" height="20" rx="3" fill="#555"/>
+    <rect x="40" width="60" height="20" rx="3" fill="#eab308"/>
+    <text x="20" y="14.5" class="b-label" text-anchor="middle">license</text>
+    <text x="70" y="14.5" class="b-value" text-anchor="middle">MIT</text>
+  </g>
+</svg>
