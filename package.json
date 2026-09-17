@@ -12,7 +12,9 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "validate:northstar": "tsx scripts/validate-northstar.ts",
-    "validate:northstar:ci": "tsx scripts/validate-northstar.ts --ci --require-pools 8"
+    "validate:northstar:ci": "tsx scripts/validate-northstar.ts --ci --require-pools 8",
+    "perf:bench": "tsx scripts/perf-bench.ts",
+    "perf:bench:prod": "PERF_BASE_URL=https://app.example.com tsx scripts/perf-bench.ts"
   },
   "dependencies": {
     "@base-org/account": "^2.5.3",
