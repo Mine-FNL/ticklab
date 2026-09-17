@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { ZodError } from 'zod';
 import { simulationRequestSchema } from '@/lib/validation/schemas';
 import { runDeterministicScenario } from '@/lib/simulation/deterministic';
 import { estimateFees } from '@/lib/univ3/fees';
@@ -126,12 +127,29 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Simulation error:', error);
-    
+
+    // Validation errors (zod) are 400, not 500. The previous catch block
+    // surfaced them as 500 which broke clients that send invalid bodies
+    // and trusted the status code to drive UX. Surfaced by perf bench
+    // (commit 8c93c6f) — `/api/simulations` returned 500:100 at every
+    // concurrency because the bench sent `{ /* TODO */ }`.
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        {
+          error: 'invalid_request',
+          message: 'Request did not match expected schema',
+          details: error.flatten(),
+          suggestion: 'Check the inputs and try again.',
+        },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
-      { 
-        error: 'Simulation failed', 
+      {
+        error: 'Simulation failed',
         message: (error as Error).message,
-        suggestion: 'Check your inputs and try again.'
+        suggestion: 'Check your inputs and try again.',
       },
       { status: 500 }
     );
