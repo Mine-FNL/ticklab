@@ -33,7 +33,7 @@ Ticklab is an A16Z-grade simulator for Uniswap V3 concentrated-liquidity positio
 
 ## See it in 2 minutes
 
-Four short videos that walk the story — pain → magic → proof → path. Open [`marketing/videos/index.html`](./marketing/videos/index.html) to play all four in-page.
+Four narrated explainer videos that walk the story — pain → magic → proof → path. **Audio-synced** (Microsoft Edge neural TTS, `en-US-GuyNeural` voice), rendered at 1600×900, h264 + AAC. Open [`marketing/videos/index.html`](./marketing/videos/index.html) to play all four in-page (muted by default per browser autoplay rules).
 
 | # | Title | What it answers | Watch |
 |---|---|---|---|
@@ -42,7 +42,15 @@ Four short videos that walk the story — pain → magic → proof → path. Ope
 | 03 | **The Proof** | Show me it really runs. | [MP4](./marketing/videos/03-the-proof.mp4) · [GIF](./marketing/videos/03-the-proof.gif) |
 | 04 | **The Path** | How do I run this on my laptop? | [MP4](./marketing/videos/04-the-path.mp4) · [GIF](./marketing/videos/04-the-path.gif) |
 
-Total runtime: 2 min 18 s. Source HTML for each video lives in [`marketing/videos/source/`](./marketing/videos/source/) — every frame is hand-tuned CSS, no proprietary video tool needed.
+Total runtime: 2 min 6 s of narration. Source HTML for each video lives in [`marketing/videos/source/`](./marketing/videos/source/) — every frame is hand-tuned CSS, every narration beat is timed against the audio via JS. To re-render after any edit:
+
+```bash
+cd marketing/videos
+python3 narrate.py   # regenerate the 4 narration MP3s
+python3 render.py    # record + mux audio + encode MP4 + export GIF
+```
+
+Zero proprietary tools. Edge TTS is free, Playwright + ffmpeg are open-source.
 
 ## Quickstart (5 commands)
 

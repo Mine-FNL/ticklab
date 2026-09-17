@@ -1,8 +1,8 @@
 <!doctype html>
 <!--
-  Video 1 of 4 — "The Pain"
-  Theme: what LPers actually experience when they trust an LP simulator.
-  Duration: ~30s, 1280x720, 24fps, auto-plays on load.
+  Video 1 of 4 — "The Pain" (v2: narrated, smoother)
+  Resolution: 1600x900, 30fps, audio-synced narration.
+  Narration length: 23.3s · Frame budget: 28s (extra tail for hook).
 -->
 <html lang="en">
 <head>
@@ -10,181 +10,229 @@
 <title>Ticklab — The Pain</title>
 <style>
   :root {
-    --bg: #09090b;
-    --panel: #0f0f13;
-    --grid: #18181f;
+    --bg: #08080a;
+    --panel: #0d0d12;
+    --grid: #1a1a22;
+    --grid-strong: #232330;
     --pink: #ff007a;
+    --pink-soft: rgba(255,0,122,0.18);
     --green: #22c55e;
     --red: #ef4444;
-    --text: #ebebf0;
-    --dim: #9ba0aa;
+    --red-soft: rgba(239,68,68,0.18);
+    --text: #f4f4f7;
+    --text-mid: #c4c6cd;
+    --dim: #888d97;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { width: 1280px; height: 720px; background: var(--bg); color: var(--text); overflow: hidden;
-    font-family: -apple-system, 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
-  .frame { position: absolute; inset: 0; padding: 60px 80px; opacity: 0; }
-  .frame.active { opacity: 1; }
+  html, body {
+    width: 1600px; height: 900px;
+    background: var(--bg); color: var(--text);
+    overflow: hidden;
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont,
+                 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  .frame {
+    position: absolute; inset: 0; padding: 90px 110px;
+    opacity: 0; transform: translateY(8px);
+    transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: opacity, transform;
+  }
+  .frame.active { opacity: 1; transform: translateY(0); }
+  .grid-bg {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 80px 80px;
+    opacity: 0.5; pointer-events: none;
+  }
+  .mono { font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace; }
+  .top {
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--grid-strong); padding-bottom: 22px; margin-bottom: 48px;
+  }
+  .top .l { color: var(--pink); font-weight: 700; font-size: 18px; letter-spacing: 1.5px; }
+  .top .r { color: var(--dim); font-size: 14px; letter-spacing: 0.5px; }
+  .top .bar { width: 6px; height: 18px; background: var(--pink); margin-right: 12px;
+    display: inline-block; vertical-align: middle; border-radius: 2px; }
 
-  /* grid */
-  .grid { position: absolute; inset: 0; background-image:
-    linear-gradient(var(--grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-    background-size: 80px 80px; opacity: .6; pointer-events: none; }
+  h1 { font-size: 78px; line-height: 1.04; letter-spacing: -2px; font-weight: 800; }
+  h1 .accent { color: var(--pink); }
+  h2 { font-size: 26px; line-height: 1.4; font-weight: 400; color: var(--text-mid);
+    margin-top: 22px; max-width: 1180px; letter-spacing: -0.2px; }
+  .big { font-size: 120px; line-height: 1; font-weight: 800; letter-spacing: -4px; }
 
-  /* monospace */
-  .mono { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; }
+  .pill { display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 16px; border-radius: 999px;
+    background: var(--panel); border: 1px solid var(--grid-strong);
+    font-size: 14px; font-weight: 600; letter-spacing: 0.3px; }
+  .pill.pink { color: var(--pink); border-color: var(--pink); background: var(--pink-soft); }
+  .pill.red  { color: var(--red);  border-color: var(--red);  background: var(--red-soft); }
+  .pill .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
 
-  /* title bar */
-  .top { display: flex; justify-content: space-between; align-items: center;
-    border-bottom: 1px solid var(--grid); padding-bottom: 16px; margin-bottom: 32px; }
-  .top .l { color: var(--pink); font-weight: 700; font-size: 18px; letter-spacing: 1px; }
-  .top .r { color: var(--dim); font-size: 14px; }
+  .center { display: flex; flex-direction: column; justify-content: center; height: 100%; }
 
-  h1 { font-size: 64px; line-height: 1.05; letter-spacing: -1.5px; font-weight: 800; }
-  h2 { font-size: 28px; line-height: 1.3; font-weight: 500; color: var(--dim); margin-top: 16px; max-width: 980px; }
-  .big { font-size: 96px; line-height: 1; font-weight: 800; letter-spacing: -3px; }
-  .pill { display: inline-block; padding: 6px 14px; border-radius: 999px;
-    background: var(--panel); border: 1px solid var(--grid); font-size: 14px; color: var(--dim); }
-  .pill.pink { color: var(--pink); border-color: var(--pink); }
-  .pill.green { color: var(--green); border-color: var(--green); }
-  .pill.red { color: var(--red); border-color: var(--red); }
+  /* chart card */
+  .chart-card { background: var(--panel); border: 1px solid var(--grid-strong);
+    border-radius: 16px; padding: 32px; margin-top: 36px; height: 540px;
+    position: relative; overflow: hidden; }
+  .chart-card .ch-title { font-size: 16px; color: var(--dim); margin-bottom: 20px;
+    font-family: 'SF Mono', ui-monospace, monospace; }
+  .chart-card svg { width: 100%; height: 380px; }
+  .chart-card .axis { stroke: var(--grid-strong); stroke-width: 1; }
+  .chart-card .grid-line { stroke: var(--grid); stroke-width: 1; stroke-dasharray: 4 4; }
+  .chart-card .y-label { font-size: 14px; fill: var(--dim); font-family: 'SF Mono', monospace; }
+  .chart-card .ch-line { fill: none; stroke-width: 3.5; stroke-linecap: round;
+    stroke-dasharray: 2400; stroke-dashoffset: 2400; }
+  .chart-card .ch-line.draw { animation: drawLine 3s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+  .chart-card .ch-line.pink { stroke: var(--pink); }
+  .chart-card .ch-line.red  { stroke: var(--red); }
+  .chart-card .ch-area { opacity: 0; transition: opacity 1.2s ease; }
+  .chart-card .ch-area.pink { fill: var(--pink-soft); }
+  .chart-card .ch-area.red  { fill: var(--red-soft); }
+  .chart-card .ch-area.show { opacity: 1; }
+  .chart-card .badge { position: absolute; right: 32px; top: 32px; }
+  .chart-card .end-val { position: absolute; right: 32px; bottom: 32px;
+    font-size: 44px; font-weight: 800; letter-spacing: -1.5px;
+    font-family: 'SF Mono', monospace; }
 
-  /* Frame 1 — title */
-  #f1 { animation: showHide 4s 0s forwards; }
-  #f1 .center { display: flex; flex-direction: column; justify-content: center; height: 100%; }
-
-  /* Frame 2 — projection chart */
-  #f2 { animation: showHide 7s 4s forwards; }
-  .chart-card { background: var(--panel); border: 1px solid var(--grid);
-    border-radius: 12px; padding: 24px; margin-top: 32px; height: 460px; position: relative; }
-  .chart-card .ch-title { font-size: 16px; color: var(--dim); margin-bottom: 16px; }
-  .chart-card .ch-line { stroke: var(--pink); stroke-width: 4; fill: none;
-    stroke-dasharray: 1400; stroke-dashoffset: 1400; animation: drawLine 3s 5s forwards; }
-  .chart-card .ch-area { fill: rgba(255,0,122,0.12); opacity: 0; animation: fadeIn 1s 7s forwards; }
-  .chart-card .ch-axis { stroke: var(--grid); stroke-width: 1; }
-  .chart-card .ch-y-label { font-size: 14px; fill: var(--dim); }
-  .chart-card .badge { position: absolute; right: 24px; top: 24px; }
-  .chart-card .end-val { position: absolute; right: 24px; bottom: 24px;
-    color: var(--pink); font-size: 32px; font-weight: 800; }
-
-  /* Frame 3 — reality chart (the rug pull) */
-  #f3 { animation: showHide 7s 11s forwards; }
-  .chart-card .ch-line.down { stroke: var(--red); animation: drawLine 3s 12s forwards; }
-
-  /* Frame 4 — side by side */
-  #f4 { animation: showHide 8s 18s forwards; }
-  .sxs { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 32px; }
-  .sxs .col { background: var(--panel); border: 1px solid var(--grid);
-    border-radius: 12px; padding: 24px; }
-  .sxs .col .label { color: var(--dim); font-size: 14px; text-transform: uppercase; letter-spacing: 1.5px; }
-  .sxs .col .val { font-size: 64px; font-weight: 800; letter-spacing: -2px; line-height: 1; margin: 12px 0; }
-  .sxs .col .note { font-size: 16px; color: var(--dim); }
+  /* side-by-side */
+  .sxs { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 36px; }
+  .sxs .col { background: var(--panel); border: 2px solid var(--grid-strong);
+    border-radius: 16px; padding: 36px; }
   .sxs .col.proj { border-color: var(--pink); }
   .sxs .col.real { border-color: var(--red); }
+  .sxs .col .label { color: var(--dim); font-size: 14px; text-transform: uppercase;
+    letter-spacing: 2px; font-weight: 700; font-family: 'SF Mono', monospace; }
+  .sxs .col .val { font-size: 88px; font-weight: 800; letter-spacing: -3px;
+    line-height: 1; margin: 16px 0 14px; font-family: 'SF Mono', monospace; }
+  .sxs .col .note { font-size: 18px; color: var(--dim); }
+  .gap-line { margin-top: 32px; color: var(--text-mid); font-size: 22px; }
+  .gap-line strong { color: var(--red); font-weight: 800; }
 
-  /* Frame 5 — hook */
-  #f5 { animation: showHide 4s 26s forwards; }
-  #f5 .center { display: flex; flex-direction: column; justify-content: center; height: 100%; }
-  #f5 .accent { color: var(--pink); }
+  /* hook */
+  #f5 h1 { font-size: 84px; }
+  #f5 .accent { background: linear-gradient(90deg, var(--pink), #ff66a8);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; }
 
-  @keyframes showHide { 0% { opacity: 0; } 5% { opacity: 1; } 95% { opacity: 1; } 100% { opacity: 0; } }
-  @keyframes fadeIn { to { opacity: 1; } }
+  /* Frame timings — narration-synced */
+  #f1 { animation: showHide 4.5s 0.3s forwards; }
+  #f2 { animation: showHide 4.5s 4.3s forwards; }
+  #f3 { animation: showHide 5s 8.3s forwards; }
+  #f4 { animation: showHide 6s 12.8s forwards; }
+  #f5 { animation: showHide 5s 18.3s forwards; }
+
+  @keyframes showHide {
+    0%   { opacity: 0; transform: translateY(8px); }
+    6%   { opacity: 1; transform: translateY(0); }
+    94%  { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-4px); }
+  }
   @keyframes drawLine { to { stroke-dashoffset: 0; } }
 </style>
 </head>
 <body>
-  <div class="grid"></div>
+<div class="grid-bg"></div>
 
-  <!-- Frame 1 — title (0-4s) -->
-  <section id="f1" class="frame active">
-    <div class="top">
-      <div class="l mono">TICKLAB · 01 / 04</div>
-      <div class="r mono">THE PAIN</div>
-    </div>
-    <div class="center">
-      <h1>The LP projection lie.</h1>
-      <h2>Every LP simulator ships an APR. Most of them ship the wrong one.</h2>
-    </div>
-  </section>
+<!-- Frame 1 — title -->
+<section id="f1" class="frame active">
+  <div class="top">
+    <div class="l mono"><span class="bar"></span>TICKLAB · 01 / 04</div>
+    <div class="r mono">THE PAIN</div>
+  </div>
+  <div class="center">
+    <h1>The LP projection <span class="accent">lie.</span></h1>
+    <h2>Every LP simulator ships an APR. Most of them ship the wrong one.</h2>
+  </div>
+</section>
 
-  <!-- Frame 2 — projection chart (4-11s) -->
-  <section id="f2" class="frame">
-    <div class="top">
-      <div class="l mono">TICKLAB · 01 / 04</div>
-      <div class="r mono">WHAT THE SIMULATOR SHOWS YOU</div>
-    </div>
-    <div class="chart-card">
-      <div class="ch-title mono">Projected cumulative return · WETH/USDC · 30d</div>
-      <div class="badge"><span class="pill pink">SIMULATOR</span></div>
-      <svg viewBox="0 0 1080 320" preserveAspectRatio="none" style="width:100%;height:320px;margin-top:8px;">
-        <line class="ch-axis" x1="40" y1="280" x2="1040" y2="280" />
-        <line class="ch-axis" x1="40" y1="40"  x2="40"  y2="280" />
-        <text class="ch-y-label mono" x="0" y="60" >+40%</text>
-        <text class="ch-y-label mono" x="0" y="160">+20%</text>
-        <text class="ch-y-label mono" x="0" y="260">0%</text>
-        <path class="ch-area" d="M 40 280 Q 200 240 360 200 T 680 130 T 1040 60 L 1040 280 Z" />
-        <path class="ch-line"     d="M 40 280 Q 200 240 360 200 T 680 130 T 1040 60" />
-      </svg>
-      <div class="end-val mono">+41.8% APR</div>
-    </div>
-  </section>
+<!-- Frame 2 — projection chart -->
+<section id="f2" class="frame">
+  <div class="top">
+    <div class="l mono"><span class="bar"></span>TICKLAB · 01 / 04</div>
+    <div class="r mono">WHAT THE SIMULATOR SHOWS YOU</div>
+  </div>
+  <div class="chart-card">
+    <div class="ch-title mono">projected_cumulative_return · WETH/USDC · 30d</div>
+    <div class="badge"><span class="pill pink"><span class="dot"></span>SIMULATOR</span></div>
+    <svg viewBox="0 0 1360 380" preserveAspectRatio="none">
+      <line class="grid-line" x1="60" y1="60"  x2="1320" y2="60" />
+      <line class="grid-line" x1="60" y1="160" x2="1320" y2="160" />
+      <line class="grid-line" x1="60" y1="260" x2="1320" y2="260" />
+      <line class="axis" x1="60" y1="340" x2="1320" y2="340" />
+      <line class="axis" x1="60" y1="40"  x2="60"   y2="340" />
+      <text class="y-label" x="6" y="64" >+40%</text>
+      <text class="y-label" x="6" y="164">+20%</text>
+      <text class="y-label" x="6" y="264">0%</text>
+      <path class="ch-area pink" d="M 60 340 Q 280 290 480 240 T 880 150 T 1320 70 L 1320 340 Z" />
+      <path class="ch-line pink draw" d="M 60 340 Q 280 290 480 240 T 880 150 T 1320 70" />
+    </svg>
+    <div class="end-val mono" style="color:var(--pink);">+41.8% APR</div>
+  </div>
+</section>
 
-  <!-- Frame 3 — reality chart (11-18s) -->
-  <section id="f3" class="frame">
-    <div class="top">
-      <div class="l mono">TICKLAB · 01 / 04</div>
-      <div class="r mono">WHAT ACTUALLY HAPPENED</div>
-    </div>
-    <div class="chart-card">
-      <div class="ch-title mono">Realized cumulative return · WETH/USDC · 30d</div>
-      <div class="badge"><span class="pill red">REALITY</span></div>
-      <svg viewBox="0 0 1080 320" preserveAspectRatio="none" style="width:100%;height:320px;margin-top:8px;">
-        <line class="ch-axis" x1="40" y1="280" x2="1040" y2="280" />
-        <line class="ch-axis" x1="40" y1="40"  x2="40"  y2="280" />
-        <text class="ch-y-label mono" x="0" y="60" >+40%</text>
-        <text class="ch-y-label mono" x="0" y="160">+20%</text>
-        <text class="ch-y-label mono" x="0" y="260">0%</text>
-        <path class="ch-area" d="M 40 270 Q 200 240 360 260 T 680 230 T 1040 250 L 1040 280 Z" fill="rgba(239,68,68,0.12);opacity:1" />
-        <path class="ch-line down" d="M 40 270 Q 200 240 360 260 T 680 230 T 1040 250" />
-      </svg>
-      <div class="end-val mono" style="color:var(--red);">+6.3% APR</div>
-    </div>
-  </section>
+<!-- Frame 3 — reality chart -->
+<section id="f3" class="frame">
+  <div class="top">
+    <div class="l mono"><span class="bar"></span>TICKLAB · 01 / 04</div>
+    <div class="r mono">WHAT ACTUALLY HAPPENED</div>
+  </div>
+  <div class="chart-card">
+    <div class="ch-title mono">realized_cumulative_return · WETH/USDC · 30d</div>
+    <div class="badge"><span class="pill red"><span class="dot"></span>REALITY</span></div>
+    <svg viewBox="0 0 1360 380" preserveAspectRatio="none">
+      <line class="grid-line" x1="60" y1="60"  x2="1320" y2="60" />
+      <line class="grid-line" x1="60" y1="160" x2="1320" y2="160" />
+      <line class="grid-line" x1="60" y1="260" x2="1320" y2="260" />
+      <line class="axis" x1="60" y1="340" x2="1320" y2="340" />
+      <line class="axis" x1="60" y1="40"  x2="60"   y2="340" />
+      <text class="y-label" x="6" y="64" >+40%</text>
+      <text class="y-label" x="6" y="164">+20%</text>
+      <text class="y-label" x="6" y="264">0%</text>
+      <path class="ch-area red" d="M 60 320 Q 280 280 480 310 T 880 270 T 1320 295 L 1320 340 Z" />
+      <path class="ch-line red draw" d="M 60 320 Q 280 280 480 310 T 880 270 T 1320 295" />
+    </svg>
+    <div class="end-val mono" style="color:var(--red);">+6.3% APR</div>
+  </div>
+</section>
 
-  <!-- Frame 4 — side by side (18-26s) -->
-  <section id="f4" class="frame">
-    <div class="top">
-      <div class="l mono">TICKLAB · 01 / 04</div>
-      <div class="r mono">PROJECTION vs REALITY</div>
+<!-- Frame 4 — side-by-side -->
+<section id="f4" class="frame">
+  <div class="top">
+    <div class="l mono"><span class="bar"></span>TICKLAB · 01 / 04</div>
+    <div class="r mono">PROJECTION vs REALITY</div>
+  </div>
+  <h1 style="font-size:42px;font-weight:700;letter-spacing:-0.5px;">Same pool. Same window. Different story.</h1>
+  <div class="sxs">
+    <div class="col proj">
+      <div class="label mono">SIMULATOR PROJECTION</div>
+      <div class="val" style="color:var(--pink);">+41.8%</div>
+      <div class="note">APR · confidence band ±8%</div>
     </div>
-    <h1 style="font-size:36px;font-weight:700;letter-spacing:-0.5px;">Same pool. Same window. Different story.</h1>
-    <div class="sxs">
-      <div class="col proj">
-        <div class="label mono">SIMULATOR PROJECTION</div>
-        <div class="val" style="color:var(--pink);">+41.8%</div>
-        <div class="note">APR · confidence band ±8%</div>
-      </div>
-      <div class="col real">
-        <div class="label mono">REALIZED RETURN</div>
-        <div class="val" style="color:var(--red);">+6.3%</div>
-        <div class="note">30d cumulative · IL + fees - gas</div>
-      </div>
+    <div class="col real">
+      <div class="label mono">REALIZED RETURN</div>
+      <div class="val" style="color:var(--red);">+6.3%</div>
+      <div class="note">30d cumulative · IL + fees − gas</div>
     </div>
-    <div style="margin-top:32px;color:var(--dim);font-size:18px;">
-      Difference: <span style="color:var(--red);font-weight:700;">35.5 percentage points</span>. The model never told you.
-    </div>
-  </section>
+  </div>
+  <div class="gap-line">Difference: <strong>35.5 percentage points</strong>. The model never told you.</div>
+</section>
 
-  <!-- Frame 5 — hook (26-30s) -->
-  <section id="f5" class="frame">
-    <div class="top">
-      <div class="l mono">TICKLAB · 01 / 04</div>
-      <div class="r mono">THE HOOK</div>
-    </div>
-    <div class="center">
-      <h1 style="font-size:72px;"><span class="accent">What if your simulator</span><br>published its own error?</h1>
-    </div>
-  </section>
+<!-- Frame 5 — hook -->
+<section id="f5" class="frame">
+  <div class="top">
+    <div class="l mono"><span class="bar"></span>TICKLAB · 01 / 04</div>
+    <div class="r mono">THE QUESTION</div>
+  </div>
+  <div class="center">
+    <h1>What if your simulator<br><span class="accent">published its own error?</span></h1>
+  </div>
+</section>
 
 </body>
 </html>

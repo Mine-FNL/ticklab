@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-"""Render a single video HTML to MP4 + GIF."""
+"""Render one v2 video (with audio)."""
 import asyncio
-import os
 import subprocess
 import sys
 from pathlib import Path
@@ -10,60 +9,72 @@ from playwright.async_api import async_playwright
 
 slug = sys.argv[1]
 fname = sys.argv[2]
-duration = int(sys.argv[3])
+mp3_name = sys.argv[3]
+total = int(sys.argv[4])
 
 HERE = Path(__file__).parent.resolve()
 SRC = HERE / "source"
 OUT = HERE
 src = SRC / fname
-out_mp4 = OUT / f"{slug}.mp4"
-out_gif = OUT / f"{slug}.gif"
-webm = OUT / f"{slug}-tmp.webm"
-palette = OUT / f"{slug}-tmp.png"
+mp3 = OUT / mp3_name
+
+W, H = 1600, 900
 
 async def main():
     async with async_playwright() as p:
+        print(f"[{slug}] recording {total}s …")
+        webm = OUT / f"{slug}-tmp.webm"
+        if webm.exists():
+            webm.unlink()
         browser = await p.chromium.launch()
         ctx = await browser.new_context(
-            viewport={"width": 1280, "height": 720},
+            viewport={"width": W, "height": H},
             record_video_dir=str(OUT),
-            record_video_size={"width": 1280, "height": 720},
+            record_video_size={"width": W, "height": H},
         )
         page = await ctx.new_page()
         await page.goto(f"file://{src}", wait_until="domcontentloaded")
-        await page.wait_for_timeout(500)
-        await page.wait_for_timeout(duration * 1000)
+        await page.wait_for_timeout(300)
+        await page.wait_for_timeout(total * 1000)
         video_path = await page.video.path()
         await ctx.close()
         await browser.close()
+        Path(video_path).rename(webm)
 
-    src_webm = Path(video_path)
-    src_webm.rename(webm)
-    print(f"webm: {webm.stat().st_size} bytes")
+    mp4_silent = OUT / f"{slug}-silent.mp4"
+    mp4_final = OUT / f"{slug}.mp4"
+    gif = OUT / f"{slug}.gif"
 
     subprocess.run(
         ["ffmpeg", "-y", "-i", str(webm),
          "-c:v", "libx264", "-pix_fmt", "yuv420p",
          "-movflags", "+faststart",
-         "-preset", "veryfast", "-crf", "20", str(out_mp4)],
-        check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-    )
-    print(f"mp4: {out_mp4.stat().st_size} bytes")
-
-    subprocess.run(
-        ["ffmpeg", "-y", "-i", str(out_mp4),
-         "-vf", "fps=12,scale=960:-1:flags=lanczos,palettegen", str(palette)],
+         "-preset", "slow", "-crf", "18", str(mp4_silent)],
         check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
     )
     subprocess.run(
-        ["ffmpeg", "-y", "-i", str(out_mp4), "-i", str(palette),
-         "-filter_complex", "fps=12,scale=960:-1:flags=lanczos[x];[x][1:v]paletteuse",
-         str(out_gif)],
+        ["ffmpeg", "-y", "-i", str(mp4_silent), "-i", str(mp3),
+         "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
+         "-map", "0:v", "-map", "1:a",
+         "-movflags", "+faststart", str(mp4_final)],
         check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
     )
-    print(f"gif: {out_gif.stat().st_size} bytes")
-
-    os.remove(webm)
-    os.remove(palette)
+    palette = OUT / f"{slug}-palette.png"
+    subprocess.run(
+        ["ffmpeg", "-y", "-i", str(mp4_final),
+         "-vf", "fps=12,scale=1280:-1:flags=lanczos,palettegen", str(palette)],
+        check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+    )
+    subprocess.run(
+        ["ffmpeg", "-y", "-i", str(mp4_final), "-i", str(palette),
+         "-filter_complex", "fps=12,scale=1280:-1:flags=lanczos[x];[x][1:v]paletteuse",
+         str(gif)],
+        check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+    )
+    print(f"[{slug}] mp4: {mp4_final.stat().st_size} bytes")
+    print(f"[{slug}] gif: {gif.stat().st_size} bytes")
+    webm.unlink(missing_ok=True)
+    mp4_silent.unlink(missing_ok=True)
+    palette.unlink(missing_ok=True)
 
 asyncio.run(main())

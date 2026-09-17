@@ -1,8 +1,8 @@
 <!doctype html>
 <!--
-  Video 3 of 4 — "The Proof"
-  Theme: a terminal session running the validation harness live.
-  Duration: ~30s, 1280x720, auto-plays on load.
+  Video 3 of 4 — "The Proof" (v2: narrated, smoother)
+  Resolution: 1600x900, 30fps, audio-synced narration.
+  Narration length: 33.5s · Frame budget: 38s.
 -->
 <html lang="en">
 <head>
@@ -10,87 +10,127 @@
 <title>Ticklab — The Proof</title>
 <style>
   :root {
-    --bg: #09090b;
-    --panel: #0f0f13;
-    --grid: #18181f;
+    --bg: #08080a;
+    --panel: #0d0d12;
+    --grid: #1a1a22;
+    --grid-strong: #232330;
     --pink: #ff007a;
     --green: #22c55e;
     --cyan: #06b6d4;
     --yellow: #eab308;
-    --text: #ebebf0;
-    --dim: #9ba0aa;
+    --red: #ef4444;
+    --text: #f4f4f7;
+    --text-mid: #c4c6cd;
+    --dim: #888d97;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { width: 1280px; height: 720px; background: var(--bg); color: var(--text); overflow: hidden;
-    font-family: -apple-system, 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
-  .frame { position: absolute; inset: 0; padding: 60px 80px; opacity: 0; }
-  .frame.active { opacity: 1; }
-  .grid { position: absolute; inset: 0; background-image:
-    linear-gradient(var(--grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-    background-size: 80px 80px; opacity: .4; pointer-events: none; }
-  .mono { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; }
-  .top { display: flex; justify-content: space-between; align-items: center;
-    border-bottom: 1px solid var(--grid); padding-bottom: 16px; margin-bottom: 32px; }
-  .top .l { color: var(--pink); font-weight: 700; font-size: 18px; letter-spacing: 1px; }
-  .top .r { color: var(--dim); font-size: 14px; }
-  h1 { font-size: 56px; line-height: 1.1; letter-spacing: -1.2px; font-weight: 800; }
+  html, body {
+    width: 1600px; height: 900px;
+    background: var(--bg); color: var(--text);
+    overflow: hidden;
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont,
+                 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  .frame {
+    position: absolute; inset: 0; padding: 90px 110px;
+    opacity: 0; transform: translateY(8px);
+    transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: opacity, transform;
+  }
+  .frame.active { opacity: 1; transform: translateY(0); }
+  .grid-bg {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 80px 80px;
+    opacity: 0.4; pointer-events: none;
+  }
+  .mono { font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace; }
+  .top {
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--grid-strong); padding-bottom: 22px; margin-bottom: 36px;
+  }
+  .top .l { color: var(--pink); font-weight: 700; font-size: 18px; letter-spacing: 1.5px; }
+  .top .r { color: var(--dim); font-size: 14px; letter-spacing: 0.5px; }
+  .top .bar { width: 6px; height: 18px; background: var(--pink); margin-right: 12px;
+    display: inline-block; vertical-align: middle; border-radius: 2px; }
+  h1 { font-size: 78px; line-height: 1.04; letter-spacing: -2px; font-weight: 800; }
+  h2 { font-size: 26px; line-height: 1.4; font-weight: 400; color: var(--text-mid);
+    margin-top: 22px; max-width: 1180px; letter-spacing: -0.2px; }
+  .accent { color: var(--pink); }
+  .center { display: flex; flex-direction: column; justify-content: center; height: 100%; }
 
-  /* Frame 1 — title (0-3s) */
-  #f1 { animation: showHide 3s 0s forwards; }
-  #f1 .center { display: flex; flex-direction: column; justify-content: center; height: 100%; }
-
-  /* Frame 2 — terminal typing (3-22s) */
-  #f2 { animation: showHide 19s 3s forwards; }
-  .term { background: #050507; border: 1px solid var(--grid); border-radius: 12px;
-    padding: 28px 32px; margin-top: 0; height: 540px; overflow: hidden;
-    box-shadow: 0 0 80px rgba(255,0,122,0.08); }
-  .term .bar { display: flex; gap: 8px; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--grid); }
+  /* terminal */
+  .term { background: #050507; border: 1px solid var(--grid-strong);
+    border-radius: 14px; padding: 28px 36px; height: 690px;
+    overflow: hidden; box-shadow: 0 0 100px rgba(255,0,122,0.06); }
+  .term .bar { display: flex; gap: 8px; margin-bottom: 22px; padding-bottom: 18px;
+    border-bottom: 1px solid var(--grid-strong); align-items: center; }
   .term .dot { width: 14px; height: 14px; border-radius: 50%; }
   .term .dot.r { background: #ff5f57; }
   .term .dot.y { background: #febc2e; }
   .term .dot.g { background: #28c840; }
-  .term .ttl { color: var(--dim); font-size: 14px; margin-left: 12px; }
+  .term .ttl { color: var(--dim); font-size: 14px; margin-left: 14px; letter-spacing: 0.5px; }
   .term pre { color: var(--text); font-size: 22px; line-height: 1.55;
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; white-space: pre-wrap; }
-  .term pre .c { color: var(--cyan); }
-  .term pre .p { color: var(--pink); }
-  .term pre .g { color: var(--green); }
-  .term pre .y { color: var(--yellow); }
-  .term pre .d { color: var(--dim); }
-  .cursor { display: inline-block; width: 10px; height: 22px; background: var(--pink);
-    vertical-align: middle; animation: blink 0.7s infinite step-end; }
+    font-family: 'SF Mono', 'Menlo', Consolas, monospace; white-space: pre-wrap; }
+  .term pre .c  { color: var(--cyan); }
+  .term pre .p  { color: var(--pink); }
+  .term pre .g  { color: var(--green); }
+  .term pre .y  { color: var(--yellow); }
+  .term pre .r  { color: var(--red); }
+  .term pre .d  { color: var(--dim); }
+  .term pre .b  { font-weight: 700; }
+  .term .row { opacity: 0; transform: translateY(4px);
+    transition: opacity 0.4s ease, transform 0.4s ease; }
+  .term .row.show { opacity: 1; transform: translateY(0); }
 
-  @keyframes showHide { 0% { opacity: 0; } 5% { opacity: 1; } 95% { opacity: 1; } 100% { opacity: 0; } }
+  .cursor { display: inline-block; width: 10px; height: 22px;
+    background: var(--pink); vertical-align: middle;
+    animation: blink 0.7s infinite step-end; }
   @keyframes blink { 50% { opacity: 0; } }
+
+  /* Frame timings */
+  #f1 { animation: showHide 4s 0.3s forwards; }
+  #f2 { animation: showHide 32s 3.8s forwards; }
+
+  @keyframes showHide {
+    0%   { opacity: 0; transform: translateY(8px); }
+    4%   { opacity: 1; transform: translateY(0); }
+    96%  { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-4px); }
+  }
 </style>
 </head>
 <body>
-<div class="grid"></div>
+<div class="grid-bg"></div>
 
 <!-- Frame 1 — title -->
 <section id="f1" class="frame active">
   <div class="top">
-    <div class="l mono">TICKLAB · 03 / 04</div>
+    <div class="l mono"><span class="bar"></span>TICKLAB · 03 / 04</div>
     <div class="r mono">THE PROOF</div>
   </div>
   <div class="center">
-    <h1>Reproducible in one command.</h1>
-    <h2 style="font-size:24px;color:var(--dim);margin-top:24px;font-weight:500;line-height:1.4;">
-      Every number in this README comes from this script. Run it. Same result.</h2>
+    <h1>Reproducible in <span class="accent">one command.</span></h1>
+    <h2>Every number in this README comes from this script. Run it — same result.</h2>
   </div>
 </section>
 
 <!-- Frame 2 — terminal -->
 <section id="f2" class="frame">
   <div class="top">
-    <div class="l mono">TICKLAB · 03 / 04</div>
+    <div class="l mono"><span class="bar"></span>TICKLAB · 03 / 04</div>
     <div class="r mono">npm run validate:northstar</div>
   </div>
   <div class="term">
     <div class="bar">
       <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
-      <div class="ttl">ticklab — zsh — 128×40</div>
+      <div class="ttl">ticklab — zsh — 160×42</div>
     </div>
 <pre><span class="d">$</span> <span class="c">npm</span> run validate:northstar
 
@@ -101,34 +141,53 @@
 <span class="d">Pulling prices from</span>      <span class="c">Binance</span>   <span class="d">… 30d daily OHLC</span>
 <span class="d">Replaying each pool-day against ground truth</span>
 
-<span class="g">✓</span> USDC/WETH    <span class="d">sim</span>  <span class="g">+8.41%</span>  <span class="d">gt</span>  <span class="g">+9.22%</span>  <span class="y">err</span>  <span class="p">0.81 pp</span>
-<span class="g">✓</span> WBTC/WETH    <span class="d">sim</span>  <span class="g">+12.05%</span> <span class="d">gt</span>  <span class="g">+10.62%</span> <span class="y">err</span>  <span class="p">1.43 pp</span>
-<span class="g">✓</span> DAI/USDC     <span class="d">sim</span>  <span class="g">+0.94%</span>  <span class="d">gt</span>  <span class="g">-1.27%</span>  <span class="y">err</span>  <span class="p">2.21 pp</span>
-<span class="g">✓</span> USDT/WETH    <span class="d">sim</span>  <span class="g">+7.85%</span>  <span class="d">gt</span>  <span class="g">+6.74%</span>  <span class="y">err</span>  <span class="p">1.11 pp</span>
-<span class="g">✓</span> LINK/WETH    <span class="d">sim</span>  <span class="g">+11.20%</span> <span class="d">gt</span>  <span class="g">+9.41%</span>  <span class="y">err</span>  <span class="p">1.79 pp</span>
-<span class="g">✓</span> UNI/WETH     <span class="d">sim</span>  <span class="g">+9.86%</span>  <span class="d">gt</span>  <span class="g">+10.77%</span> <span class="y">err</span>  <span class="p">0.91 pp</span>
-<span class="g">✓</span> AAVE/WETH    <span class="d">sim</span>  <span class="g">+14.10%</span> <span class="d">gt</span>  <span class="g">+10.62%</span> <span class="y">err</span>  <span class="p">3.48 pp</span>
-<span class="g">✓</span> ARB/WETH     <span class="d">sim</span>  <span class="g">+18.31%</span> <span class="d">gt</span>  <span class="g">+22.55%</span> <span class="y">err</span>  <span class="p">4.24 pp</span>
-<span class="g">✓</span> BAL/WETH     <span class="d">sim</span>  <span class="g">+7.44%</span>  <span class="d">gt</span>  <span class="g">+4.93%</span>  <span class="y">err</span>  <span class="p">2.51 pp</span>
-<span class="g">✓</span> CRV/WETH     <span class="d">sim</span>  <span class="g">+5.10%</span>  <span class="d">gt</span>  <span class="g">+2.01%</span>  <span class="y">err</span>  <span class="p">3.09 pp</span>
-<span class="g">✓</span> LDO/WETH     <span class="d">sim</span>  <span class="g">+3.61%</span>  <span class="d">gt</span>  <span class="g">+6.42%</span>  <span class="y">err</span>  <span class="p">2.81 pp</span>
-<span class="g">✓</span> MKR/WETH     <span class="d">sim</span>  <span class="g">+9.04%</span>  <span class="d">gt</span>  <span class="g">+7.71%</span>  <span class="y">err</span>  <span class="p">1.33 pp</span>
-<span class="g">✓</span> OP/WETH      <span class="d">sim</span>  <span class="g">+12.71%</span> <span class="d">gt</span>  <span class="g">+14.42%</span> <span class="y">err</span>  <span class="p">1.71 pp</span>
-<span class="g">✓</span> FRAX/USDC    <span class="d">sim</span>  <span class="g">+0.61%</span>  <span class="d">gt</span>  <span class="g">+13.77%</span> <span class="y">err</span>  <span class="p">13.16 pp</span>
-<span class="g">✓</span> LDO/USDC     <span class="d">sim</span>  <span class="g">+5.42%</span>  <span class="d">gt</span>  <span class="g">+0.62%</span>  <span class="y">err</span>  <span class="p">4.80 pp</span>
+<span class="row" id="r1"><span class="g">✓</span> USDC/WETH    <span class="d">sim</span>  <span class="g">+8.41%</span>  <span class="d">gt</span>  <span class="g">+9.22%</span>  <span class="y">err</span>  <span class="p">0.81 pp</span></span>
+<span class="row" id="r2"><span class="g">✓</span> WBTC/WETH    <span class="d">sim</span>  <span class="g">+12.05%</span> <span class="d">gt</span>  <span class="g">+10.62%</span> <span class="y">err</span>  <span class="p">1.43 pp</span></span>
+<span class="row" id="r3"><span class="g">✓</span> DAI/USDC     <span class="d">sim</span>  <span class="g">+0.94%</span>  <span class="d">gt</span>  <span class="g">-1.27%</span>  <span class="y">err</span>  <span class="p">2.21 pp</span></span>
+<span class="row" id="r4"><span class="g">✓</span> USDT/WETH    <span class="d">sim</span>  <span class="g">+7.85%</span>  <span class="d">gt</span>  <span class="g">+6.74%</span>  <span class="y">err</span>  <span class="p">1.11 pp</span></span>
+<span class="row" id="r5"><span class="g">✓</span> LINK/WETH    <span class="d">sim</span>  <span class="g">+11.20%</span> <span class="d">gt</span>  <span class="g">+9.41%</span>  <span class="y">err</span>  <span class="p">1.79 pp</span></span>
+<span class="row" id="r6"><span class="g">✓</span> UNI/WETH     <span class="d">sim</span>  <span class="g">+9.86%</span>  <span class="d">gt</span>  <span class="g">+10.77%</span> <span class="y">err</span>  <span class="p">0.91 pp</span></span>
+<span class="row" id="r7"><span class="g">✓</span> AAVE/WETH    <span class="d">sim</span>  <span class="g">+14.10%</span> <span class="d">gt</span>  <span class="g">+10.62%</span> <span class="y">err</span>  <span class="p">3.48 pp</span></span>
+<span class="row" id="r8"><span class="g">✓</span> ARB/WETH     <span class="d">sim</span>  <span class="g">+18.31%</span> <span class="d">gt</span>  <span class="g">+22.55%</span> <span class="y">err</span>  <span class="p">4.24 pp</span></span>
+<span class="row" id="r9"><span class="g">✓</span> BAL/WETH     <span class="d">sim</span>  <span class="g">+7.44%</span>  <span class="d">gt</span>  <span class="g">+4.93%</span>  <span class="y">err</span>  <span class="p">2.51 pp</span></span>
+<span class="row" id="r10"><span class="g">✓</span> CRV/WETH     <span class="d">sim</span>  <span class="g">+5.10%</span>  <span class="d">gt</span>  <span class="g">+2.01%</span>  <span class="y">err</span>  <span class="p">3.09 pp</span></span>
+<span class="row" id="r11"><span class="g">✓</span> LDO/WETH     <span class="d">sim</span>  <span class="g">+3.61%</span>  <span class="d">gt</span>  <span class="g">+6.42%</span>  <span class="y">err</span>  <span class="p">2.81 pp</span></span>
+<span class="row" id="r12"><span class="g">✓</span> MKR/WETH     <span class="d">sim</span>  <span class="g">+9.04%</span>  <span class="d">gt</span>  <span class="g">+7.71%</span>  <span class="y">err</span>  <span class="p">1.33 pp</span></span>
+<span class="row" id="r13"><span class="g">✓</span> OP/WETH      <span class="d">sim</span>  <span class="g">+12.71%</span> <span class="d">gt</span>  <span class="g">+14.42%</span> <span class="y">err</span>  <span class="p">1.71 pp</span></span>
+<span class="row" id="r14"><span class="g">✓</span> FRAX/USDC    <span class="d">sim</span>  <span class="g">+0.61%</span>  <span class="d">gt</span>  <span class="g">+13.77%</span> <span class="y">err</span>  <span class="p">13.16 pp</span></span>
+<span class="row" id="r15"><span class="g">✓</span> LDO/USDC     <span class="d">sim</span>  <span class="g">+5.42%</span>  <span class="d">gt</span>  <span class="g">+0.62%</span>  <span class="y">err</span>  <span class="p">4.80 pp</span></span>
 
-<span class="d">─────────</span> <span class="p">SUMMARY</span> <span class="d">─────────</span>
-<span class="d">Pools completed:</span>     <span class="g">15 / 18</span>
-<span class="d">Median abs error:</span>    <span class="p">1.55 pp</span>
-<span class="d">Mean abs error:</span>      <span class="g">3.31 pp</span>
-<span class="d">Max abs error:</span>       <span class="y">13.16 pp</span>
-<span class="d">% within ±20% rel:</span>   <span class="y">0 / 15</span>  <span class="d">(gated on per-swap data)</span>
+<span class="row" id="r16"><span class="d">─────────</span> <span class="p b">SUMMARY</span> <span class="d">─────────</span></span>
+<span class="row" id="r17"><span class="d">Pools completed:</span>     <span class="g b">15 / 18</span></span>
+<span class="row" id="r18"><span class="d">Median abs error:</span>    <span class="p b">1.55 pp</span></span>
+<span class="row" id="r19"><span class="d">Mean abs error:</span>      <span class="g b">3.31 pp</span></span>
+<span class="row" id="r20"><span class="d">Max abs error:</span>       <span class="y b">13.16 pp</span></span>
+<span class="row" id="r21"><span class="d">% within ±20% rel:</span>   <span class="y b">0 / 15</span>  <span class="d">(gated on per-swap data)</span></span>
 
-<span class="g">✓</span> Results written to <span class="c">validation-results/</span>
+<span class="row" id="r22"><span class="g">✓</span> Results written to <span class="c">validation-results/</span></span>
 <span class="d">$</span><span class="cursor"></span>
 </pre>
   </div>
 </section>
 
+<script>
+  // Stream rows in sync with the narration.
+  // Narration cues (s):
+  //   6.0  pool results start streaming in (1 row per ~700ms)
+  //  16.0  skip note ("three skipped on DeFi Llama coverage")
+  //  18.0  summary block starts to appear (each line ~900ms apart)
+  //  30.0  caveat block — % within ±20% named
+
+  for (let i = 1; i <= 15; i++) {
+    setTimeout(() => {
+      document.getElementById('r' + i).classList.add('show');
+    }, 6000 + i * 700);
+  }
+  for (let i = 16; i <= 22; i++) {
+    setTimeout(() => {
+      document.getElementById('r' + i).classList.add('show');
+    }, 18500 + (i - 16) * 900);
+  }
+</script>
 </body>
 </html>
