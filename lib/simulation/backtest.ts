@@ -270,9 +270,15 @@ export function runBacktest(params: BacktestParams): BacktestResult {
     if (inRange) {
       inRangePeriods++;
       
-      // Accrue fees (simplified model)
+      // Accrue fees (simplified model).
+//   feeShare = 0.001 represents 0.1% of the pool's fees — a typical
+//   assumption for a small LP (e.g. $10k into a $10M pool). The previous
+//   default of 0.01 (1%) was a 10× over-projection for most real LP sizes
+//   and inflated simulator projections by an order of magnitude on
+//   mainstream pools (verified by `npm run validate:northstar`).
+//   See NORTH_STAR_REPORT.md → "Fee-share default" for the numbers.
       const dailyFeeRate = feeTier / 10000;
-      const feeShare = 0.01; // Assumed 1% of pool
+      const feeShare = 0.001; // Default 0.1% of pool — typical for a small LP.
       const dailyFees = dataPoint.volumeUSD * dailyFeeRate * feeShare;
       totalFees += dailyFees;
     } else {

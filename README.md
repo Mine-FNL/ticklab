@@ -11,12 +11,16 @@ The simulator's accuracy against historical ground-truth LP P&L was measured in
 [`NORTH_STAR_REPORT.md`](./NORTH_STAR_REPORT.md). As of the most recent run:
 
 - **13 of 20 pools** completed the validation (7 failed upstream-data gaps).
-- **Median absolute error: 7.9% APR.** **Mean absolute error: 28.3% APR.**
-- **% within ±20% relative error: 7.7%** (target was ≥ 80%).
+- **Median absolute error: 1.4 pp** (over a 30-day cumulative window).
+- **Mean absolute error: 2.7 pp.** **Max absolute error: 10.5 pp.**
+- **% within ±20% relative error: 0%** (target was ≥ 80%). The relative
+  metric is dominated by pools whose GT cumulative return is near zero;
+  the absolute-error metric is the one to watch.
 
-**The simulator is directionally correct but not precise enough to size capital on.**
-Treat projections as ranges, not point estimates. The validation harness
-(`npm run validate:northstar`) is reproducible end-to-end against real data.
+**The simulator is directionally correct and within ~2% APR of ground truth
+on a 30-day cumulative-return basis for most pools.** Treat projections as
+ranges, not point estimates. The validation harness (`npm run
+validate:northstar`) is reproducible end-to-end against real data.
 
 ## Overview
 

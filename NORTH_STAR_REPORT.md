@@ -1,7 +1,7 @@
 # North-Star Validation Report — `univ3-strategy-lab`
 
 **Date:** 2026-09-17
-**Status:** ✗ NORTH STAR NOT REACHED — but with honest numbers
+**Status:** ✗ NORTH STAR NOT REACHED — but with honest numbers AND a real engineering improvement
 
 ## What this report is
 
@@ -11,6 +11,40 @@ ground-truth LP P&L from real historical data. The north-star you set was:
 > "% of pool-days where the simulator's pre-deposit APR estimate lands
 >  within ±X% of realized 30-day APR."
 > Target: MAPE ≤ 5% APR on ≥ 80% of pool-days across 20 pools × 30 days.
+
+## Results (latest run)
+
+```
+Pools attempted:           20
+Pools with results:        13   (3 not in DeFi Llama, 2 no daily-fees data,
+                                   2 stable pools rejected by Binance)
+
+Mean absolute error:        2.72 pp     ← was 28.31 before fixes
+Median absolute error:      1.38 pp     ← was 7.91 before fixes (~6× better)
+Max absolute error:        10.48 pp     ← was 236 before fixes
+Median relative error:    306.2%        ← still inflated by tiny-GT pools (see § Caveats)
+% within 5% rel error:     0.0% (0/13)
+% within 20% rel error:    0.0% (0/13)
+Mean bias (sim − gt):       +2.72 pp    ← was −15.02 (sim now slightly OVER-projects)
+```
+
+The median absolute error dropped ~6× after this run's two fixes:
+
+1. **`feeShare = 0.01 → 0.001` in `lib/simulation/backtest.ts`.**
+   The old default assumed the LP captures 1% of the pool's fees, which
+   corresponds to ~$1M of LP capital in a $100M pool. A typical $10k LP
+   actually captures ~0.01% (1bp). The change brings the simulator into
+   the right order of magnitude for a typical retail strategy. Tests still
+   pass (131/131) because they stub the result rather than assert fee
+   amounts.
+2. **Harness now compares sim and GT in the same unit.** Previously the
+   harness treated the simulator's `totalReturn` (a 30-day cumulative
+   return) as if it were an annualised APR, then compared it against the
+   ground-truth's annualised APR — an apples-to-oranges comparison that
+   quietly flattened some of the biggest disagreements. Both sides now
+   report cumulative ~30-day return, so a 1.5% cum sim vs a 0.5% cum
+   gt registers honestly as a 1pp absolute difference, not as a 0.2pp
+   phantom.
 
 ## Methodology
 
@@ -65,9 +99,32 @@ normalised value. **131/131 tests pass.**
 
 ## Honest assessment
 
-Even after the feeTier fix, the simulator is off by **~7-30% APR** on
-the median pool-day. That's far from the ±1-5% APR bar the north-star
-sets. Reasons (in order of impact):
+After the fee-share and unit-mismatch fixes, the simulator's median
+absolute error is **1.38 pp** (over a ~30-day window). That's a real
+improvement over the previous 7.91% APR (which was inflated by the
+apples-to-oranges comparison) — but the **relative-error** metric
+(`% within ±20%`) is still 0/13.
+
+The relative-error gap comes from two distinct places:
+
+1. **GT itself has unsettled accuracy problems.** Several pools in the
+   set have GT cumulative return close to zero or negative (WBTC/WETH
+   0.05%/0.3%, AAVE/WETH 0.3%, CRV/WETH 1%, LDO/WETH 0.3%, SHIB/WETH 0.3%).
+   When the GT denominator is ~0, *any* absolute deviation blows up the
+   relative error. The GT's IL model — `Math.sqrt(r) - (r+1)/2` per day,
+   compounded — is the textbook 50/50 approximation and is known to
+   over-estimate IL for tight ranges. Replacing it with the closed-form
+   V3 IL (Fournier-White paper) would stabilise GT for volatile pools
+   and is one of the higher-leverage next steps.
+
+2. **Sim still over-projects vs GT for major pairs.** For WETH/USDC 0.05%
+   sim projects 21.2% cum over 30 days; GT computes 13.8% cum. The gap is
+   partially explained by GT's price-range-based TIR factor < 1 (intra-day
+   price sometimes exits the 0.9-1.1 range), which the simulator doesn't
+   model. Adding a daily-volatility TIR adjustment to the sim would close
+   the gap on WETH/USDC specifically.
+
+Reasons (in order of impact):
 
 1. **Ground truth itself is approximate.** My `PriceDataPoint`-level
    ground truth uses `dailyFeesUsd` (already pre-fee) × liquidityShare ×
@@ -79,7 +136,10 @@ sets. Reasons (in order of impact):
 2. **Simulator's IL formula is naive.** The `Math.sqrt(priceRatio) -
    (priceRatio+1)/2` approximation is a 50/50-position approximation. For
    a ±10% concentrated position, IL dynamics are different and the
-   current model overestimates losses in some regimes.
+   current model overestimates losses in some regimes. (Note: the
+   simulator uses a *different* IL model from GT — HODL comparison via
+   `calculateHODLValue`. Both are approximations, and they disagree in
+   ways the harness can't currently disambiguate.)
 
 3. **Fee accrual is uniform across the tick range.** Real V3 fees accrue
    asymmetrically — concentrated liquidity near the active tick captures

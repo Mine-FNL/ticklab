@@ -342,6 +342,20 @@ interface GroundTruthResult {
   totalILPct: number;
 }
 
+/**
+ * Compare simulator cumulative return vs ground-truth cumulative return, both
+ * expressed as decimal returns over the SAME ~N-day window. Both sides are
+ * answering the question: "if I deposited $X on day 0 and held for N days, how
+ * much would my position be worth relative to deposit?". Expressing both in
+ * the same unit (cumulative-window-return) avoids the unit mismatch that
+ * earlier runs silently papered over (sim was a 30-day cumulative return;
+ * gt was an annualised APR).
+ */
+function pctErrorBetweenCumulatives(simCum: number, gtCum: number): number {
+  // |Δ| / |gt|, with guard for gt ≈ 0 (treat as absolute error = |sim|)
+  return gtCum !== 0 ? Math.abs(simCum - gtCum) / Math.abs(gtCum) : Math.abs(simCum);
+}
+
 function computeGroundTruth(p: GroundTruthParams): GroundTruthResult {
   const feeRate = p.feeTierBips / 1_000_000;
 
@@ -424,7 +438,7 @@ async function runSimulator(
   priceHistory: PriceDataPoint[],
   lowerPrice: number,
   upperPrice: number,
-): Promise<number> {
+): Promise<{ cumulativeReturn: number }> {
   if (priceHistory.length < 2) {
     throw new Error('priceHistory has fewer than 2 points');
   }
@@ -447,7 +461,7 @@ async function runSimulator(
     token1Decimals: DECIMALS[p.token1Symbol] ?? 18,
   };
   const result = runBacktest(params);
-  return result.totalReturn;
+  return { cumulativeReturn: result.totalReturn };
 }
 
 /**
@@ -494,9 +508,15 @@ function buildSimulatorPriceHistory(
 interface ValidationRow {
   pool: string;
   days: number;
-  simulatorAPR: number;
+  /** Simulator's cumulative return over the window (e.g. 0.014 = +1.4%). */
+  simulatorCumReturn: number;
+  /** Ground truth's cumulative return over the window. */
+  groundTruthCumReturn: number;
+  /** Ground truth's annualised APR — kept for backward-compat reading of prior CSVs. */
   groundTruthAPR: number;
+  /** Absolute error in cumulative-return units. */
   absError: number;
+  /** Relative error in cumulative-return units (|sim-gt|/|gt|). */
   pctError: number;
 }
 
@@ -573,9 +593,10 @@ async function main() {
         `avgVol=${(priceHistory.reduce((a, p) => a + p.volumeUSD, 0) / priceHistory.length).toFixed(0)} ` +
         `feeTier-in-engine=${pool.feeTierBips / 100}`,
       );
-      let simApr: number;
+      let simCum: number;
       try {
-        simApr = await runSimulator(pool, priceHistory, lowerPrice, upperPrice);
+        const out = await runSimulator(pool, priceHistory, lowerPrice, upperPrice);
+        simCum = out.cumulativeReturn;
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         console.log(`SIM FAIL (${msg.slice(0, 80)})`);
@@ -583,20 +604,25 @@ async function main() {
         continue;
       }
 
-      const absError = Math.abs(simApr - gt.apr);
-      const pctError = gt.apr !== 0 ? absError / Math.abs(gt.apr) : absError;
+      // Both sides are now expressed as cumulative return over the window.
+      // Sim: result.totalReturn. GT: compoundedReturn. Both in [-∞, +∞],
+      // where 0.0144 = +1.44% over the window.
+      const gtCum = gt.compoundedReturn;
+      const absError = Math.abs(simCum - gtCum);
+      const pctError = pctErrorBetweenCumulatives(simCum, gtCum);
 
       rows.push({
         pool: pool.label,
         days: gt.days,
-        simulatorAPR: simApr,
+        simulatorCumReturn: simCum,
+        groundTruthCumReturn: gtCum,
         groundTruthAPR: gt.apr,
         absError,
         pctError,
       });
 
       console.log(
-        `sim=${(simApr * 100).toFixed(2)}% gt=${(gt.apr * 100).toFixed(2)}% ` +
+        `sim=${(simCum * 100).toFixed(2)}% gt=${(gtCum * 100).toFixed(2)}% ` +
         `err=${(pctError * 100).toFixed(1)}% (${gt.days}d, ${gt.daysInRange}in-range)`,
       );
     } catch (err) {
@@ -630,23 +656,24 @@ async function main() {
 
   const within1 = rows.filter((r) => r.pctError <= 0.05).length; // within 5% relative error
   const within5 = rows.filter((r) => r.pctError <= 0.20).length;
-  const bias = rows.reduce((a, r) => a + (r.simulatorAPR - r.groundTruthAPR), 0) / rows.length;
+  // Bias is now defined in cumulative-return units to match the comparison axis.
+  const bias = rows.reduce((a, r) => a + (r.simulatorCumReturn - r.groundTruthCumReturn), 0) / rows.length;
 
-  console.log('\n— Error stats (against ground-truth OHLC replay) —');
-  console.log(`  Mean absolute error: ${(meanAbsError * 100).toFixed(2)}% APR`);
-  console.log(`  Median absolute error: ${(medianAbsError * 100).toFixed(2)}% APR`);
-  console.log(`  Max absolute error: ${(maxAbsError * 100).toFixed(2)}% APR`);
+  console.log('\n— Error stats (against ground-truth OHLC replay, both as ~30-day cumulative return) —');
+  console.log(`  Mean absolute error: ${(meanAbsError * 100).toFixed(2)} pp`);
+  console.log(`  Median absolute error: ${(medianAbsError * 100).toFixed(2)} pp`);
+  console.log(`  Max absolute error: ${(maxAbsError * 100).toFixed(2)} pp`);
   console.log(`  Median relative error: ${(medianPctError * 100).toFixed(1)}%`);
   console.log(`  % within 5% relative error: ${((within1 / rows.length) * 100).toFixed(1)}% (${within1}/${rows.length})`);
   console.log(`  % within 20% relative error: ${((within5 / rows.length) * 100).toFixed(1)}% (${within5}/${rows.length})`);
-  console.log(`  Mean bias (sim - gt): ${(bias * 100).toFixed(2)}% APR`);
+  console.log(`  Mean bias (sim - gt): ${(bias * 100).toFixed(2)} pp`);
 
   // Acceptance criterion
   const starReached = (within5 / rows.length) >= 0.8;
   console.log(`\n— NORTH STAR —`);
   console.log(`  Target: % within 20% relative error >= 80% on pool-days.`);
   console.log(`  Actual: ${((within5 / rows.length) * 100).toFixed(1)}%.`);
-  console.log(`  Median absolute error: ${(medianAbsError * 100).toFixed(2)}% APR`);
+  console.log(`  Median absolute error: ${(medianAbsError * 100).toFixed(2)} pp`);
   console.log(`  ${starReached ? '✓ REACHED' : '✗ NOT REACHED'}`);
 
   // Dump raw rows + summary to a CSV for inspection
@@ -654,10 +681,10 @@ async function main() {
   mkdirSync(outDir, { recursive: true });
   const ts = new Date().toISOString().replace(/[:.]/g, '-');
   const csvPath = resolve(outDir, `validation-${ts}.csv`);
-  const header = 'pool,days,simulator_apr,ground_truth_apr,abs_error,pct_error\n';
+  const header = 'pool,days,simulator_cum_return,ground_truth_cum_return,ground_truth_apr,abs_error,pct_error\n';
   const lines = rows.map((r) =>
-    [r.pool, r.days, r.simulatorAPR.toFixed(6), r.groundTruthAPR.toFixed(6),
-     r.absError.toFixed(6), r.pctError.toFixed(6)].join(',')
+    [r.pool, r.days, r.simulatorCumReturn.toFixed(6), r.groundTruthCumReturn.toFixed(6),
+     r.groundTruthAPR.toFixed(6), r.absError.toFixed(6), r.pctError.toFixed(6)].join(',')
   );
   writeFileSync(csvPath, header + lines.join('\n') + '\n');
   console.log(`\nWrote ${csvPath}`);
