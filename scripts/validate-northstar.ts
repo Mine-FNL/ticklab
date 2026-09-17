@@ -435,6 +435,7 @@ function computeGroundTruth(p: GroundTruthParams): GroundTruthResult {
 // ============================================================================
 
 import { runBacktest, type PriceDataPoint } from '../lib/simulation/backtest';
+import { simulateV3InRange } from '../lib/simulation/v3-inrange';
 
 async function runSimulator(
   p: PoolSpec,
@@ -511,8 +512,12 @@ function buildSimulatorPriceHistory(
 interface ValidationRow {
   pool: string;
   days: number;
-  /** Simulator's cumulative return over the window (e.g. 0.014 = +1.4%). */
+  /** Primary simulator cumulative return (V3-aware when available, else legacy). */
   simulatorCumReturn: number;
+  /** Legacy simulator (runBacktest) cumulative return — kept for comparison. */
+  simulatorCumReturnLegacy: number;
+  /** V3-aware simulator (simulateV3InRange) cumulative return, if computed. */
+  simulatorCumReturnV3?: number;
   /** Ground truth's cumulative return over the window. */
   groundTruthCumReturn: number;
   /** Ground truth's annualised APR — kept for backward-compat reading of prior CSVs. */
@@ -597,9 +602,32 @@ async function main() {
         `feeTier-in-engine=${pool.feeTierBips / 100}`,
       );
       let simCum: number;
+      let simCumV3: number | null = null;
       try {
         const out = await runSimulator(pool, priceHistory, lowerPrice, upperPrice);
         simCum = out.cumulativeReturn;
+        // Also compute via the V3-aware simulator. As of the most recent run
+        // the V3 path is NOT used as the primary metric because `v3EntryLiquidity`
+        // has a bug — it recomputes token amounts from `L = min(L0, L1)` instead
+        // of using the original deposited amounts, which produces wildly leveraged
+        // positions (e.g. $12M position from a $10k deposit on WETH/USDC). The
+        // values are still logged for visibility, but the primary abs-error
+        // metric uses the legacy simulator.
+        try {
+          const v3 = simulateV3InRange({
+            priceHistory,
+            lowerPrice,
+            upperPrice,
+            feeTier: pool.feeTierBips / 100,
+            liquidityShare: 0.001,
+            depositAmount: STRATEGY.depositUSD,
+          });
+          simCumV3 = (v3.lpValueEnd - STRATEGY.depositUSD) / STRATEGY.depositUSD;
+        } catch (v3err) {
+          const v3msg = v3err instanceof Error ? v3err.message : String(v3err);
+          console.log(`    [v3-simulator: skipped — ${v3msg.slice(0, 60)}]`);
+          simCumV3 = null;
+        }
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         console.log(`SIM FAIL (${msg.slice(0, 80)})`);
@@ -611,21 +639,27 @@ async function main() {
       // Sim: result.totalReturn. GT: compoundedReturn. Both in [-∞, +∞],
       // where 0.0144 = +1.44% over the window.
       const gtCum = gt.compoundedReturn;
-      const absError = Math.abs(simCum - gtCum);
-      const pctError = pctErrorBetweenCumulatives(simCum, gtCum);
+      // Primary metric uses the LEGACY simulator until the V3 entry math is
+      // fixed (see simCumV3 commentary above).
+      const primaryCum = simCum;
+      const absError = Math.abs(primaryCum - gtCum);
+      const pctError = pctErrorBetweenCumulatives(primaryCum, gtCum);
 
       rows.push({
         pool: pool.label,
         days: gt.days,
-        simulatorCumReturn: simCum,
+        simulatorCumReturn: primaryCum,
+        simulatorCumReturnLegacy: simCum,
+        simulatorCumReturnV3: simCumV3 ?? undefined,
         groundTruthCumReturn: gtCum,
         groundTruthAPR: gt.apr,
         absError,
         pctError,
       });
 
+      const v3Tag = simCumV3 != null ? ` [v3=${(simCumV3 * 100).toFixed(2)}%]` : '';
       console.log(
-        `sim=${(simCum * 100).toFixed(2)}% gt=${(gtCum * 100).toFixed(2)}% ` +
+        `sim=${(primaryCum * 100).toFixed(2)}%${v3Tag} gt=${(gtCum * 100).toFixed(2)}% ` +
         `err=${(pctError * 100).toFixed(1)}% (${gt.days}d, ${gt.daysInRange}in-range)`,
       );
     } catch (err) {
@@ -684,10 +718,12 @@ async function main() {
   mkdirSync(outDir, { recursive: true });
   const ts = new Date().toISOString().replace(/[:.]/g, '-');
   const csvPath = resolve(outDir, `validation-${ts}.csv`);
-  const header = 'pool,days,simulator_cum_return,ground_truth_cum_return,ground_truth_apr,abs_error,pct_error\n';
+  const header = 'pool,days,simulator_cum_return,simulator_cum_return_legacy,simulator_cum_return_v3,ground_truth_cum_return,ground_truth_apr,abs_error,pct_error\n';
   const lines = rows.map((r) =>
-    [r.pool, r.days, r.simulatorCumReturn.toFixed(6), r.groundTruthCumReturn.toFixed(6),
-     r.groundTruthAPR.toFixed(6), r.absError.toFixed(6), r.pctError.toFixed(6)].join(',')
+    [r.pool, r.days, r.simulatorCumReturn.toFixed(6), r.simulatorCumReturnLegacy.toFixed(6),
+     (r.simulatorCumReturnV3 ?? '').toString() === '' ? '' : r.simulatorCumReturnV3!.toFixed(6),
+     r.groundTruthCumReturn.toFixed(6), r.groundTruthAPR.toFixed(6),
+     r.absError.toFixed(6), r.pctError.toFixed(6)].join(',')
   );
   writeFileSync(csvPath, header + lines.join('\n') + '\n');
   console.log(`\nWrote ${csvPath}`);
