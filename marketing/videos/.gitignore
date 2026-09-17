@@ -1,0 +1,5 @@
+# Stray playwright recordings — these get dropped in the cwd during recording
+# and shouldn't be checked in.
+page@*.webm
+*-tmp.webm
+*-tmp.png
