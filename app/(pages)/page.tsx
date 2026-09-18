@@ -8,12 +8,11 @@ export default function Home() {
         <div className="mx-auto max-w-4xl">
           <div className="text-center">
             <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-              UniV3 LP
-              <span style={{ color: '#10b981' }}> Strategy Lab</span>
+              Ticklab
             </h1>
             <p className="mt-6 text-lg leading-8 text-[#888] max-w-2xl mx-auto">
-              Research terminal for Uniswap V3 concentrated liquidity strategies.
-              Model positions, backtest performance, and optimize your LP returns.
+              Production-grade backtest & risk analytics for concentrated-liquidity
+              LP strategies — built on real on-chain data with no API keys required.
             </p>
             <div className="mt-10 flex items-center justify-center gap-4">
               <Link

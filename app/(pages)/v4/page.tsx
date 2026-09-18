@@ -12,7 +12,7 @@ export default function V4Page() {
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-white flex items-center gap-2">
           <Zap className="w-6 h-6 text-amber-400" />
-          V4 Strategy Lab
+          Ticklab · V4
         </h1>
         <p className="text-sm text-[#888] mt-1">
           Explore Uniswap V4 pools, hooks, and LP outcomes

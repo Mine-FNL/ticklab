@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   title: 'Ticklab',
   description: 'Research terminal for Uniswap V3 concentrated liquidity strategies',
   keywords: ['Uniswap', 'DeFi', 'LP', 'liquidity', 'yield', 'strategy', 'backtest'],
-  authors: [{ name: 'UniV3 LP Lab' }],
+  authors: [{ name: 'Ticklab' }],
   openGraph: {
     title: 'Ticklab',
     description: 'Research terminal for Uniswap V3 concentrated liquidity strategies',

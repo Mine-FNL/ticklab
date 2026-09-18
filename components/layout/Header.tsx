@@ -32,7 +32,7 @@ export function Header() {
               <BarChart3 className="w-4 h-4 text-white" />
             </div>
             <span className="text-sm font-semibold text-white hidden sm:block tracking-tight">
-              UniV3 Lab
+              Ticklab
             </span>
           </Link>
 
