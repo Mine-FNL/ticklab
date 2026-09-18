@@ -1,0 +1,11 @@
+Cinematic moody dark cinematic shot. A glowing pink line chart rises smoothly upward across a sleek dark trading desk monitor, representing a projected 41 percent APR return. Soft pink volumetric light bathes the desk surface and a trader's hands visible at the bottom of frame, typing. The chart climbs confidently, almost triumphantly. At the seventh second the chart suddenly glitches — the pink line shatters, fragments fall, and a new flat, broken, dim red line emerges barely above zero, labeled 6 percent. The trader slowly pulls their hands back from the keyboard, defeated.
+
+Dialogue (calm, authoritative male voice, close-mic):
+"Most LP simulators ship a projected APR like it's gospel.
+Then reality arrives.
+The simulator said plus forty-one percent.
+Reality was plus six."
+
+Sound design: low ambient hum, soft keyboard clicks building as the chart climbs, a sharp digital glitch and reverb crash on the chart break, then silence. Cinematic tension.
+
+Camera: slow dolly in toward the monitor, ending on a close-up of the broken red line. Cinematic 35mm film grain, shallow depth of field, color graded for dark teal shadows with hot pink and dim red accents. Aspect ratio 16:9.

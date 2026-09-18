@@ -1,0 +1,13 @@
+Cinematic abstract cyber-style sequence. A dark void with subtle grid floor. On the left, two streams of glowing data emerge — one gold labeled DeFi Llama, one cyan labeled Binance OHLC — flowing rightward as luminous particle rivers. They converge into a central glowing engine orb labeled Ticklab that pulses with pink and white light as it processes them. From the engine, a single bright pink horizontal beam emerges to the right and lands on a giant floating number that reads 1.55 pp in clean monospace. Subtle ripples emanate from the number.
+
+Dialogue (calm, authoritative male voice):
+"What does honest measurement mean?
+Ticklab pulls real data from DeFi Llama and Binance,
+replays each pool-day,
+and publishes its own error metric.
+Median absolute error: one point five five percentage points.
+A six-times improvement."
+
+Sound design: electronic ambient score, soft whooshes on stream convergence, deep synth pulse on engine activation, bright chime when the 1.55 pp number locks in. Cinematic tension building to a clean resolution beat.
+
+Camera: slow cinematic orbit around the central engine, ending on a frontal close-up of the 1.55 pp number. Dark cinematic color grading, hot pink + gold + cyan accents against deep navy black. Subtle bloom and lens flare. Aspect ratio 16:9.

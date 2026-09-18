@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ticklab — H3 hero clips</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #08080a;
+    --panel: #0d0d12;
+    --grid: #1a1a22;
+    --grid-strong: #232330;
+    --pink: #ff007a;
+    --text: #f4f4f7;
+    --dim: #888d97;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--text); min-height: 100vh;
+    font-family: 'SF Pro Display', -apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    padding: 60px 40px; }
+  .grid-bg { position: fixed; inset: 0; background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 80px 80px; opacity: .4; pointer-events: none; z-index: -1; }
+  .header { max-width: 1400px; margin: 0 auto 60px; }
+  .header .eyebrow { color: var(--pink); font-family: ui-monospace, monospace;
+    font-weight: 700; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; }
+  .header h1 { font-size: 56px; line-height: 1.05; letter-spacing: -1.5px; font-weight: 800; margin: 16px 0; }
+  .header p { color: var(--dim); font-size: 18px; max-width: 820px; line-height: 1.5; }
+  .videos { display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px;
+    max-width: 1400px; margin: 0 auto; }
+  .video { background: var(--panel); border: 1px solid var(--grid-strong);
+    border-radius: 16px; overflow: hidden; }
+  .video .meta { padding: 24px 32px; border-bottom: 1px solid var(--grid-strong);
+    display: flex; justify-content: space-between; align-items: baseline; }
+  .video .meta .n { color: var(--pink); font-family: ui-monospace, monospace;
+    font-weight: 700; font-size: 14px; letter-spacing: 1.5px; }
+  .video .meta .t { color: var(--text); font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+  .video .meta .d { color: var(--dim); font-family: ui-monospace, monospace; font-size: 14px; }
+  .video video { display: block; width: 100%; height: auto; background: #000; }
+  .video .links { padding: 16px 32px; display: flex; gap: 18px;
+    font-family: ui-monospace, monospace; font-size: 14px; }
+  .video .links a { color: var(--dim); text-decoration: none;
+    border-bottom: 1px dashed var(--grid-strong); padding-bottom: 2px; }
+  .video .links a:hover { color: var(--pink); border-bottom-color: var(--pink); }
+  .note { max-width: 1400px; margin: 48px auto 0; color: var(--dim); font-size: 14px;
+    line-height: 1.6; padding: 24px 32px; border: 1px solid var(--grid-strong);
+    border-radius: 12px; background: var(--panel); }
+  .note strong { color: var(--text); }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<div class="header">
+  <div class="eyebrow">Ticklab · H3 Hero Clips · 4 × ~6s · h264 + AAC · 1366×768</div>
+  <h1>Hero clips for the campaign.</h1>
+  <p>Cinematic, AI-generated hero clips for each of the four campaign concepts. Use these for high-impact social posts (Twitter / LinkedIn / Discord) where auto-play and a punchy 6-second beat matter more than the longer 21–48s narrated explainers. All clips have native narration synced to the visual story.</p>
+</div>
+
+<div class="videos">
+  <div class="video">
+    <div class="meta">
+      <div class="n">H3 · 01</div>
+      <div class="t">The Pain</div>
+      <div class="d">~5s · 1366×768</div>
+    </div>
+    <video src="01-the-pain.mp4" autoplay loop muted playsinline></video>
+    <div class="links">
+      <a href="01-the-pain.mp4">MP4</a>
+      <a href="01-the-pain.gif">GIF</a>
+    </div>
+  </div>
+
+  <div class="video">
+    <div class="meta">
+      <div class="n">H3 · 02</div>
+      <div class="t">The Magic</div>
+      <div class="d">~5s · 1366×768</div>
+    </div>
+    <video src="02-the-magic.mp4" autoplay loop muted playsinline></video>
+    <div class="links">
+      <a href="02-the-magic.mp4">MP4</a>
+      <a href="02-the-magic.gif">GIF</a>
+    </div>
+  </div>
+
+  <div class="video">
+    <div class="meta">
+      <div class="n">H3 · 03</div>
+      <div class="t">The Proof</div>
+      <div class="d">~6s · 1366×768</div>
+    </div>
+    <video src="03-the-proof.mp4" autoplay loop muted playsinline></video>
+    <div class="links">
+      <a href="03-the-proof.mp4">MP4</a>
+      <a href="03-the-proof.gif">GIF</a>
+    </div>
+  </div>
+
+  <div class="video">
+    <div class="meta">
+      <div class="n">H3 · 04</div>
+      <div class="t">The Path</div>
+      <div class="d">~6s · 1366×768</div>
+    </div>
+    <video src="04-the-path.mp4" autoplay loop muted playsinline></video>
+    <div class="links">
+      <a href="04-the-path.mp4">MP4</a>
+      <a href="04-the-path.gif">GIF</a>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <strong>Notes on H3 rendering:</strong>
+  <ul style="margin-top: 12px; padding-left: 20px;">
+    <li>Text in frames (terminal output, KPI numbers) is approximate — text-to-video models render legible code unreliably. Use the CSS-animated explained videos in <code>../</code> for pixel-perfect type.</li>
+    <li>All audio is generated by Microsoft Edge neural TTS (<code>en-US-GuyNeural</code>), muxed into each MP4 at 192 kbps AAC.</li>
+    <li>Model: <code>MiniMax-Hailuo-2.3</code> at 768P, 16:9, 6s. H3 (2K with native audio) requires account credits which were unavailable; Hailuo-2.3 is the Token-Plan-eligible alternative.</li>
+  </ul>
+</div>
+
+</body>
+</html>

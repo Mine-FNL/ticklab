@@ -1,0 +1,14 @@
+Cinematic close-up of a glowing terminal screen in a dark room. The terminal shows green and pink monospace text streaming line by line, like a build log: pool names, sim percentages, gt percentages, error columns. The cursor blinks steadily. The lines accumulate into a clean summary block at the bottom of the screen with three highlighted numbers in pink, green, and yellow: 1.55 pp, 3.31 pp, 13.16 pp. A soft pink glow illuminates the desk surface beneath the monitor.
+
+Dialogue (calm, authoritative male voice, close-mic):
+"Here's what it actually looks like.
+One command. One output.
+Fifteen pools completed.
+Median: one point five five.
+Mean: three point three one.
+Max: thirteen point one six.
+Every claim reproducible. No hiding."
+
+Sound design: mechanical keyboard clicks building in tempo as results stream, soft terminal beeps on each completed pool, a low ambient hum, a satisfying synth lock-in chord on the summary block. Cinematic tech-noir tension.
+
+Camera: static close-up with subtle parallax depth, very slow push-in toward the summary block as the dialogue lands. Cinematic dark teal color grading, hot pink + green accents. Slight film grain. Aspect ratio 16:9.

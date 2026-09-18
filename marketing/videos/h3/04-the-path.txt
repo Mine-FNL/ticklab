@@ -1,0 +1,14 @@
+Cinematic dark developer setup. A glowing terminal window floats center-frame against a deep black background. Clean monospace text types itself into the terminal one command at a time: git clone Mine-FNL slash ticklab, cd ticklab, npm install, npm run validate:northstar, npm run dev. Each command lands with a subtle keystroke sound. As the final command runs, the camera pulls back smoothly and the terminal frame transforms into a fully rendered browser window at localhost:3000 showing a clean dashboard with three highlighted KPI cards: 1.55 pp, 15 / 18, 257. The browser frame has a soft pink glow.
+
+Dialogue (calm, authoritative male voice):
+"Five commands.
+Git clone.
+NPM install.
+NPM run validate north star to reproduce every metric.
+NPM run dev.
+Browser opens at localhost three thousand.
+Run it — same result."
+
+Sound design: crisp mechanical keyboard typing, soft terminal beeps, a bright synth resolution chord when the browser loads, a clean ambient electronic pad underneath. Cinematic tension that resolves into a confident landing.
+
+Camera: starts on a tight close-up of the terminal, smoothly pulls back and reframes to reveal the full browser window. Cinematic dark color grading with hot pink accents, subtle bloom, very slight film grain. Aspect ratio 16:9.
