@@ -610,29 +610,47 @@ async function main() {
   for (const pool of POOLS) {
     process.stdout.write(`  ${pool.label.padEnd(28)} `);
     try {
-      // Fetch OHLC for both tokens + DeFi Llama daily fees.
-      // In parallel, attempt the Covalent overlay — when the API key is set
-      // we replace the back-derived dailyFees with swap-by-swap fees from
-      // the actual on-chain stream, which is what was leaving the harness
-      // at 0/15 within ±20% relative error before this path was added.
-      const [ohlc0, ohlc1, dailyFeesLlama, covalentOverlay] = await Promise.all([
+      // Fetch OHLC for both tokens. DeFi Llama + Covalent are tried in
+      // parallel for the daily-fee source so a Llama failure (ENS/SUSHI/
+      // PEPE aren't indexed there) can fall through to Covalent swaps.
+      const [ohlc0, ohlc1, dailyFeesLlamaOrNull, covalentOverlay] = await Promise.all([
         fetchTokenOhlc(pool.token0Address, STRATEGY.horizonDays),
         fetchTokenOhlc(pool.token1Address, STRATEGY.horizonDays),
-        fetchPoolDailyFees(pool, 1),
+        fetchPoolDailyFees(pool, 1).catch((err) => {
+          const msg = err instanceof Error ? err.message : String(err);
+          console.log(`\n    [defillama: skipped — ${msg.slice(0, 80)}]`);
+          return null;
+        }),
         fetchPoolDailyFeesFromCovalent(pool, 1, STRATEGY.horizonDays).catch((err) => {
           const msg = err instanceof Error ? err.message : String(err);
-          console.log(`\n    [covalent-overlay: disabled — ${msg.slice(0, 80)}]`);
+          console.log(`\n    [covalent-overlay: skipped — ${msg.slice(0, 80)}]`);
           return null;
         }),
       ]);
 
-      // Use the Covalent overlay when it returned non-empty data; otherwise
-      // fall back to DeFi Llama so the harness keeps running in zero-config.
-      const dailyFees =
-        covalentOverlay && covalentOverlay.dailyFees.length > 0
-          ? covalentOverlay.dailyFees
-          : dailyFeesLlama;
-      const covalentUsed = !!(covalentOverlay && covalentOverlay.dailyFees.length > 0);
+      // Source preference: Covalent wins when it has data (real swap stream
+      // is more accurate than Llama's back-derived dailyFees), otherwise
+      // fall back to Llama, otherwise fall through to a clear skip error.
+      const covalentHasData = !!(covalentOverlay && covalentOverlay.dailyFees.length > 0);
+      const llamaHasData = !!dailyFeesLlamaOrNull && dailyFeesLlamaOrNull.length > 0;
+      let dailyFees: PoolDailyFee[];
+      let covalentUsed: boolean;
+      let feeSource: 'covalent' | 'defillama' | 'none';
+      if (covalentHasData) {
+        dailyFees = covalentOverlay!.dailyFees;
+        covalentUsed = true;
+        feeSource = 'covalent';
+      } else if (llamaHasData) {
+        dailyFees = dailyFeesLlamaOrNull!;
+        covalentUsed = false;
+        feeSource = 'defillama';
+      } else {
+        throw new Error(
+          `no daily-fee data for pool ${pool.label} (DeFi Llama + Covalent both unavailable)`,
+        );
+      }
+      // Capture for the row.
+      void feeSource;
 
       // Use the most recent close as current price
       const last0 = ohlc0.at(-1);
