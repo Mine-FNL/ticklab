@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Ticklab documentation
+    url: https://github.com/Mine-FNL/ticklab#readme
+    about: README, NORTH_STAR_REPORT, methodology, and SDK reference.
+  - name: Security advisories
+    url: https://github.com/Mine-FNL/ticklab/security/advisories/new
+    about: Please report security issues privately here, not as a public bug.
