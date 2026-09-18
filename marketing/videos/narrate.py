@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Generate narration audio for the four campaign videos using Microsoft Edge's
-free neural TTS. Each video gets a polished, calm, authoritative voice
-(`en-US-GuyNeural`) — the same voice across the set for continuity.
+Generate narration audio for the four campaign videos.
+Each video gets a polished, calm, authoritative voice — the same voice
+across the set for continuity.
 
 Also generates SRT subtitle files for accessibility + platforms where audio
 is muted by default.

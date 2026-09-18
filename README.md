@@ -41,18 +41,18 @@ Need the 30-second pitch for a cold email or newsletter? **[`marketing/one-pager
 
 **Two flavors** — pick whichever fits the medium:
 
-### Hero clips (H3-generated, ~6s each, autoplay-friendly)
+### Hero clips (~6s each, autoplay-friendly)
 
-Cinematic AI-generated hero clips for high-impact social posts. Use these for Twitter / LinkedIn / Discord where a punchy 6-second beat with sound is what converts.
+Cinematic short clips for high-impact social posts. Use these for Twitter / LinkedIn / Discord where a punchy 6-second beat with sound is what converts.
 
 | # | Title | Beat | Watch |
 |---|---|---|---|
-| H3·01 | **The Pain** | Glowing pink projection chart shatters into reality | [MP4](./marketing/videos/h3/01-the-pain.mp4) · [GIF](./marketing/videos/h3/01-the-pain.gif) |
-| H3·02 | **The Magic** | Data streams converge into Ticklab, lock on 1.55 pp | [MP4](./marketing/videos/h3/02-the-magic.mp4) · [GIF](./marketing/videos/h3/02-the-magic.gif) |
-| H3·03 | **The Proof** | Terminal streams, three KPIs highlight at the end | [MP4](./marketing/videos/h3/03-the-proof.mp4) · [GIF](./marketing/videos/h3/03-the-proof.gif) |
-| H3·04 | **The Path** | Five commands type in, browser window reveals with glow | [MP4](./marketing/videos/h3/04-the-path.mp4) · [GIF](./marketing/videos/h3/04-the-path.gif) |
+| 01 | **The Pain** | Glowing pink projection chart shatters into reality | [MP4](./marketing/videos/hero-clips/01-the-pain.mp4) · [GIF](./marketing/videos/hero-clips/01-the-pain.gif) |
+| 02 | **The Magic** | Data streams converge into Ticklab, lock on 1.55 pp | [MP4](./marketing/videos/hero-clips/02-the-magic.mp4) · [GIF](./marketing/videos/hero-clips/02-the-magic.gif) |
+| 03 | **The Proof** | Terminal streams, three KPIs highlight at the end | [MP4](./marketing/videos/hero-clips/03-the-proof.mp4) · [GIF](./marketing/videos/hero-clips/03-the-proof.gif) |
+| 04 | **The Path** | Five commands type in, browser window reveals with glow | [MP4](./marketing/videos/hero-clips/04-the-path.mp4) · [GIF](./marketing/videos/hero-clips/04-the-path.gif) |
 
-Generated with **MiniMax-Hailuo-2.3** (text-to-video, 768P, 16:9). Audio is Microsoft Edge neural TTS (`en-US-GuyNeural`) muxed into each MP4 at 192 kbps AAC. Open [`marketing/videos/h3/index.html`](./marketing/videos/h3/index.html) to play all four in-page. Note: H3-generated text (terminal output, KPI numbers) is approximate — use the CSS-animated explainers below for pixel-perfect type.
+Each MP4 includes synced narration, h264 + AAC at 192 kbps, rendered at 768P, 16:9. Open [`marketing/videos/hero-clips/index.html`](./marketing/videos/hero-clips/index.html) to play all four in-page. Note: text rendered inside the cinematic clips is approximate — use the CSS-animated explainers below for pixel-perfect type.
 
 ### Long-form explainers (~30s each, narrated, pixel-perfect)
 
@@ -65,7 +65,7 @@ Full narrated walkthroughs with hand-tuned CSS animations. Use these for in-prod
 | 03 | **The Proof** | Show me it really runs. | [MP4](./marketing/videos/03-the-proof.mp4) · [GIF](./marketing/videos/03-the-proof.gif) |
 | 04 | **The Path** | How do I run this on my laptop? | [MP4](./marketing/videos/04-the-path.mp4) · [GIF](./marketing/videos/04-the-path.gif) |
 
-Total runtime: 2 min 6 s of narration. Audio-synced (Edge neural TTS, `en-US-GuyNeural`), 1600×900, h264 + AAC. Open [`marketing/videos/index.html`](./marketing/videos/index.html) to play all four in-page.
+Total runtime: 2 min 6 s of narration. 1600×900, h264 + AAC. Open [`marketing/videos/index.html`](./marketing/videos/index.html) to play all four in-page.
 
 Source HTML for each video lives in [`marketing/videos/source/`](./marketing/videos/source/) — every frame is hand-tuned CSS, every narration beat is timed against the audio via JS. To re-render:
 
@@ -75,7 +75,7 @@ python3 narrate.py   # regenerate the 4 narration MP3s
 python3 render.py    # record + mux audio + encode MP4 + export GIF
 ```
 
-Zero proprietary tools. Edge TTS is free, Playwright + ffmpeg are open-source.
+Playwright + ffmpeg are open-source.
 
 ## Quickstart (5 commands)
 

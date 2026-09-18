@@ -39,8 +39,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Marketing & launch campaign
 - **Hero banner** (`marketing/hero-banner.png`, 1600×600) + logo (`marketing/logo.svg`) + status badges (`marketing/badges.svg`).
-- **Long-form narrated explainer videos** (`marketing/videos/`): 4 videos (28-48s each), 1600×900, Edge neural TTS narration (`en-US-GuyNeural`), rendered via Playwright + ffmpeg.
-- **H3 AI-generated hero clips** (`marketing/videos/h3/`): 4 cinematic clips (~5-6s each), MiniMax-Hailuo-2.3 + MiniMax TTS audiobook_male_1.
+- **Long-form narrated explainer videos** (`marketing/videos/`): 4 videos (28-48s each), 1600×900, narrated and rendered via Playwright + ffmpeg.
+- **Cinematic hero clips** (`marketing/videos/hero-clips/`): 4 short clips (~5-6s each) for social posts, with synced narration.
 - **One-pager PDF** (`marketing/one-pager/ticklab-one-pager.pdf`): letter-size, single-page, designed to attach to cold-email pitches.
 - **OG share card** (`marketing/og-card.png`): 1200×630, used by GitHub README / Twitter / Discord previews.
 - **Demo GIF** (`marketing/demo/homepage.gif`): captured live app at localhost:3000 showing the new Ticklab homepage.
