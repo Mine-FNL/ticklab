@@ -31,6 +31,12 @@ Ticklab is an A16Z-grade simulator for Uniswap V3 concentrated-liquidity positio
 - **V3 + V4** — concentrated-liquidity V3 simulators (in-range + portfolio) and **V4 hooks discovery + recommendation**.
 - **Open-source SDK** — `@ticklab/sdk` (TypeScript, zero runtime deps, tree-shakable) for downstream apps.
 
+## One-pager
+
+Need the 30-second pitch for a cold email or newsletter? **[`marketing/one-pager/ticklab-one-pager.pdf`](./marketing/one-pager/ticklab-one-pager.pdf)** — a single-page PDF with the headline, four KPIs, the validation-harness loop, the per-pool error chart, and the 5-command quickstart. Letter-size, designed to attach as-is.
+
+![One-pager preview](./marketing/one-pager/one-pager-preview.png)
+
 ## See it in 2 minutes
 
 **Two flavors** — pick whichever fits the medium:

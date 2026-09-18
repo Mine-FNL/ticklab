@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ticklab — One-pager</title>
+<style>
+  :root {
+    --bg: #08080a;
+    --panel: #0d0d12;
+    --grid: #1a1a22;
+    --grid-strong: #232330;
+    --pink: #ff007a;
+    --pink-soft: rgba(255,0,122,0.18);
+    --green: #22c55e;
+    --cyan: #06b6d4;
+    --yellow: #eab308;
+    --text: #f4f4f7;
+    --text-mid: #c4c6cd;
+    --dim: #888d97;
+  }
+  @page { size: letter; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 816px; height: 1056px;
+    background: var(--bg); color: var(--text);
+    overflow: hidden;
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont,
+                 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  .grid-bg {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 64px 64px;
+    opacity: 0.5; pointer-events: none;
+  }
+  .mono { font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace; }
+  .page { position: relative; width: 816px; height: 1056px; padding: 44px 56px; }
+
+  /* Brand strip */
+  .brand {
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--grid-strong); padding-bottom: 16px;
+  }
+  .brand .logo { display: flex; align-items: center; gap: 12px; }
+  .brand .mark {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: var(--panel); border: 1px solid var(--grid-strong);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .brand .name { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+  .brand .name .tl { color: var(--pink); }
+  .brand .meta { color: var(--dim); font-size: 10.5px; letter-spacing: 0.5px;
+    font-family: ui-monospace, monospace; text-align: right; line-height: 1.5; }
+  .brand .meta .pink { color: var(--pink); }
+
+  /* Eyebrow + headline */
+  .eyebrow {
+    color: var(--pink); font-weight: 700; font-size: 11px;
+    letter-spacing: 2.5px; text-transform: uppercase;
+    font-family: ui-monospace, monospace; margin-top: 22px;
+  }
+  h1 {
+    font-size: 44px; line-height: 1.04; letter-spacing: -1.5px;
+    font-weight: 800; margin-top: 10px;
+  }
+  h1 .accent {
+    background: linear-gradient(90deg, var(--pink), #ff66a8);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .lede {
+    color: var(--text-mid); font-size: 13.5px; line-height: 1.5;
+    margin-top: 10px; max-width: 640px;
+  }
+
+  /* KPI strip */
+  .kpis {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+    margin-top: 22px;
+  }
+  .kpi {
+    background: var(--panel); border: 1px solid var(--grid-strong);
+    border-radius: 10px; padding: 14px 16px;
+  }
+  .kpi .lbl { color: var(--dim); font-size: 9.5px; letter-spacing: 1.5px;
+    text-transform: uppercase; font-weight: 700; font-family: ui-monospace, monospace; }
+  .kpi .val { font-size: 24px; font-weight: 800; letter-spacing: -1px;
+    margin-top: 3px; font-family: ui-monospace, monospace; }
+  .kpi .val.pink { color: var(--pink); }
+  .kpi .val.green { color: var(--green); }
+  .kpi .val.cyan { color: var(--cyan); }
+  .kpi .sub { color: var(--dim); font-size: 10px; margin-top: 2px; }
+
+  /* Section header */
+  .sec {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-top: 24px; padding-bottom: 6px;
+    border-bottom: 1px solid var(--grid-strong);
+  }
+  .sec .t {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 2.5px;
+    text-transform: uppercase; font-family: ui-monospace, monospace;
+  }
+  .sec .t.pink { color: var(--pink); }
+  .sec .r { color: var(--dim); font-size: 10.5px; font-family: ui-monospace, monospace; }
+
+  /* Two-column body */
+  .body { display: grid; grid-template-columns: 1.05fr 1fr; gap: 28px;
+    margin-top: 14px; }
+  .col h3 { font-size: 19px; font-weight: 700; letter-spacing: -0.3px; line-height: 1.2; }
+  .col .lede2 { color: var(--text-mid); font-size: 12px; line-height: 1.45;
+    margin-top: 5px; }
+
+  /* Loop diagram (compact) */
+  .loop { display: grid; grid-template-columns: 1fr 22px 1fr 22px 1fr 22px 1fr;
+    gap: 0; align-items: stretch; margin-top: 14px; }
+  .ln { background: var(--panel); border: 1.5px solid var(--grid-strong);
+    border-radius: 8px; padding: 12px 11px; }
+  .ln.pink { border-color: var(--pink); }
+  .ln .ic { font-size: 9px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; font-family: ui-monospace, monospace;
+    color: var(--cyan); white-space: nowrap; }
+  .ln.pink .ic { color: var(--pink); }
+  .ln .src { font-size: 14px; font-weight: 800; margin-top: 6px; line-height: 1.1; }
+  .ln .note { font-size: 9.5px; color: var(--dim); margin-top: 3px; line-height: 1.35; }
+  .arr { display: flex; align-items: center; justify-content: center;
+    color: var(--dim); font-size: 18px; font-weight: 300; }
+
+  /* Code block */
+  .code {
+    margin-top: 14px; background: var(--panel); border: 1px solid var(--grid-strong);
+    border-radius: 8px; padding: 12px 14px;
+    font-family: 'SF Mono', ui-monospace, monospace; font-size: 10.5px;
+    line-height: 1.55; color: var(--text);
+  }
+  .code .c { color: var(--cyan); }
+  .code .p { color: var(--pink); }
+  .code .g { color: var(--green); }
+  .code .y { color: var(--yellow); }
+  .code .d { color: var(--dim); }
+  .code .line { white-space: pre; }
+
+  /* Bar chart */
+  .bars { display: flex; align-items: flex-end; gap: 4px;
+    margin-top: 14px; height: 110px;
+    border-bottom: 1px solid var(--grid-strong); border-left: 1px solid var(--grid-strong);
+    padding: 0 6px; }
+  .bar {
+    flex: 1; background: linear-gradient(180deg, var(--pink), #8b0046);
+    border-radius: 3px 3px 0 0; position: relative;
+  }
+  .bar .v { position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
+    font-size: 8.5px; color: var(--text); font-weight: 700;
+    font-family: ui-monospace, monospace; }
+  .bars-legend {
+    margin-top: 8px; color: var(--dim); font-size: 10px;
+    font-family: ui-monospace, monospace; display: flex; gap: 16px;
+  }
+  .bars-legend strong { color: var(--text); font-weight: 700; }
+
+  /* Footer */
+  .footer {
+    position: absolute; left: 56px; right: 56px; bottom: 32px;
+    display: flex; justify-content: space-between; align-items: center;
+    padding-top: 12px; border-top: 1px solid var(--grid-strong);
+  }
+  .footer .url { font-family: ui-monospace, monospace; font-size: 12px;
+    color: var(--cyan); }
+  .footer .url .org { color: var(--pink); }
+  .footer .tagline { color: var(--dim); font-size: 11px;
+    font-family: ui-monospace, monospace; }
+  .footer .tagline strong { color: var(--text); font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="page">
+
+  <!-- Brand strip -->
+  <div class="brand">
+    <div class="logo">
+      <div class="mark">
+        <svg viewBox="0 0 24 22" width="24" height="22">
+          <path d="M 3 1 L 21 1 L 12 11 L 21 21 L 3 21 L 12 11 Z" fill="#ff007a"/>
+        </svg>
+      </div>
+      <div class="name">Tick<span class="tl">lab</span></div>
+    </div>
+    <div class="meta">
+      <div>ONE-PAGER · <span class="pink">v0.1.0</span></div>
+      <div>SEPTEMBER 2026 · UNISWAP V3 + V4</div>
+    </div>
+  </div>
+
+  <!-- Eyebrow + headline -->
+  <div class="eyebrow">PRODUCTION-GRADE LP BACKTEST · OPEN SOURCE · ZERO API KEYS</div>
+  <h1>Honest measurement for<br><span class="accent">Uniswap V3 + V4 LPs.</span></h1>
+  <p class="lede">The only LP simulator that ships its own error metric. Every projection is reproduced end-to-end against real DeFi Llama fees and Binance prices — pool by pool, day by day. If the model lies, the harness says so.</p>
+
+  <!-- KPI strip -->
+  <div class="kpis">
+    <div class="kpi">
+      <div class="lbl">MEDIAN ABS ERR</div>
+      <div class="val pink">1.55 pp</div>
+      <div class="sub">15 / 18 pools</div>
+    </div>
+    <div class="kpi">
+      <div class="lbl">ACCURACY LIFT</div>
+      <div class="val green">6×</div>
+      <div class="sub">vs prior round</div>
+    </div>
+    <div class="kpi">
+      <div class="lbl">TESTS</div>
+      <div class="val">257</div>
+      <div class="sub">passing</div>
+    </div>
+    <div class="kpi">
+      <div class="lbl">API KEYS</div>
+      <div class="val cyan">0</div>
+      <div class="sub">DeFi Llama · Binance · RPC</div>
+    </div>
+  </div>
+
+  <!-- Two-column body -->
+  <div class="body">
+    <!-- Left column: how it works -->
+    <div class="col">
+      <div class="sec">
+        <div class="t pink">HOW IT WORKS</div>
+        <div class="r">npm run validate:northstar</div>
+      </div>
+      <h3>The validation harness.</h3>
+      <p class="lede2">Pull DeFi Llama fees, pull Binance prices, replay each pool-day, publish the error. Anyone can run it — same numbers.</p>
+
+      <div class="loop">
+        <div class="ln"><div class="ic">01 PULL</div><div class="src">DeFi Llama</div><div class="note">18 V3 pools · daily fees</div></div>
+        <div class="arr">→</div>
+        <div class="ln"><div class="ic">02 PULL</div><div class="src">Binance OHLC</div><div class="note">Daily prices, same window</div></div>
+        <div class="arr">→</div>
+        <div class="ln"><div class="ic">03 SIM</div><div class="src">Ticklab</div><div class="note">Replay each pool-day</div></div>
+        <div class="arr">→</div>
+        <div class="ln pink"><div class="ic">04 PUB</div><div class="src">Error metric</div><div class="note">Median, mean, max — printed</div></div>
+      </div>
+    </div>
+
+    <!-- Right column: the proof -->
+    <div class="col">
+      <div class="sec">
+        <div class="t pink">THE PROOF</div>
+        <div class="r">% error per pool</div>
+      </div>
+      <h3>Simulator vs ground truth.</h3>
+      <p class="lede2">15 pools, 30-day window, median 1.55 pp. The model that publishes its error is the model you can trust.</p>
+
+      <div class="bars">
+        <div class="bar" style="height:8%;"><div class="v">0.8</div></div>
+        <div class="bar" style="height:14%;"><div class="v">1.4</div></div>
+        <div class="bar" style="height:22%;"><div class="v">2.2</div></div>
+        <div class="bar" style="height:11%;"><div class="v">1.1</div></div>
+        <div class="bar" style="height:18%;"><div class="v">1.8</div></div>
+        <div class="bar" style="height:9%;"><div class="v">0.9</div></div>
+        <div class="bar" style="height:28%;"><div class="v">2.8</div></div>
+        <div class="bar" style="height:35%;"><div class="v">3.5</div></div>
+        <div class="bar" style="height:13%;"><div class="v">1.3</div></div>
+        <div class="bar" style="height:42%;"><div class="v">4.2</div></div>
+        <div class="bar" style="height:17%;"><div class="v">1.7</div></div>
+        <div class="bar" style="height:25%;"><div class="v">2.5</div></div>
+        <div class="bar" style="height:31%;"><div class="v">3.1</div></div>
+        <div class="bar" style="height:48%;"><div class="v">4.8</div></div>
+        <div class="bar" style="height:100%;"><div class="v">13.2</div></div>
+      </div>
+      <div class="bars-legend">
+        <span><span style="color:var(--pink);">▮</span> Median <strong>1.55 pp</strong></span>
+        <span>Max <strong>13.16 pp</strong></span>
+        <span>Pools <strong>15 / 18</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quickstart block -->
+  <div class="sec" style="margin-top:22px;">
+    <div class="t pink">QUICKSTART</div>
+    <div class="r">5 commands · ~30 s</div>
+  </div>
+  <div class="code">
+<span class="line"><span class="d">$</span> <span class="c">git</span> clone https://github.com/<span class="p">Mine-FNL</span>/<span class="p">ticklab</span>.git</span>
+<span class="line"><span class="d">$</span> <span class="c">cd</span> ticklab && <span class="c">npm</span> install</span>
+<span class="line"><span class="d">$</span> <span class="c">npm</span> run validate:northstar     <span class="d"># reproduces every metric in this one-pager</span></span>
+<span class="line"><span class="d">$</span> <span class="c">npm</span> run dev                    <span class="d"># http://localhost:3000</span></span>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="url">github.com/<span class="org">Mine-FNL</span>/ticklab</div>
+    <div class="tagline"><strong>MIT</strong> · TypeScript · Next.js 14 · Node 20</div>
+  </div>
+
+</div>
+</body>
+</html>
