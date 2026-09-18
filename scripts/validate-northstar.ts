@@ -24,6 +24,12 @@
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 
+import {
+  aggregateCovalentSwapsByDay,
+  fetchCovalentSwaps,
+  isCovalentEnabled,
+} from '../lib/data/covalent';
+
 // ============================================================================
 // Pool selection — 20 V3 pools covering diverse fee tiers, TVL ranges, and
 // token categories on Ethereum mainnet. Addresses hardcoded because DeFi
@@ -305,6 +311,49 @@ async function fetchPoolDailyFees(pool: PoolSpec, chainId: number): Promise<Pool
 }
 
 /**
+ * Fetch per-swap data for a pool via Covalent GoldRush and bucket it into
+ * the same `PoolDailyFee[]` shape that DeFi Llama returns. This is the
+ * "ground-truth-from-swaps" path: it replaces the back-derived
+ * `dailyFeesUsd ≈ tvl × apyBase / 100 / 365` approximation with the
+ * actual swap stream, which is what was leaving the harness at 0/15 pools
+ * within ±20% relative error on the legacy metric.
+ *
+ * Returns `null` if the Covalent key is not configured — caller falls back
+ * to the DeFi Llama path. Throws if the key IS set but the request fails.
+ *
+ * The fee rate is applied as `volumeUSD × feeRate`, matching how V3
+ * computes fees (the fee is taken out of the swap before the user receives
+ * the output token, so the notional is the gross trade size).
+ */
+async function fetchPoolDailyFeesFromCovalent(
+  pool: PoolSpec,
+  chainId: number,
+  horizonDays: number,
+): Promise<{ dailyFees: PoolDailyFee[]; swapCount: number; nullCount: number } | null> {
+  if (!isCovalentEnabled()) return null;
+  const endTime = new Date();
+  const startTime = new Date(endTime.getTime() - horizonDays * 86_400_000);
+  const swaps = await fetchCovalentSwaps(chainId, pool.address, { startTime, endTime });
+  if (swaps.length === 0) {
+    return { dailyFees: [], swapCount: 0, nullCount: 0 };
+  }
+  const feeRate = pool.feeTierBips / 1_000_000;
+  const agg = aggregateCovalentSwapsByDay(swaps, feeRate);
+  const dailyFees: PoolDailyFee[] = [];
+  for (const [day, bucket] of [...agg.byDay.entries()].sort((a, b) => a[0] - b[0])) {
+    // No TVL signal from Covalent swaps alone — leave at 0; the harness only
+    // reads `dailyFeesUsd` for the ground-truth path so 0 TVL is fine.
+    dailyFees.push({
+      timestamp: day,
+      apyBase: 0,
+      tvlUsd: 0,
+      dailyFeesUsd: bucket.dailyFeesUsd,
+    });
+  }
+  return { dailyFees, swapCount: agg.totalSwapCount, nullCount: agg.nullCount };
+}
+
+/**
  * Compute the USD price of the pool's "other" token given its quote-token
  * price. We treat the pool as token0_per_token1, so
  *   pool_price = token0_price / token1_price.
@@ -526,6 +575,10 @@ interface ValidationRow {
   absError: number;
   /** Relative error in cumulative-return units (|sim-gt|/|gt|). */
   pctError: number;
+  /** Number of actual swaps fetched from Covalent for this pool (0 if key not set). */
+  covalentSwapCount?: number;
+  /** Number of swaps Covalent returned without a USD price (token not yet listed). */
+  covalentNullCount?: number;
 }
 
 // CLI args
@@ -557,12 +610,29 @@ async function main() {
   for (const pool of POOLS) {
     process.stdout.write(`  ${pool.label.padEnd(28)} `);
     try {
-      // Fetch OHLC for both tokens
-      const [ohlc0, ohlc1, dailyFees] = await Promise.all([
+      // Fetch OHLC for both tokens + DeFi Llama daily fees.
+      // In parallel, attempt the Covalent overlay — when the API key is set
+      // we replace the back-derived dailyFees with swap-by-swap fees from
+      // the actual on-chain stream, which is what was leaving the harness
+      // at 0/15 within ±20% relative error before this path was added.
+      const [ohlc0, ohlc1, dailyFeesLlama, covalentOverlay] = await Promise.all([
         fetchTokenOhlc(pool.token0Address, STRATEGY.horizonDays),
         fetchTokenOhlc(pool.token1Address, STRATEGY.horizonDays),
         fetchPoolDailyFees(pool, 1),
+        fetchPoolDailyFeesFromCovalent(pool, 1, STRATEGY.horizonDays).catch((err) => {
+          const msg = err instanceof Error ? err.message : String(err);
+          console.log(`\n    [covalent-overlay: disabled — ${msg.slice(0, 80)}]`);
+          return null;
+        }),
       ]);
+
+      // Use the Covalent overlay when it returned non-empty data; otherwise
+      // fall back to DeFi Llama so the harness keeps running in zero-config.
+      const dailyFees =
+        covalentOverlay && covalentOverlay.dailyFees.length > 0
+          ? covalentOverlay.dailyFees
+          : dailyFeesLlama;
+      const covalentUsed = !!(covalentOverlay && covalentOverlay.dailyFees.length > 0);
 
       // Use the most recent close as current price
       const last0 = ohlc0.at(-1);
@@ -655,12 +725,17 @@ async function main() {
         groundTruthAPR: gt.apr,
         absError,
         pctError,
+        covalentSwapCount: covalentOverlay?.swapCount,
+        covalentNullCount: covalentOverlay?.nullCount,
       });
 
       const v3Tag = simCumV3 != null ? ` [v3=${(simCumV3 * 100).toFixed(2)}%]` : '';
+      const covalentTag = covalentUsed
+        ? ` [covalent=${covalentOverlay!.swapCount}sw, ${covalentOverlay!.nullCount}unpriced]`
+        : '';
       console.log(
         `sim=${(primaryCum * 100).toFixed(2)}%${v3Tag} gt=${(gtCum * 100).toFixed(2)}% ` +
-        `err=${(pctError * 100).toFixed(1)}% (${gt.days}d, ${gt.daysInRange}in-range)`,
+        `err=${(pctError * 100).toFixed(1)}% (${gt.days}d, ${gt.daysInRange}in-range)${covalentTag}`,
       );
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -718,12 +793,17 @@ async function main() {
   mkdirSync(outDir, { recursive: true });
   const ts = new Date().toISOString().replace(/[:.]/g, '-');
   const csvPath = resolve(outDir, `validation-${ts}.csv`);
-  const header = 'pool,days,simulator_cum_return,simulator_cum_return_legacy,simulator_cum_return_v3,ground_truth_cum_return,ground_truth_apr,abs_error,pct_error\n';
+  const header =
+    'pool,days,simulator_cum_return,simulator_cum_return_legacy,simulator_cum_return_v3,' +
+    'ground_truth_cum_return,ground_truth_apr,abs_error,pct_error,' +
+    'covalent_swap_count,covalent_unpriced_count\n';
   const lines = rows.map((r) =>
     [r.pool, r.days, r.simulatorCumReturn.toFixed(6), r.simulatorCumReturnLegacy.toFixed(6),
      (r.simulatorCumReturnV3 ?? '').toString() === '' ? '' : r.simulatorCumReturnV3!.toFixed(6),
      r.groundTruthCumReturn.toFixed(6), r.groundTruthAPR.toFixed(6),
-     r.absError.toFixed(6), r.pctError.toFixed(6)].join(',')
+     r.absError.toFixed(6), r.pctError.toFixed(6),
+     r.covalentSwapCount ?? '',
+     r.covalentNullCount ?? ''].join(',')
   );
   writeFileSync(csvPath, header + lines.join('\n') + '\n');
   console.log(`\nWrote ${csvPath}`);
