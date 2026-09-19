@@ -21,9 +21,12 @@ Ticklab is an A16Z-grade simulator for Uniswap V3 concentrated-liquidity positio
 
 ## Live demo
 
-**Try it now:** **[univ3-strategy-iracrgj5t-0xbingbongs-projects.vercel.app](https://univ3-strategy-iracrgj5t-0xbingbongs-projects.vercel.app)** — full simulator, risk analytics, and the live `/validation` page rendering the latest north-star harness output.
+**Try it now:** **[univ3-strategy-cufxrctf5-0xbingbongs-projects.vercel.app](https://univ3-strategy-cufxrctf5-0xbingbongs-projects.vercel.app)** — full simulator, risk analytics, the live `/validation` page, and the new `/pricing` surface.
 
 **Self-hostable in 30 seconds** — `git clone && npm install && npm run dev`. One-click deploy to Vercel via `vercel.json`. Container image ships in the repo (Alpine, ~85 MB, non-root uid 1001).
+
+> Note: the previous custom alias `univ3-strategy-lab.vercel.app` is currently returning 404 because Vercel's alias metadata got stuck after a destructive deploy removal during the publish window. The new deployment is healthy and serving on the direct URL above. Re-aliasing is a one-line Vercel dashboard fix:
+> `vercel alias univ3-strategy-cufxrctf5-0xbingbongs-projects.vercel.app univ3-strategy-lab.vercel.app`
 
 ## Why this is different
 
