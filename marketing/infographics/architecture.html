@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ticklab · Architecture</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1600px; height: 900px; overflow: hidden; }
+  body {
+    background: linear-gradient(135deg, #0a0a0a 0%, #121212 100%);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    color: #fafafa;
+    padding: 56px 64px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .header { display: flex; justify-content: space-between; align-items: flex-end; }
+  .title-block h1 { font-size: 38px; font-weight: 700; letter-spacing: -0.5px; }
+  .title-block h1 .accent { color: #10b981; }
+  .title-block p { font-size: 15px; color: #888; margin-top: 6px; }
+  .badge {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 12px;
+    color: #10b981;
+    font-weight: 500;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+  }
+  .diagram {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr 1.5fr 1fr;
+    gap: 28px;
+    flex: 1;
+    align-items: stretch;
+    margin: 32px 0;
+  }
+  .col-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: #10b981;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+  .box {
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .box-row {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 10px 12px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+  }
+  .box-row .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dot-green { background: #10b981; }
+  .dot-amber { background: #f59e0b; }
+  .dot-cyan { background: #06b6d4; }
+  .box-row .meta { margin-left: auto; font-size: 11px; color: #666; }
+  .arrow {
+    align-self: center;
+    color: #444;
+    font-size: 22px;
+    margin-right: -14px;
+    z-index: 1;
+  }
+  .col-wrap { display: flex; flex-direction: column; }
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  .stats { display: flex; gap: 32px; }
+  .stat .v { font-size: 22px; font-weight: 700; color: #fafafa; }
+  .stat .v .accent { color: #10b981; }
+  .stat .l { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.6px; margin-top: 2px; }
+  .url { font-size: 13px; color: #666; font-family: "SF Mono", monospace; }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="title-block">
+      <h1>Ticklab <span class="accent">·</span> How it works</h1>
+      <p>End-to-end pipeline from real on-chain data to decision-grade backtests — zero API keys by default.</p>
+    </div>
+    <div class="badge">Architecture overview · 2026</div>
+  </div>
+
+  <div class="diagram">
+    <div class="col-wrap">
+      <div class="col-title">Data sources</div>
+      <div class="box">
+        <div class="box-row"><span class="dot dot-green"></span>DeFi Llama<span class="meta">TVL · volume · APR</span></div>
+        <div class="box-row"><span class="dot dot-green"></span>Binance OHLC<span class="meta">daily price</span></div>
+        <div class="box-row"><span class="dot dot-green"></span>Public RPCs<span class="meta">pool state</span></div>
+        <div class="box-row"><span class="dot dot-amber"></span>Covalent GoldRush<span class="meta">per-swap · opt-in</span></div>
+      </div>
+    </div>
+
+    <div class="arrow">▶</div>
+
+    <div class="col-wrap">
+      <div class="col-title">Math engine</div>
+      <div class="box">
+        <div class="box-row"><span class="dot dot-cyan"></span>V3 in-range simulator<span class="meta">lib/simulation</span></div>
+        <div class="box-row"><span class="dot dot-cyan"></span>Portfolio composition<span class="meta">multi-pool</span></div>
+        <div class="box-row"><span class="dot dot-cyan"></span>Risk analytics<span class="meta">VaR · Sharpe · Sortino</span></div>
+        <div class="box-row"><span class="dot dot-cyan"></span>Monte Carlo paths<span class="meta">GBM · 1k–10k</span></div>
+      </div>
+    </div>
+
+    <div class="arrow">▶</div>
+
+    <div class="col-wrap">
+      <div class="col-title">Outputs</div>
+      <div class="box">
+        <div class="box-row"><span class="dot dot-green"></span>33 API routes<span class="meta">REST · OpenAPI 3.1</span></div>
+        <div class="box-row"><span class="dot dot-green"></span>Standalone SDK<span class="meta">@ticklab/sdk · ESM</span></div>
+        <div class="box-row"><span class="dot dot-green"></span>/validation page<span class="meta">live results</span></div>
+        <div class="box-row"><span class="dot dot-green"></span>/api/metrics<span class="meta">Prometheus</span></div>
+      </div>
+    </div>
+
+    <div class="arrow">▶</div>
+
+    <div class="col-wrap">
+      <div class="col-title">Validation</div>
+      <div class="box">
+        <div class="box-row"><span class="dot dot-green"></span>15 V3 pools · 30d<span class="meta">ground-truth OHLC</span></div>
+        <div class="box-row"><span class="dot dot-green"></span>Median abs err<span class="meta">1.55 pp</span></div>
+        <div class="box-row"><span class="dot dot-green"></span>6× vs prior<span class="meta">7.91 → 1.55</span></div>
+        <div class="box-row"><span class="dot dot-green"></span>reproducible<span class="meta">npm run validate</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="stats">
+      <div class="stat"><div class="v"><span class="accent">288</span> root tests</div><div class="l">vitest · 100% green</div></div>
+      <div class="stat"><div class="v"><span class="accent">35</span> SDK tests</div><div class="l">@ticklab/sdk</div></div>
+      <div class="stat"><div class="v"><span class="accent">0</span> API keys</div><div class="l">zero-config by default</div></div>
+    </div>
+    <div class="url">github.com/Mine-FNL/ticklab</div>
+  </div>
+</body>
+</html>
