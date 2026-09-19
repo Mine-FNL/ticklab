@@ -21,7 +21,7 @@ Ticklab is an A16Z-grade simulator for Uniswap V3 concentrated-liquidity positio
 
 ## Live demo
 
-**Try it now:** **[univ3-strategy-lab.vercel.app](https://univ3-strategy-lab.vercel.app)** — full simulator, risk analytics, and the live `/validation` page rendering the latest north-star harness output.
+**Try it now:** **[univ3-strategy-iracrgj5t-0xbingbongs-projects.vercel.app](https://univ3-strategy-iracrgj5t-0xbingbongs-projects.vercel.app)** — full simulator, risk analytics, and the live `/validation` page rendering the latest north-star harness output.
 
 **Self-hostable in 30 seconds** — `git clone && npm install && npm run dev`. One-click deploy to Vercel via `vercel.json`. Container image ships in the repo (Alpine, ~85 MB, non-root uid 1001).
 
