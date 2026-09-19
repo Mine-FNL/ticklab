@@ -1,6 +1,15 @@
 import Link from "next/link";
+import { CheckCircle2, AlertCircle, ArrowRight } from "lucide-react";
 
-export default function Home() {
+import {
+  computeStats,
+  formatAge,
+  loadLatestValidation,
+} from "@/lib/validation-results";
+
+export default async function Home() {
+  const validationRun = await loadLatestValidation();
+  const validationStats = validationRun ? computeStats(validationRun.rows) : null;
   return (
     <div className="animate-fade-in">
       {/* Hero Section */}
@@ -28,6 +37,40 @@ export default function Home() {
                 View Pools →
               </Link>
             </div>
+
+            {/* Live Validation Widget — surfaces the latest north-star
+                metrics straight on the home page so visitors see the
+                "alive" signal without needing to navigate to /validation. */}
+            {validationStats && validationRun && (
+              <div className="mt-10 inline-flex flex-col items-center gap-3">
+                <Link
+                  href="/validation"
+                  className="group inline-flex items-center gap-3 px-5 py-3 bg-zinc-900/70 border border-zinc-800 hover:border-emerald-700 rounded-full text-sm transition-colors"
+                  aria-label={`Live validation: ${validationStats.medianAbsErrorPP.toFixed(2)} pp median absolute error across ${validationStats.poolCount} pools, updated ${formatAge(validationRun.timestampISO)}`}
+                >
+                  {validationStats.starReached ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 text-amber-400" />
+                  )}
+                  <span className="text-zinc-300">
+                    Live validation:{" "}
+                    <span className="text-white font-semibold tabular-nums">
+                      {validationStats.medianAbsErrorPP.toFixed(2)} pp
+                    </span>{" "}
+                    median abs err ·{" "}
+                    <span className="text-white font-semibold tabular-nums">
+                      {validationStats.poolCount}
+                    </span>{" "}
+                    pools ·{" "}
+                    <span className="text-zinc-500 text-xs">
+                      updated {formatAge(validationRun.timestampISO)}
+                    </span>
+                  </span>
+                  <ArrowRight className="w-3.5 h-3.5 text-zinc-500 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-transform" />
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </section>
