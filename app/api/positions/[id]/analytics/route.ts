@@ -93,7 +93,22 @@ export async function GET(
     });
   } catch (error) {
     console.error('Position analytics error:', error);
-    
+
+    // Zod failures (bad path param, bad query string) should be 400, not
+    // 500. The outer catch previously lumped them together, leaking
+    // the schema error as a "Failed to fetch" 500.
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        {
+          error: 'invalid_request',
+          message: 'Request did not match expected schema',
+          details: error.errors,
+          suggestion: 'Check the path parameter `id` and query string `chainId`.',
+        },
+        { status: 400 },
+      );
+    }
+
     return NextResponse.json(
       { error: 'Failed to fetch position analytics', message: (error as Error).message },
       { status: 500 }
