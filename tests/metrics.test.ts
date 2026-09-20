@@ -18,8 +18,8 @@ describe('metrics registry', () => {
     recordMetric('pools.list', 'GET', 500, 800);
 
     const out = renderPrometheusMetrics();
-    expect(out).toMatch(/univ3_http_requests_total\{route="pools\.list",method="GET",status_class="2xx"\} 2/);
-    expect(out).toMatch(/univ3_http_requests_total\{route="pools\.list",method="GET",status_class="5xx"\} 1/);
+    expect(out).toMatch(/ticklab_http_requests_total\{route="pools\.list",method="GET",status_class="2xx"\} 2/);
+    expect(out).toMatch(/ticklab_http_requests_total\{route="pools\.list",method="GET",status_class="5xx"\} 1/);
   });
 
   it('renders the latency histogram with cumulative bucket counts', () => {
@@ -30,19 +30,19 @@ describe('metrics registry', () => {
     const out = renderPrometheusMetrics();
     // First two requests fall in buckets 0, 0+1 — so the cumulative
     // counts at le="10" and le="50" should reflect both.
-    expect(out).toMatch(/univ3_http_request_duration_ms\{route="backtests\.run",le="10"\} 1/);
-    expect(out).toMatch(/univ3_http_request_duration_ms\{route="backtests\.run",le="50"\} 2/);
-    expect(out).toMatch(/univ3_http_request_duration_ms\{route="backtests\.run",le="5000"\} 3/);
-    expect(out).toMatch(/univ3_http_request_duration_ms\{route="backtests\.run",le="\+Inf"\} 3/);
+    expect(out).toMatch(/ticklab_http_request_duration_ms\{route="backtests\.run",le="10"\} 1/);
+    expect(out).toMatch(/ticklab_http_request_duration_ms\{route="backtests\.run",le="50"\} 2/);
+    expect(out).toMatch(/ticklab_http_request_duration_ms\{route="backtests\.run",le="5000"\} 3/);
+    expect(out).toMatch(/ticklab_http_request_duration_ms\{route="backtests\.run",le="\+Inf"\} 3/);
   });
 
   it('includes process metrics (uptime, memory, node)', () => {
     recordMetric('any.route', 'GET', 200, 1);
     const out = renderPrometheusMetrics();
-    expect(out).toMatch(/# TYPE univ3_uptime_seconds gauge/);
-    expect(out).toMatch(/univ3_uptime_seconds \d/);
-    expect(out).toMatch(/univ3_memory_rss_bytes \d+/);
-    expect(out).toMatch(/univ3_node_info\{node_version="v\d/,);
+    expect(out).toMatch(/# TYPE ticklab_uptime_seconds gauge/);
+    expect(out).toMatch(/ticklab_uptime_seconds \d/);
+    expect(out).toMatch(/ticklab_memory_rss_bytes \d+/);
+    expect(out).toMatch(/ticklab_node_info\{node_version="v\d/,);
   });
 
   it('renders custom counters and gauges', () => {
@@ -52,10 +52,10 @@ describe('metrics registry', () => {
     setGauge('active_pools', 12345);
 
     const out = renderPrometheusMetrics();
-    expect(out).toMatch(/univ3_custom_counter\{name="backtests_run_total"\} 3/);
-    expect(out).toMatch(/univ3_custom_counter\{name="cache_hits_total"\} 1/);
-    expect(out).toMatch(/univ3_custom_gauge\{name="queue_depth"\} 7/);
-    expect(out).toMatch(/univ3_custom_gauge\{name="active_pools"\} 12345/);
+    expect(out).toMatch(/ticklab_custom_counter\{name="backtests_run_total"\} 3/);
+    expect(out).toMatch(/ticklab_custom_counter\{name="cache_hits_total"\} 1/);
+    expect(out).toMatch(/ticklab_custom_gauge\{name="queue_depth"\} 7/);
+    expect(out).toMatch(/ticklab_custom_gauge\{name="active_pools"\} 12345/);
   });
 
   it('escapes label values that contain quotes or backslashes', () => {

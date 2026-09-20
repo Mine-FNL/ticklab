@@ -132,7 +132,7 @@ const PrometheusTextSchema: JsonSchema = {
   description:
     'Prometheus text exposition format (v0.0.4). See https://prometheus.io/docs/instrumenting/exposition_formats/',
   examples: [
-    '# HELP univ3_route_duration_ms Request duration in ms\n# TYPE univ3_route_duration_ms summary\nuniv3_route_duration_ms{quantile="0.5",route="pools.list"} 12\n',
+    '# HELP ticklab_route_duration_ms Request duration in ms\n# TYPE ticklab_route_duration_ms summary\nticklab_route_duration_ms{quantile="0.5",route="pools.list"} 12\n',
   ],
 };
 registerSchema('PrometheusText', PrometheusTextSchema);

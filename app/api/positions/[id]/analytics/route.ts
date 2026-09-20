@@ -8,7 +8,12 @@ import { apiConfig } from '@/lib/api/handler';
 export const { dynamic, runtime } = apiConfig();
 
 const paramsSchema = z.object({
-  id: z.string(),
+  // ERC721 position token IDs are large positive decimal integers. We
+  // restrict to that shape (plus the hex form used in some clients) so
+  // that URL-encoded path-traversal attempts like `%2e%2e%2fetc%2fpasswd`
+  // surface as a 400 with a clean error envelope instead of leaking a
+  // BigInt conversion error as a 500.
+  id: z.string().regex(/^(0|[1-9][0-9]*)$|^0x[0-9a-fA-F]{1,64}$/, 'Must be a positive integer or hex token id'),
 });
 
 const querySchema = z.object({

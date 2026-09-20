@@ -174,59 +174,59 @@ export function renderPrometheusMetrics(): string {
 
   // Standard process metrics.
   const mem = process.memoryUsage();
-  lines.push('# HELP univ3_uptime_seconds Process uptime in seconds.');
-  lines.push('# TYPE univ3_uptime_seconds gauge');
-  lines.push(`univ3_uptime_seconds ${(process.uptime() ?? 0).toFixed(3)}`);
-  lines.push('# HELP univ3_memory_rss_bytes Resident set size in bytes.');
-  lines.push('# TYPE univ3_memory_rss_bytes gauge');
-  lines.push(`univ3_memory_rss_bytes ${mem.rss}`);
-  lines.push('# HELP univ3_memory_heap_bytes Heap used in bytes.');
-  lines.push('# TYPE univ3_memory_heap_bytes gauge');
-  lines.push(`univ3_memory_heap_bytes ${mem.heapUsed}`);
-  lines.push('# HELP univ3_node_info Static info labels.');
-  lines.push('# TYPE univ3_node_info gauge');
+  lines.push('# HELP ticklab_uptime_seconds Process uptime in seconds.');
+  lines.push('# TYPE ticklab_uptime_seconds gauge');
+  lines.push(`ticklab_uptime_seconds ${(process.uptime() ?? 0).toFixed(3)}`);
+  lines.push('# HELP ticklab_memory_rss_bytes Resident set size in bytes.');
+  lines.push('# TYPE ticklab_memory_rss_bytes gauge');
+  lines.push(`ticklab_memory_rss_bytes ${mem.rss}`);
+  lines.push('# HELP ticklab_memory_heap_bytes Heap used in bytes.');
+  lines.push('# TYPE ticklab_memory_heap_bytes gauge');
+  lines.push(`ticklab_memory_heap_bytes ${mem.heapUsed}`);
+  lines.push('# HELP ticklab_node_info Static info labels.');
+  lines.push('# TYPE ticklab_node_info gauge');
   lines.push(
-    `univ3_node_info{node_version="${process.version}",platform="${process.platform}"} 1`
+    `ticklab_node_info{node_version="${process.version}",platform="${process.platform}"} 1`
   );
 
   // Request counters per route + method + status class.
-  lines.push('# HELP univ3_http_requests_total Total HTTP requests served, partitioned by route, method, and 2xx/4xx/5xx class.');
-  lines.push('# TYPE univ3_http_requests_total counter');
+  lines.push('# HELP ticklab_http_requests_total Total HTTP requests served, partitioned by route, method, and 2xx/4xx/5xx class.');
+  lines.push('# TYPE ticklab_http_requests_total counter');
   const state = getState();
   for (const [k, v] of state.requestCounts.entries()) {
     const [route, method, statusClass] = k.split('|');
-    lines.push(renderCounterLine('univ3_http_requests_total', { route, method, status_class: statusClass }, v));
+    lines.push(renderCounterLine('ticklab_http_requests_total', { route, method, status_class: statusClass }, v));
   }
 
   // Latency histograms per route (5 explicit buckets + +Inf).
-  lines.push('# HELP univ3_http_request_duration_ms Request latency histogram in milliseconds.');
-  lines.push('# TYPE univ3_http_request_duration_ms histogram');
+  lines.push('# HELP ticklab_http_request_duration_ms Request latency histogram in milliseconds.');
+  lines.push('# TYPE ticklab_http_request_duration_ms histogram');
   for (const [route, buckets] of state.latencyBuckets.entries()) {
     for (let i = 0; i < LATENCY_BOUNDS.length; i++) {
       lines.push(
-        `univ3_http_request_duration_ms{route="${escapeLabelValue(route)}",le="${LATENCY_BOUNDS[i]}"} ${buckets[i]}`
+        `ticklab_http_request_duration_ms{route="${escapeLabelValue(route)}",le="${LATENCY_BOUNDS[i]}"} ${buckets[i]}`
       );
     }
     lines.push(
-      `univ3_http_request_duration_ms{route="${escapeLabelValue(route)}",le="+Inf"} ${buckets[LATENCY_BOUNDS.length]}`
+      `ticklab_http_request_duration_ms{route="${escapeLabelValue(route)}",le="+Inf"} ${buckets[LATENCY_BOUNDS.length]}`
     );
   }
 
   // Custom counters.
   if (state.customCounters.size > 0) {
-    lines.push('# HELP univ3_custom_counter App-defined counter.');
-    lines.push('# TYPE univ3_custom_counter counter');
+    lines.push('# HELP ticklab_custom_counter App-defined counter.');
+    lines.push('# TYPE ticklab_custom_counter counter');
     for (const [name, v] of state.customCounters.entries()) {
-      lines.push(renderCounterLine('univ3_custom_counter', {}, v).replace('univ3_custom_counter ', `univ3_custom_counter{name="${escapeLabelValue(name)}"} `));
+      lines.push(renderCounterLine('ticklab_custom_counter', {}, v).replace('ticklab_custom_counter ', `ticklab_custom_counter{name="${escapeLabelValue(name)}"} `));
     }
   }
 
   // Custom gauges.
   if (state.customGauges.size > 0) {
-    lines.push('# HELP univ3_custom_gauge App-defined gauge.');
-    lines.push('# TYPE univ3_custom_gauge gauge');
+    lines.push('# HELP ticklab_custom_gauge App-defined gauge.');
+    lines.push('# TYPE ticklab_custom_gauge gauge');
     for (const [name, v] of state.customGauges.entries()) {
-      lines.push(renderCounterLine('univ3_custom_gauge', {}, v).replace('univ3_custom_gauge ', `univ3_custom_gauge{name="${escapeLabelValue(name)}"} `));
+      lines.push(renderCounterLine('ticklab_custom_gauge', {}, v).replace('ticklab_custom_gauge ', `ticklab_custom_gauge{name="${escapeLabelValue(name)}"} `));
     }
   }
 

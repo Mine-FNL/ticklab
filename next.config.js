@@ -25,11 +25,20 @@ const nextConfig = {
     return config;
   },
   async headers() {
+    // CORS for the public /api surface. We allow any origin (the API is
+    // intentionally public for the launch — there's no auth, no cookies,
+    // and the wallet endpoint takes a wallet address as a query param,
+    // not from a session).
+    //
+    // We deliberately do NOT set Access-Control-Allow-Credentials: browsers
+    // reject the wildcard-with-credentials combination per the CORS spec
+    // (RFC 6454 §7.2) and accepting credentials from any origin would
+    // leak user data. If we add cookie-based auth later, replace `*`
+    // with an explicit allowlist and re-enable credentials.
     return [
       {
         source: '/api/:path*',
         headers: [
-          { key: 'Access-Control-Allow-Credentials', value: 'true' },
           { key: 'Access-Control-Allow-Origin', value: '*' },
           { key: 'Access-Control-Allow-Methods', value: 'GET,POST,OPTIONS' },
           { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization' },
