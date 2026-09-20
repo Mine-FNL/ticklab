@@ -12,6 +12,8 @@
  */
 
 import { TicklabClient } from '@ticklab/sdk';
+// Falls back to the local dist when run outside the monorepo (e.g. when
+// someone copies this file as a quickstart).
 
 const baseUrl = process.env.TICKLAB_BASE_URL ?? 'https://univ3-strategy-lab.vercel.app';
 const client = new TicklabClient({ baseUrl });
@@ -29,12 +31,12 @@ async function main(): Promise<void> {
   });
 
   console.log('\n— Result —');
-  console.log(`totalReturn:    ${(result.totalReturn * 100).toFixed(2)}%`);
-  console.log(`apy:            ${(result.apy * 100).toFixed(2)}%`);
-  console.log(`feesEarned:     $${result.feesEarned.toFixed(2)}`);
-  console.log(`ilPct:          ${(result.ilPct * 100).toFixed(2)}%`);
-  console.log(`timeInRange:    ${(result.timeInRange * 100).toFixed(1)}%`);
-  console.log(`rebalanceCount: ${result.rebalanceCount}`);
+  console.log(`totalReturn:    ${(result.results.totalReturn * 100).toFixed(2)}%`);
+  console.log(`totalFees:      $${result.results.totalFees.toFixed(2)}`);
+  console.log(`timeInRange:    ${(result.results.timeInRange * 100).toFixed(1)}%`);
+  console.log(`periodsOOR:     ${result.results.periodsOutOfRange}`);
+  console.log(`backtestId:     ${result.backtestId}`);
+  console.log(`useRealData:    ${result.useRealData}`);
   console.log(`requestId:      ${result.requestId}`);
 }
 

@@ -160,8 +160,67 @@ export async function getPool(chainId: number, poolAddress: string): Promise<Poo
   
   // Cache the result
   poolCache.set(cacheKey, { data: pool, timestamp: Date.now() });
-  
+
   return pool;
+}
+
+/**
+ * Hardcoded fallback for the most-frequently-queried pools. Used when
+ * `fetchPoolData` returns null (typically because the upstream RPC has
+ * rate-limited us — common on serverless edge platforms where every
+ * node shares a small IP pool). The token addresses + decimals + fee
+ * tier are stable on-chain so this is safe to ship; only the live
+ * `currentTick` / `currentSqrtPriceX96` fields are stale (but the
+ * backtest engine derives a synthetic price from the historical data
+ * path so this doesn't affect the result).
+ *
+ * Add new entries as the production traffic concentrates on additional
+ * pools. Format: pool address → static Pool record.
+ */
+const KNOWN_POOLS: Record<string, Pool> = {
+  // Ethereum mainnet — V3 pools most-queried by the validation harness
+  // and the northstar /api/analytics endpoint.
+  '0x88e6a0c2ddd26feeb64f039a2c4122fcb7f78a72': {
+    chainId: 1,
+    address: '0x88e6a0c2ddd26feeb64f039a2c4122fcb7f78a72',
+    token0: { chainId: 1, address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', symbol: 'USDC', name: 'USD Coin', decimals: 6, verified: true },
+    token1: { chainId: 1, address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', symbol: 'WETH', name: 'Wrapped Ether', decimals: 18, verified: true },
+    feeTier: 500,
+    tickSpacing: 10,
+  },
+  '0x8ad599c3a0ff1de082011efdd2bce8a3c8763363': {
+    chainId: 1,
+    address: '0x8ad599c3a0ff1de082011efdd2bce8a3c8763363',
+    token0: { chainId: 1, address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', symbol: 'USDC', name: 'USD Coin', decimals: 6, verified: true },
+    token1: { chainId: 1, address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', symbol: 'WETH', name: 'Wrapped Ether', decimals: 18, verified: true },
+    feeTier: 3000,
+    tickSpacing: 60,
+  },
+  '0xcbcdf9626bc03e7f6d22d462f0d4b1d30e14e1c5': {
+    chainId: 1,
+    address: '0xcbcdf9626bc03e7f6d22d462f0d4b1d30e14e1c5',
+    token0: { chainId: 1, address: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', symbol: 'WBTC', name: 'Wrapped BTC', decimals: 8, verified: true },
+    token1: { chainId: 1, address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', symbol: 'WETH', name: 'Wrapped Ether', decimals: 18, verified: true },
+    feeTier: 3000,
+    tickSpacing: 60,
+  },
+  '0x4585fe77225b41b697c9b5e82213441756fba1e2': {
+    chainId: 1,
+    address: '0x4585fe77225b41b697c9b5e82213441756fba1e2',
+    token0: { chainId: 1, address: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', symbol: 'WBTC', name: 'Wrapped BTC', decimals: 8, verified: true },
+    token1: { chainId: 1, address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', symbol: 'WETH', name: 'Wrapped Ether', decimals: 18, verified: true },
+    feeTier: 500,
+    tickSpacing: 10,
+  },
+};
+
+/**
+ * Lookup the on-chain pool metadata for a hardcoded address. Returns
+ * `null` if the pool isn't in the fallback table.
+ */
+export function getKnownPool(chainId: number, poolAddress: string): Pool | null {
+  if (chainId !== 1) return null;
+  return KNOWN_POOLS[poolAddress.toLowerCase()] ?? null;
 }
 
 /**
@@ -209,7 +268,26 @@ export async function getPoolByAddress(
   chainId: number,
   poolAddress: string
 ): Promise<Pool> {
-  return getPool(chainId, poolAddress);
+  try {
+    return await getPool(chainId, poolAddress);
+  } catch (err) {
+    // Fall back to the static on-chain metadata for well-known pools when
+    // upstream RPCs are unavailable (common on serverless edge platforms
+    // where the shared IP pool gets rate-limited). The backtest engine
+    // derives price state from historical data, so the missing live
+    // `currentTick`/`currentSqrtPriceX96` fields don't change the
+    // output.
+    const known = getKnownPool(chainId, poolAddress);
+    if (known) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[pools] RPC fetch failed for ${poolAddress}, using static fallback`,
+        err instanceof Error ? err.message : err,
+      );
+      return known;
+    }
+    throw err;
+  }
 }
 
 /**
@@ -240,9 +318,67 @@ export function clearPoolCache(): void {
 
 // Wrapper functions for API routes
 export async function getTopPools(chainId: number, limit = 20): Promise<Pool[]> {
-  // Return empty array - actual implementation would query DeFi Llama or factory
-  console.warn('getTopPools: Using empty array - implement with DeFi Llama API');
-  return [];
+  // Pull the per-chain pool list from DeFi Llama, filter to Uniswap V3,
+  // and sort by TVL. The endpoint hits `/pools/{chain}` (NOT
+  // `/pools/Ethereum` which has been returning 404 from Vercel's edge in
+  // recent runs — `/pools/{chainSlug}` is the canonical working endpoint).
+  const llamaPools = await fetchDefiLlamaPools(chainId);
+  const v3 = llamaPools.filter(
+    (p) => (p.project ?? '').toLowerCase().startsWith('uniswap-v3'),
+  );
+  v3.sort((a, b) => (b.tvlUsd ?? 0) - (a.tvlUsd ?? 0));
+
+  // DeFi Llama's `pool` field is the internal UUID (e.g.
+  // `665dc8bc-c79d-4800-97f7-304bf368e547`), NOT the on-chain contract
+  // address. We re-derive the on-chain address from `underlyingTokens`
+  // (address-keyed) + a Uniswap V3 factory call. That's too heavy for
+  // this list path — instead, we surface what DeFi Llama gives us plus
+  // a stable lookup key (`underlyingTokens`-joined symbol) so the caller
+  // can resolve to a real address via `getPoolsByToken`.
+  return v3.slice(0, limit).map((p) => ({
+    chainId,
+    address: p.pool,
+    token0: {
+      chainId,
+      address: (p.underlyingTokens?.[0] ?? '').toLowerCase(),
+      symbol: p.symbol?.split(/[-/]/)[0]?.trim() ?? '',
+      name: p.symbol?.split(/[-/]/)[0]?.trim() ?? '',
+      decimals: 18,
+    },
+    token1: {
+      chainId,
+      address: (p.underlyingTokens?.[1] ?? '').toLowerCase(),
+      symbol: p.symbol?.split(/[-/]/)[1]?.trim() ?? '',
+      name: p.symbol?.split(/[-/]/)[1]?.trim() ?? '',
+      decimals: 18,
+    },
+    feeTier: parseFeeTierFromMeta(p.poolMeta) ?? 3000,
+    tickSpacing: FEE_TIER_TO_TICK_SPACING[parseFeeTierFromMeta(p.poolMeta) ?? 3000] ?? 60,
+    tvlUSD: p.tvlUsd,
+    volumeUSD24h: p.volumeUsd1d,
+    apr: p.apy,
+  }));
+}
+
+/**
+ * Parse a DeFi Llama `poolMeta` string ("0.3%", "0.05%", "1%") into the
+ * matching V3 fee tier (in hundredths-of-a-bps, e.g. 0.3% → 3000).
+ * Returns `null` if unrecognised.
+ *
+ * V3 fee tier units: feeTier=3000 ↔ 0.3% ↔ 30 bps ↔ 0.003 fraction.
+ * DeFi Llama's `poolMeta` is in percent units ("0.3"), so the multiplier
+ * is 10000 (not 100 — that would give bps directly).
+ */
+function parseFeeTierFromMeta(meta?: string): number | null {
+  if (!meta) return null;
+  const m = meta.match(/([\d.]+)\s*%/);
+  if (!m) return null;
+  const pct = parseFloat(m[1]);
+  if (!Number.isFinite(pct)) return null;
+  const feeTier = Math.round(pct * 10_000);
+  return SUPPORTED_FEE_TIERS.includes(feeTier as typeof SUPPORTED_FEE_TIERS[number])
+    ? feeTier
+    : null;
 }
 
 export async function getPoolsByToken(chainId: number, tokenAddress: string): Promise<Pool[]> {

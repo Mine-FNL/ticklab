@@ -38,13 +38,15 @@ async function main(): Promise<void> {
   });
 
   console.log('\n— Risk Report —');
-  console.log(`Value at Risk (95%):       ${(report.valueAtRisk * 100).toFixed(2)}%`);
-  console.log(`Conditional VaR (95%):    ${(report.conditionalVaR * 100).toFixed(2)}%`);
-  console.log(`Sharpe ratio:              ${report.sharpeRatio.toFixed(2)}`);
-  console.log(`Sortino ratio:             ${report.sortinoRatio.toFixed(2)}`);
+  console.log(`Annualised return:         ${(report.annualizedReturn * 100).toFixed(2)}%`);
   console.log(`Annualised volatility:     ${(report.annualizedVolatility * 100).toFixed(2)}%`);
+  console.log(`Sharpe ratio:              ${report.sharpeRatio.toFixed(2)}`);
+  console.log(`Sortino ratio:             ${report.sortinoRatio?.toFixed(2) ?? 'n/a'}`);
+  console.log(`Calmar ratio:              ${report.calmarRatio?.toFixed(2) ?? 'n/a'}`);
   console.log(`Max drawdown:              ${(report.maxDrawdown * 100).toFixed(2)}%`);
-  console.log(`Calmar ratio:              ${report.calmarRatio.toFixed(2)}`);
+  console.log(`VaR 95%:                   ${report.valueAtRisk95 != null ? (report.valueAtRisk95 * 100).toFixed(2) + '%' : 'n/a'}`);
+  console.log(`CVaR 95%:                  ${report.conditionalVaR95 != null ? (report.conditionalVaR95 * 100).toFixed(2) + '%' : 'n/a'}`);
+  console.log(`Sample size:               ${report.sampleSize}`);
   console.log(`requestId:                 ${report.requestId}`);
 }
 
@@ -53,7 +55,7 @@ async function main(): Promise<void> {
  * Returns a flat $10k curve if the backtest result doesn't expose
  * `equityCurve` (older API versions don't).
  */
-function buildEquityCurve(raw: ReadonlyArray<{ timestamp: number; equity: number }>): EquityPoint[] {
+function buildEquityCurve(raw: ReadonlyArray<{ timestamp: number; equity: number } | { timestamp: number; lpValue: number }>): EquityPoint[] {
   if (raw.length === 0) {
     const now = Date.now();
     return Array.from({ length: 30 }, (_, i) => ({
@@ -61,7 +63,10 @@ function buildEquityCurve(raw: ReadonlyArray<{ timestamp: number; equity: number
       equity: 10_000,
     }));
   }
-  return raw.map((p) => ({ timestamp: p.timestamp, equity: p.equity }));
+  return raw.map((p) => ({
+    timestamp: p.timestamp,
+    equity: 'equity' in p ? p.equity : p.lpValue,
+  }));
 }
 
 main().catch((err) => {

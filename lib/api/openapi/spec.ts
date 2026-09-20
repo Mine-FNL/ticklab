@@ -1,5 +1,5 @@
 /**
- * OpenAPI 3.1 spec builder for the UniV3 Strategy Lab API surface.
+ * OpenAPI 3.1 spec builder for the Ticklab API surface.
  *
  * This module owns the static part of the spec (info, servers, tags, the
  * `/api/openapi.json` route metadata) and assembles `paths` /
@@ -21,7 +21,7 @@ import type { OpenApiParameter } from './route-inventory';
 import { listSchemas } from './schemas';
 
 const API_VERSION = '0.1.0';
-const API_TITLE = 'UniV3 Strategy Lab API';
+const API_TITLE = 'Ticklab API';
 
 /* -------------------------------------------------------------------------- */
 /* Tag catalogue                                                                */
@@ -165,7 +165,7 @@ export const OPENAPI_SPEC = {
     version: API_VERSION,
     summary: 'LP strategy lab API surface — V3 + V4 simulation, backtest, risk.',
     description: [
-      'OpenAPI 3.1 contract for the UniV3 Strategy Lab HTTP API.',
+      'OpenAPI 3.1 contract for the Ticklab HTTP API.',
       '',
       '**Stability**: this spec is the machine-readable source of truth for SDK',
       'generation, mock servers, and request validation. It is hand-maintained',
@@ -178,7 +178,7 @@ export const OPENAPI_SPEC = {
       'breaks CI.',
     ].join('\n'),
     contact: {
-      name: 'UniV3 Strategy Lab maintainers',
+      name: 'Ticklab maintainers',
       url: 'https://github.com/qscreen/ticklab',
     },
     license: {

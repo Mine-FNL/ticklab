@@ -16,6 +16,8 @@ export interface DefiLlamaPool {
   chain: string;
   project: string;
   symbol: string;
+  /** Human-friendly fee tier label, e.g. "0.3%". Absent on some entries. */
+  poolMeta?: string;
   tvlUsd: number;
   apyBase?: number;
   apyReward?: number;
@@ -32,7 +34,15 @@ const cache = new Map<string, { data: DefiLlamaPool[]; timestamp: number }>();
 /**
  * Fetch all Uniswap V3 pools from DeFi Llama for a specific chain
  * Returns REAL TVL, volume, and APR data
- * 
+ *
+ * NOTE: As of 2026-09 the per-chain endpoint `/pools/{chain}` was
+ * removed from DeFi Llama (returns 404). The working endpoint is the
+ * single all-pools list at `yields.llama.fi/pools` (no chain suffix),
+ * which returns 11–16k pools across 100+ chains. We fetch the full
+ * list once and filter to (a) the requested chain and (b) the
+ * Uniswap V3 project — then cache the filtered subset per-chain so
+ * repeat callers don't pay the 11 MB download cost on every call.
+ *
  * @param chainId - Chain ID
  * @returns Array of pool data from DeFi Llama
  * @throws Error if API fails
@@ -43,39 +53,45 @@ export async function fetchDefiLlamaPools(chainId: number): Promise<DefiLlamaPoo
     throw new Error(`Chain ${chainId} not supported by DeFi Llama`);
   }
 
-  const cacheKey = `pools-${chainId}`;
-  const cached = cache.get(cacheKey);
-  
+  // Per-chain filtered cache.
+  const chainCacheKey = `pools-chain-${chainSlug}`;
+  const cached = cache.get(chainCacheKey);
   if (cached && Date.now() - cached.timestamp < CACHE_TTL.DEFILLAMA_DATA) {
     return cached.data;
   }
 
-  const url = `${DEFILLAMA_API.BASE_URL}/pools/${chainSlug}`;
-  
-  const response = await fetch(url, {
-    headers: { 'Accept': 'application/json' },
-  });
-
-  if (!response.ok) {
-    throw new Error(`DeFi Llama API error: ${response.status}`);
+  // Single, chain-agnostic upstream call. Cached as `pools-all` so repeat
+  // callers across different chains share the same 11 MB download.
+  const ALL_KEY = 'pools-all';
+  let allPools: DefiLlamaPool[] | null = (cache.get(ALL_KEY)?.data as DefiLlamaPool[] | undefined) ?? null;
+  if (!allPools || Date.now() - cache.get(ALL_KEY)!.timestamp >= CACHE_TTL.DEFILLAMA_DATA) {
+    const url = `https://yields.llama.fi/pools`;
+    const response = await fetch(url, { headers: { Accept: 'application/json' } });
+    if (!response.ok) {
+      throw new Error(`DeFi Llama API error: ${response.status}`);
+    }
+    const data = await response.json();
+    if (!data.data || !Array.isArray(data.data)) {
+      throw new Error('Invalid response format from DeFi Llama API');
+    }
+    allPools = data.data as DefiLlamaPool[];
+    cache.set(ALL_KEY, { data: allPools as unknown as DefiLlamaPool[], timestamp: Date.now() });
   }
 
-  const data = await response.json();
-  
-  if (!data.data || !Array.isArray(data.data)) {
-    throw new Error('Invalid response format from DeFi Llama API');
-  }
-  
-  // Filter for Uniswap V3 pools only
-  const uniswapPools = data.data.filter(
-    (pool: DefiLlamaPool) => pool.project?.toLowerCase().includes('uniswap') || 
-                             pool.project?.toLowerCase().includes('univ3')
-  );
+  // Filter to the requested chain + Uniswap V3 in one pass.
+  const chainPools = (allPools as DefiLlamaPool[])
+    .filter((p) => p.chain === chainSlug)
+    .filter(
+      (p) =>
+        p.project?.toLowerCase().startsWith('uniswap-v3') ||
+        // tolerate the legacy "uniswap" + "univ3" prefixes that older
+        // DeFi Llama entries occasionally carry.
+        (p.project?.toLowerCase().includes('uniswap') ?? false) ||
+        (p.project?.toLowerCase().includes('univ3') ?? false),
+    );
 
-  // Cache the result
-  cache.set(cacheKey, { data: uniswapPools, timestamp: Date.now() });
-
-  return uniswapPools;
+  cache.set(chainCacheKey, { data: chainPools, timestamp: Date.now() });
+  return chainPools;
 }
 
 /**

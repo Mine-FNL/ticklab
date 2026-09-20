@@ -72,7 +72,7 @@ async function probe(name: string, url: string, timeoutMs: number, expectStatus2
 async function runChecks(): Promise<HealthCheck[]> {
   const TIMEOUT_MS = 3000;
   return Promise.all([
-    probe('defillama', 'https://api.llama.fi/pools', TIMEOUT_MS, true),
+    probe('defillama', 'https://yields.llama.fi/pools', TIMEOUT_MS, true),
     probe('binance', 'https://api.binance.com/api/v3/ping', TIMEOUT_MS, true),
     probe('rpc', 'https://ethereum.publicnode.com', TIMEOUT_MS, false),
   ]);
