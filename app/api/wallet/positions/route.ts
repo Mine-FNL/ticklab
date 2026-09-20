@@ -4,6 +4,7 @@ import { fetchUserPositions } from '@/lib/data/rpc';
 import { fetchPoolState } from '@/lib/data/rpc';
 import { getAmountsForLiquidity, tickToSqrtPriceX96 } from '@/lib/univ3/math';
 import { apiConfig } from '@/lib/api/handler';
+import { jsonResponse } from '@/lib/api/json';
 
 export const { dynamic, runtime } = apiConfig();
 
@@ -77,7 +78,7 @@ export async function GET(request: NextRequest) {
     // Calculate summary
     const positionsInRange = positionsWithValues.filter((p) => p.inRange).length;
 
-    return NextResponse.json({
+    return jsonResponse({
       positions: positionsWithValues,
       summary: {
         totalPositions: positions.length,
@@ -87,21 +88,21 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Wallet positions error:', error);
-    
+
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
+      return jsonResponse(
         { error: 'Invalid parameters', details: error.errors },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    return NextResponse.json(
-      { 
-        error: 'Failed to fetch positions', 
+    return jsonResponse(
+      {
+        error: 'Failed to fetch positions',
         message: (error as Error).message,
-        suggestion: 'Make sure your wallet is connected to the correct chain.'
+        suggestion: 'Make sure your wallet is connected to the correct chain.',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

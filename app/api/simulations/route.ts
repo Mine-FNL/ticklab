@@ -8,13 +8,17 @@ import { tickToPrice } from '@/lib/univ3/math';
 import { getPoolByAddress } from '@/lib/data/pools';
 import { fetchPoolState } from '@/lib/data/rpc';
 import { getPoolMetrics } from '@/lib/data/defillama';
+import { safeJson } from '@/lib/api/json';
 import { apiConfig } from '@/lib/api/handler';
 
 export const { dynamic, runtime } = apiConfig();
 
 export async function POST(request: NextRequest) {
+  const parsed = await safeJson<unknown>(request);
+  if (!parsed.ok) return parsed.response;
+  const body = parsed.value;
+
   try {
-    const body = await request.json();
     const params = simulationRequestSchema.parse(body);
 
     // Fetch pool data

@@ -7,6 +7,7 @@ import { HistoricalDataError } from '@/lib/data/historical';
 import { getPoolByAddress } from '@/lib/data/pools';
 import { tickToPrice } from '@/lib/univ3/math';
 import { apiConfig } from '@/lib/api/handler';
+import { safeJson } from '@/lib/api/json';
 import {
   compoundWindowReturns,
   computeConfidenceBands,
@@ -65,8 +66,16 @@ export async function POST(request: NextRequest) {
     );
   };
 
+  // Use safeJson so malformed bodies return a typed 400 envelope instead
+  // of a 500 from a thrown JSON.parse error.
+  const parsed = await safeJson<unknown>(request);
+  if (!parsed.ok) {
+    log(400, 'malformed JSON body');
+    return parsed.response;
+  }
+  const body = parsed.value;
+
   try {
-    const body = await request.json();
     const params = realBacktestRequestSchema.parse(body);
 
     // -------- pre-flight checks (run before any expensive work) --------
