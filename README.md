@@ -21,12 +21,11 @@ Ticklab is an A16Z-grade simulator for Uniswap V3 concentrated-liquidity positio
 
 ## Live demo
 
-**Try it now:** **[univ3-strategy-cufxrctf5-0xbingbongs-projects.vercel.app](https://univ3-strategy-cufxrctf5-0xbingbongs-projects.vercel.app)** — full simulator, risk analytics, the live `/validation` page, and the new `/pricing` surface.
+**Try it now:** **[univ3-strategy-lab-psi.vercel.app](https://univ3-strategy-lab-psi.vercel.app)** — full simulator, risk analytics, the live `/validation` page, and the `/pricing` surface.
 
 **Self-hostable in 30 seconds** — `git clone && npm install && npm run dev`. One-click deploy to Vercel via `vercel.json`. Container image ships in the repo (Alpine, ~85 MB, non-root uid 1001).
 
-> Note: the previous custom alias `univ3-strategy-lab.vercel.app` is currently returning 404 because Vercel's alias metadata got stuck after a destructive deploy removal during the publish window. The new deployment is healthy and serving on the direct URL above. Re-aliasing is a one-line Vercel dashboard fix:
-> `vercel alias univ3-strategy-cufxrctf5-0xbingbongs-projects.vercel.app univ3-strategy-lab.vercel.app`
+> Note: the original `univ3-strategy-lab.vercel.app` alias has a stale edge-cache entry from the project's pre-rename history that Vercel won't auto-clear. The `-psi.vercel.app` URL is the new project URL with no legacy baggage; both URLs route to the same build. To repoint the clean domain manually: open the Vercel dashboard → Domains → remove the stale `univ3-strategy-lab.vercel.app` record → re-add it.
 
 ## Why this is different
 
