@@ -7,7 +7,12 @@
 
 import type { Strategy } from '@/types/strategy'
 
-const STORAGE_KEY = 'univ3_saved_strategies'
+// Renamed from `univ3_saved_strategies` as part of the ticklab rebrand.
+// Old-key data is still readable so users with existing browser-stored
+// strategies don't lose them on upgrade.
+const STORAGE_KEY = 'ticklab_saved_strategies'
+/** @deprecated — kept for one release for backwards-compatible reads. */
+const LEGACY_STORAGE_KEY = 'univ3_saved_strategies'
 
 export interface SavedStrategy {
   id: string
@@ -44,7 +49,10 @@ export function saveStrategy(strategy: Strategy, name?: string): SavedStrategy {
 export function getSavedStrategies(): SavedStrategy[] {
   if (typeof window === 'undefined') return []
 
-  const stored = localStorage.getItem(STORAGE_KEY)
+  // Read the new key first; fall back to the legacy key for users who
+  // had browser-stored strategies under the pre-rebrand name.
+  let stored = localStorage.getItem(STORAGE_KEY)
+  if (!stored) stored = localStorage.getItem(LEGACY_STORAGE_KEY)
   if (!stored) return []
 
   try {
