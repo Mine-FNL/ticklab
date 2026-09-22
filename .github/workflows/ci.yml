@@ -45,7 +45,7 @@ jobs:
           # The build doesn't actually call RPC at compile time, but supplying
           # the WalletConnect project id prevents wagmi/RainbowKit from
           # failing the build when env-validation runs.
-          NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${{ secrets.WALLETCONNECT_PROJECT_ID || 'ci-placeholder' }
+          NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${{ secrets.WALLETCONNECT_PROJECT_ID || 'ci-placeholder' }}
 
   sdk:
     name: SDK build + unit tests
