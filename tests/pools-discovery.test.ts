@@ -216,4 +216,23 @@ describe('getPoolByAddress fallback', () => {
       globalThis.fetch = realFetch;
     }
   });
+
+  // Regression: the static fallback record has no live sqrtPriceX96, so
+  // callers must not see `currentSqrtPriceX96: "0"` or `undefined` — that
+  // crashes downstream sqrtPriceToTick() with "sqrtPrice must be positive".
+  // The /api/pools/[address] route handles this by checking the live state
+  // is meaningful before exposing it; here we assert the upstream invariant
+  // that the fallback itself never carries a zero/empty sqrtPriceX96.
+  it('static fallback record never carries a zero or empty sqrtPriceX96', () => {
+    const KNOWN_POOL_ADDRESS = '0x8ad599c3a0ff1de082011efdd2bce8a3c8763363'; // USDC/WETH 0.3%
+    const known = getKnownPool(1, KNOWN_POOL_ADDRESS);
+    expect(known).not.toBeNull();
+    // The fallback record should NOT pre-fill currentSqrtPriceX96 with "0"
+    // or any falsy value — that path leads to a downstream crash. Either
+    // absent (undefined) or a real positive BigInt-as-string is acceptable;
+    // what matters is that it's never "0".
+    if (known?.currentSqrtPriceX96 !== undefined) {
+      expect(BigInt(known.currentSqrtPriceX96)).toBeGreaterThan(0n);
+    }
+  });
 });

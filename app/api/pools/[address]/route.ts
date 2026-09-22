@@ -64,14 +64,25 @@ export async function GET(
       });
     }
 
+    // Use live on-chain state when available, but only when it's actually
+    // meaningful. A zero sqrtPriceX96 (or null state) means the RPC call
+    // returned no real data; fall back to whatever the static pool record
+    // has. Without this guard, callers see `currentSqrtPriceX96: "0"` and
+    // downstream code crashes with "sqrtPrice must be positive".
+    const hasLiveState = state !== null && state.sqrtPriceX96 > 0n;
+
     return NextResponse.json({
       pool: {
         ...pool,
-        currentTick: state?.tick ?? pool.currentTick,
-        currentSqrtPriceX96: state?.sqrtPriceX96.toString() ?? pool.currentSqrtPriceX96,
-        currentLiquidity: state?.liquidity.toString() ?? pool.currentLiquidity,
+        currentTick: hasLiveState ? state.tick : pool.currentTick,
+        currentSqrtPriceX96: hasLiveState
+          ? state.sqrtPriceX96.toString()
+          : pool.currentSqrtPriceX96,
+        currentLiquidity: hasLiveState
+          ? state.liquidity.toString()
+          : pool.currentLiquidity,
       },
-      currentState: state,
+      currentState: hasLiveState ? state : null,
       metrics,
       warnings,
     });

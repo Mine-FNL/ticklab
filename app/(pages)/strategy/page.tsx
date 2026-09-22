@@ -57,10 +57,26 @@ export default function StrategyPage() {
     setCalculatedRange({ lowerTick, upperTick });
   };
 
-  const currentTick = selectedPool ? sqrtPriceToTick(BigInt(selectedPool.currentSqrtPriceX96 ?? '0')) : 0;
-  const currentPrice = selectedPool
-    ? Math.pow(Number(BigInt(selectedPool.currentSqrtPriceX96 ?? '0')) / Number(BigInt(2 ** 96)), 2)
-    : 0;
+  const currentTick = (() => {
+    if (!selectedPool?.currentSqrtPriceX96) return 0;
+    try {
+      const sq = BigInt(selectedPool.currentSqrtPriceX96);
+      return sq > 0n ? sqrtPriceToTick(sq) : 0;
+    } catch {
+      return 0;
+    }
+  })();
+  const currentPrice = (() => {
+    if (!selectedPool?.currentSqrtPriceX96) return 0;
+    try {
+      const sq = BigInt(selectedPool.currentSqrtPriceX96);
+      return sq > 0n
+        ? Math.pow(Number(sq) / Number(BigInt(2 ** 96)), 2)
+        : 0;
+    } catch {
+      return 0;
+    }
+  })();
 
   return (
     <div className="animate-fade-in">
@@ -164,7 +180,14 @@ export default function StrategyPage() {
             <StrategyBuilder
               pool={selectedPool}
               currentTick={currentTick}
-              sqrtPrice={BigInt(selectedPool.currentSqrtPriceX96 ?? '0')}
+              sqrtPrice={(() => {
+                try {
+                  const sq = BigInt(selectedPool.currentSqrtPriceX96 ?? '0');
+                  return sq > 0n ? sq : 1n;
+                } catch {
+                  return 1n;
+                }
+              })()}
               currentPrice={currentPrice}
               onStrategyComplete={handleStrategyComplete}
               onScenariosCalculated={handleScenariosCalculated}

@@ -184,10 +184,18 @@ export const test = base.extend<{
     await use(ctx);
     await ctx.dispose();
   },
-  seededPage: async ({ page, poolApi }, use) => {
+  seededPage: async ({ page }, use) => {
     // Mock the /api/pools/<address> endpoint with our deterministic fixture
     // so tests don't depend on flaky public RPCs. We intercept BOTH the JSON
     // helper call and the surrounding pool wrapper.
+    //
+    // We do NOT call fetchPool from the test side. The earlier implementation
+    // tried to source `currentSqrtPriceX96` from the live /api/pools endpoint,
+    // but that endpoint falls back to the static KNOWN_POOLS table when RPCs
+    // are unreachable (common in CI), and the static fallback lacks live
+    // sqrtPriceX96. The page would then crash with `sqrtPrice must be
+    // positive` because `selectedPool.currentSqrtPriceX96` was undefined.
+    // SEEDED_POOL is the canonical source of truth for tests.
     await page.route(
       (url) => url.pathname.includes('/api/pools/') && !url.pathname.endsWith('/pools'),
       async (route) => {
@@ -198,8 +206,7 @@ export const test = base.extend<{
         });
       }
     );
-    const pool = await fetchPool(poolApi, testPool.address);
-    await installStoreSeed(page, pool ?? SEEDED_POOL);
+    await installStoreSeed(page, SEEDED_POOL);
     await use(page);
   },
 });
